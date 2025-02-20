@@ -57,12 +57,12 @@ describe('Market Calculations', () => {
 
   describe('getPriceGuidance', () => {
     it('should provide basic guidance with low market intel', () => {
-      const guidance = getPriceGuidance(100, 10, 'Test Drug')
+      const guidance = getPriceGuidance(10, 'Test Drug')
       expect(guidance).toBe('Prices are very low')
     })
 
     it('should provide detailed guidance with high market intel', () => {
-      const guidance = getPriceGuidance(100, 80, 'Test Drug')
+      const guidance = getPriceGuidance(80, 'Test Drug')
       expect(guidance).toBe('Prices are very low for Test Drug - Great time to buy!')
     })
   })
