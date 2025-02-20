@@ -138,15 +138,17 @@ function App() {
         <button onClick={() => setCurrentScreen("market")}>Market</button>
         <button onClick={() => setCurrentScreen("loan")}>Loan Shark</button>
         <button onClick={() => setCurrentScreen("upgrades")}>Upgrades</button>
-        <div className="audio-controls">
-          <button 
-            onClick={toggleAudio}
-            title={isPlaying ? "Mute Music" : "Play Music"}
-          >
-            {isPlaying ? "🔊 Mute" : "🔈 Play"}
-          </button>
-        </div>
       </nav>
+
+      <div className="audio-controls">
+        <button 
+          onClick={toggleAudio}
+          title={isPlaying ? "Mute Music" : "Play Music"}
+        >
+          {isPlaying ? "🔊" : "🔈"}
+          <span>{isPlaying ? " Mute" : " Play"}</span>
+        </button>
+      </div>
 
       <main>
         {currentScreen === "map" && <MapScreen />}

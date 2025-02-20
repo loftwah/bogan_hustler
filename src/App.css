@@ -44,10 +44,38 @@ h1 {
 }
 
 .nav-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin: 20px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-buttons button {
+  min-height: 48px;
+  padding: 12px 24px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.nav-buttons button:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.nav-buttons button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 button {
@@ -58,11 +86,6 @@ button {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-button:hover:not(:disabled) {
-  background-color: var(--primary-color);
-  color: white;
 }
 
 button:disabled {
@@ -106,18 +129,68 @@ main {
 @media (max-width: 600px) {
   .status-bar {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  .nav-buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: var(--bg-color);
+    padding: 8px;
+    gap: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    z-index: 9999;
+    border-top: 1px solid var(--border-color);
+    margin: 0;
+    box-sizing: border-box;
   }
 
+  .nav-buttons button {
+    min-height: 40px;
+    padding: 8px 4px;
+    font-size: 0.85rem;
+    border-width: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .app {
+    padding-bottom: 70px;
+  }
+
+  main {
+    margin-bottom: 60px;
+  }
+
+  .floating-inventory,
+  .floating-inventory-toggle {
+    bottom: 70px;
+  }
+}
+
+@media (max-width: 360px) {
   .nav-buttons {
-    flex-direction: column;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .nav-buttons button {
+    min-height: 36px;
+    padding: 4px;
+    font-size: 0.75rem;
   }
 }
 
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: clamp(0.5rem, 2vw, 1rem);
   text-align: center;
 }
 
@@ -184,288 +257,194 @@ main {
 }
 
 .market-screen {
-  padding: 0.5rem;
+  padding: 1.5rem;
   max-width: 800px;
   margin: 0 auto;
-  overflow-x: hidden;
 }
 
-/* Base quantity control styles */
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin: 1rem 0;
-  padding: 1rem;
-  background: var(--surface-color);
-  border-radius: 8px;
-}
-
-.quantity-button {
-  width: 40px;
-  height: 40px;
-  font-size: 1.2rem;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.quantity-input {
-  width: 80px;
-  padding: 0.5rem;
-  text-align: center;
-  font-size: 1.2rem;
-  background: var(--surface-color);
-  border: 2px solid var(--primary-color);
-  border-radius: 8px;
-  color: var(--text-color);
-}
-
-/* Mobile adjustments */
-@media (max-width: 600px) {
-  .quantity-controls {
-    padding: 0.5rem;
-    gap: 0.5rem;
-    margin: 0.5rem 0;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 300px; /* Prevent controls from spreading too wide */
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .quantity-button {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-    border-radius: 6px;
-  }
-
-  .quantity-input {
-    width: 50px;
-    padding: 0.25rem;
-    font-size: 1rem;
-    border-width: 1px;
-  }
-}
-
-/* Very small screen adjustments */
-@media (max-width: 360px) {
-  .quantity-controls {
-    padding: 0.375rem;
-    gap: 0.375rem;
-    max-width: 260px;
-  }
-
-  .quantity-button {
-    width: 32px;
-    height: 32px;
-    font-size: 0.9rem;
-    border-radius: 4px;
-  }
-
-  .quantity-input {
-    width: 40px;
-    padding: 0.25rem;
-  }
-}
-
-.market-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
+/* Market item styling */
 .market-item {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.25rem;
-  position: relative;
-  background: linear-gradient(to right, var(--surface-color), var(--bg-color));
+  background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transform: translate3d(0, 0, 0);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  will-change: transform, box-shadow;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.market-item:hover {
-  transform: translate3d(0, -4px, 0);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
+/* Header section with drug info */
 .market-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  width: 100%;
-}
-
-.market-item-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.drug-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.drug-stats {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .drug-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.drug-price {
-  color: var(--primary-color);
-}
-
-.drug-owned {
-  color: #ccc;
-}
-
-.drug-details {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-}
-
-.drug-stat {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text-color);
 }
 
-.drug-stat-icon {
-  width: 16px;
-  height: 16px;
+.drug-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: right;
+}
+
+.drug-owned {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  color: #888;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Quantity controls */
+.quantity-controls {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px 48px;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.quantity-button {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  border-radius: 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-color);
-  border-radius: 4px;
-  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.drug-actions {
-  grid-column: 1 / -1;
+.quantity-button:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+}
+
+.quantity-input {
+  height: 48px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+/* Action buttons */
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.quick-action-button {
+  height: 48px;
+  padding: 0 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.action-button {
-  min-width: 120px;
-  padding: 0.75rem 1.5rem;
-}
-
-.buy-button {
+.quick-action-button.buy-button {
   background: var(--primary-color);
   color: white;
+  border: none;
 }
 
-.sell-button {
-  background: #2a2a2a;
-  color: white;
-  border: 1px solid var(--primary-color);
+.quick-action-button.sell-button {
+  background: transparent;
+  color: var(--text-color);
+  border: 2px solid var(--primary-color);
 }
 
-.action-button:disabled {
+.buy-options,
+.sell-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+  .market-screen {
+    padding: 1rem;
+  }
+
+  .market-item {
+    padding: 1rem;
+  }
+
+  .market-item-header {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .drug-price {
+    text-align: left;
+  }
+
+  .quantity-controls {
+    grid-template-columns: 44px 1fr 44px 44px;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .quantity-button {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .quantity-input {
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .quick-action-button {
+    height: 44px;
+  }
+
+  .buy-options,
+  .sell-options {
+    gap: 0.5rem;
+  }
+}
+
+/* Disabled states */
+.quick-action-button:disabled,
+.quantity-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.action-button:not(:disabled):hover {
-  transform: translateY(-2px);
-}
-
-/* Media Queries for Responsive Design */
-@media (min-width: 768px) {
-  .market-item {
-    grid-template-columns: 1fr auto;
-  }
-
-  .drug-actions {
-    grid-column: 2;
-    grid-row: 2;
-    min-width: 150px;
-  }
-
-  .market-item-details {
-    grid-column: 1;
-    grid-row: 2;
-  }
-}
-
-@media (max-width: 767px) {
-  .quantity-controls {
-    padding: 0.5rem;
-    margin: 0.5rem 0;
-  }
-
-  .quantity-input {
-    width: 60px;
-  }
-
-  .market-item {
-    padding: 0.5rem;
-  }
-
-  .drug-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
-
-  .drug-details {
-    width: 100%;
-    justify-content: space-between;
-    font-size: 0.9rem;
-  }
-
-  .drug-actions {
-    margin-top: 0.5rem;
-  }
-
-  .action-button {
-    padding: 0.5rem 0.25rem;
-    font-size: 0.85rem;
-  }
-
-  header {
-    margin-bottom: 10px;
-    padding: 10px;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-    margin: 0 0 10px 0;
-  }
-
-  .status-bar {
-    padding: 5px;
-    font-size: 0.9rem;
-  }
+/* Focus states */
+.quantity-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
 .status-item {
@@ -701,17 +680,16 @@ img {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
 .location-button {
-  padding: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  text-align: left;
   background: #333;
   border: 1px solid #444;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
 }
 
 .location-button:hover:not(:disabled) {
@@ -831,15 +809,13 @@ img {
 /* Add floating inventory panel */
 .floating-inventory {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 280px;
+  bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  right: max(20px, env(safe-area-inset-right, 20px));
+  width: min(280px, calc(100% - 40px));
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  padding: 1rem;
+  padding: clamp(0.5rem, 2vw, 1rem);
 }
 
 .floating-inventory-header {
@@ -928,7 +904,41 @@ img {
   transform: scale(1.1);
 }
 
-/* Add these styles */
+/* Clean up market item styles */
+.market-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.market-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.market-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Simplify quick actions */
 .quick-actions {
   display: flex;
   flex-direction: column;
@@ -940,220 +950,71 @@ img {
   text-align: center;
 }
 
-.action-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-}
-
 .primary-actions {
   display: flex;
-  gap: 0.5rem;
-  justify-content: center;
+  gap: 10px;
   width: 100%;
-  max-width: 300px;
+}
+
+.primary-actions button {
+  flex: 1;
+  min-width: 120px;
 }
 
 .percentage-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
+  margin-top: 10px;
 }
 
 .buy-options,
 .sell-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
 }
 
 .quick-action-button {
-  position: relative;
-  padding: 0.5rem;
+  min-width: 120px;
+  min-height: 44px;
+  padding: 10px 20px;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid transparent;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  min-width: 80px;
-  width: 100%;
-  height: 100%;
-  min-height: 50px;
+  gap: 0.5rem;
 }
 
-.quick-action-button.buy-button,
-.quick-action-button.sell-button {
-  width: 100%;
-  font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  min-width: 120px;
-}
-
-.quick-action-button.percentage-button {
-  background: #333;
+.quick-action-button.buy-button {
+  background-color: var(--primary-color);
   color: white;
-  font-size: 0.85rem;
+  border: none;
 }
 
-.quick-action-button.percentage-button.buy {
-  border-color: var(--primary-color);
-  background: rgba(255, 69, 0, 0.1);
+.quick-action-button.sell-button {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--primary-color);
 }
 
-.quick-action-button.percentage-button.sell {
-  border-color: #4caf50;
-  background: rgba(76, 175, 80, 0.1);
-}
-
-.quick-action-button .action-value {
-  font-size: 0.75rem;
-  opacity: 0.9;
-}
-
-.quick-action-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.quick-action-button:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.quick-action-button.percentage-button.buy:not(:disabled):hover {
-  background: rgba(255, 69, 0, 0.2);
-}
-
-.quick-action-button.percentage-button.sell:not(:disabled):hover {
-  background: rgba(76, 175, 80, 0.2);
-}
-
+/* Mobile optimizations */
 @media (max-width: 600px) {
-  .buy-options,
-  .sell-options {
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    padding: 0 0.5rem;
+  .primary-actions {
+    flex-direction: column;
+    gap: 8px;
   }
 
   .quick-action-button {
-    padding: 0.4rem;
-    font-size: 0.8rem;
-    min-height: 45px;
+    width: 100%;
+    min-width: unset;
   }
 
-  .quick-action-button.buy-button,
-  .quick-action-button.sell-button {
-    min-width: 100px;
-    padding: 0.5rem 1rem;
+  .buy-options,
+  .sell-options {
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  .primary-actions {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .market-item-content {
-    align-items: center;
-  }
-
-  .market-stats {
-    text-align: center;
-  }
-}
-
-/* Add these styles near the market-item related CSS */
-.market-item-details {
-  width: 100%;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 1rem;
-  text-align: center;
-}
-
-.market-item-details h4 {
-  color: var(--primary-color);
-  margin: 0;
-}
-
-.market-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  padding: 0.5rem;
-  justify-content: center;
-  align-items: center;
-}
-
-.market-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  transition: transform 0.2s ease;
-  align-items: center;
-  text-align: center;
-}
-
-.market-stat:hover {
-  transform: translateY(-2px);
-}
-
-.market-stat-value {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--primary-color);
-}
-
-.market-stat-label {
-  font-size: 0.9rem;
-  color: var(--text-color);
-  opacity: 0.8;
-}
-
-.market-stat.highlight {
-  background: rgba(255, 69, 0, 0.1);
-  padding: 0.75rem;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 69, 0, 0.2);
-}
-
-.market-stat-subvalue {
-  font-size: 0.8rem;
-  color: var(--text-color);
-  opacity: 0.7;
-}
-
-.market-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  width: 100%;
-}
-
-.expand-button {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: 1px solid var(--primary-color);
-  color: var(--text-color);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  transform: translateZ(0);
-}
-
-.expand-button:hover {
-  background-color: var(--primary-color);
-  color: white;
 }
 
 /* Accessibility improvements */
@@ -1193,16 +1054,63 @@ img {
   }
 }
 
-/* Simplify audio controls styles */
+/* Update audio controls styling */
 .audio-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
+  position: fixed;
+  bottom: 48px; /* Height of nav buttons */
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+  z-index: 9999;
 }
 
 .audio-controls button {
-  min-width: 100px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 16px;
+  background-color: var(--surface-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .nav-buttons {
+    bottom: 0;
+    padding: 8px;
+  }
+
+  .audio-controls {
+    bottom: 56px; /* Nav height + padding */
+  }
+
+  /* Adjust floating inventory to be above audio controls */
+  .floating-inventory,
+  .floating-inventory-toggle {
+    bottom: 120px; /* Combined height of nav + audio controls */
+  }
+
+  /* Adjust main content padding */
+  .app {
+    padding-bottom: 120px; /* Combined height of nav + audio controls */
+  }
+
+  main {
+    margin-bottom: 120px;
+  }
+}
+
+@media (max-width: 360px) {
+  .audio-controls button {
+    min-height: 36px;
+    font-size: 0.85rem;
+  }
 }
 
 /* Add these styles for the new market actions */
@@ -1251,43 +1159,8 @@ img {
   gap: 0.5rem;
 }
 
-.quick-action-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.75rem;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-}
-
-.quick-action-button.buy-button {
-  background: rgba(255, 69, 0, 0.1);
-  color: var(--text-color);
-  border-color: rgba(255, 69, 0, 0.2);
-}
-
-.quick-action-button.sell-button {
-  background: rgba(76, 175, 80, 0.1);
-  color: var(--text-color);
-  border-color: rgba(76, 175, 80, 0.2);
-}
-
 .quick-action-button:hover:not(:disabled) {
   transform: translateY(-2px);
-}
-
-.quick-action-button.buy-button:hover:not(:disabled) {
-  background: rgba(255, 69, 0, 0.2);
-  border-color: rgba(255, 69, 0, 0.4);
-}
-
-.quick-action-button.sell-button:hover:not(:disabled) {
-  background: rgba(76, 175, 80, 0.2);
-  border-color: rgba(76, 175, 80, 0.4);
 }
 
 .quick-action-button:disabled {
@@ -1325,111 +1198,23 @@ img {
 /* Update market item styling for mobile */
 @media (max-width: 600px) {
   .market-screen {
-    padding: 0.25rem;
-  }
-
-  .market-item {
-    padding: 1rem;
-    gap: 0.75rem;
-    /* Ensure content stays contained */
-    overflow: hidden;
-    width: auto;
-    min-width: 0;
-  }
-
-  .market-item-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .drug-info {
-    width: 100%;
-    text-align: center;
-  }
-
-  .drug-stats {
-    justify-content: center;
-    width: 100%;
-  }
-
-  /* Fix market stats layout */
-  .market-stats {
-    grid-template-columns: 1fr;
-    width: 100%;
-    gap: 0.5rem;
-  }
-
-  .market-stat {
-    width: 100%;
-  }
-
-  /* Adjust quick actions layout */
-  .quick-actions {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
     padding: 0.5rem;
-    gap: 0.5rem;
   }
-
-  .primary-actions {
-    width: 100%;
-    flex-direction: column;
+  
+  button {
+    min-height: 44px; /* Ensure minimum touch target size */
   }
-
-  .buy-options,
-  .sell-options {
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
-
-  .quick-action-button {
-    width: 100%;
-    min-height: 44px; /* Better touch target */
-    padding: 0.5rem;
-    font-size: 0.9rem;
-  }
-
-  /* Adjust quantity controls */
-  .quantity-controls {
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.5rem;
-    gap: 0.5rem;
-  }
-
-  .quantity-button {
-    width: 44px; /* Larger touch target */
-    height: 44px;
-    flex-shrink: 0;
-  }
-
-  .quantity-input {
-    width: 60px;
-    text-align: center;
-  }
-
-  /* Ensure market item details stay contained */
-  .market-item-details {
-    width: auto;
-    padding: 0.75rem;
-  }
-
-  /* Fix floating inventory for mobile */
-  .floating-inventory {
-    width: calc(100% - 40px); /* Account for margins */
-    max-width: none;
+  
+  input {
+    min-height: 44px;
+    font-size: 16px; /* Prevent iOS zoom on focus */
   }
 }
 
 /* Additional fixes for very small screens */
 @media (max-width: 360px) {
   .market-screen {
-    padding: 0;
+    padding: 0.25rem;
   }
 
   .market-item {
@@ -1450,5 +1235,217 @@ img {
   .quantity-input {
     width: 50px;
   }
+}
+
+/* Safe area insets for modern mobile browsers */
+@supports (padding: max(0px)) {
+  .app {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Market item styling improvements */
+.market-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.market-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.drug-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.drug-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  min-width: 120px;
+}
+
+.drug-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  min-width: 100px;
+  text-align: right;
+}
+
+.drug-owned {
+  font-size: 1rem;
+  color: #888;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 80px;
+  justify-content: center;
+}
+
+/* Quantity controls improvements */
+.quantity-controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  align-items: center;
+}
+
+.quantity-button {
+  width: 48px;
+  height: 48px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quantity-button:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+}
+
+.quantity-input {
+  height: 48px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+/* Market stats styling */
+.drug-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.drug-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.drug-stat-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--primary-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+  .market-item {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .market-item-header {
+    padding-bottom: 0.75rem;
+  }
+
+  .drug-name {
+    font-size: 1.1rem;
+  }
+
+  .drug-price {
+    font-size: 1.25rem;
+  }
+
+  .quantity-controls {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .quantity-button {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .quantity-input {
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .drug-stats {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .drug-stat {
+    font-size: 0.9rem;
+  }
+
+  .drug-stat-icon {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Additional polish */
+.market-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.market-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.quantity-button:active:not(:disabled),
+.quick-action-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.quantity-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
 }
 
