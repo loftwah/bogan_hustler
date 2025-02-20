@@ -8,8 +8,8 @@ import UpgradesScreen from "./components/UpgradesScreen";
 import EventPopup from "./components/EventPopup";
 import FloatingInventory from './components/FloatingInventory';
 import "./App.css";
-import bannerImage from '../public/banner.jpg';
-import squareImage from '../public/square.jpg';
+import bannerImage from './assets/banner.jpg';
+import squareImage from './assets/square.jpg';
 import { toggleAdultMode } from "./store/playerSlice";
 
 type Screen = "map" | "market" | "loan" | "upgrades";
@@ -21,7 +21,7 @@ function App() {
   );
   const dispatch = useDispatch();
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
-  const [audio] = useState(new Audio('./themesong.mp3'));
+  const [audio] = useState(new Audio('/bogan_hustler/themesong.mp3'));
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {

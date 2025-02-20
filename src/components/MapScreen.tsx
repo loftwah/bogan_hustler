@@ -5,7 +5,7 @@ import { triggerRandomEvent } from "../store/eventSlice";
 import { RootState, AppDispatch } from "../store/store";
 
 // Group locations by region for better organization
-const locationsByRegion = {
+export const locationsByRegion = {
   "New South Wales": [
     "Kings Cross",
     "Redfern",

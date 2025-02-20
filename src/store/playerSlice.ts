@@ -25,7 +25,7 @@ const initialState: PlayerState = {
   inventory: [],
   inventorySpace: 10,
   reputation: 0,
-  location: "Sydney",
+  location: "Kings Cross",
   currentDay: 1,
   maxDays: 30,
   debt: 0,
