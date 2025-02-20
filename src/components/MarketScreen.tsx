@@ -87,8 +87,16 @@ interface InventoryItem {
   quantity: number;
 }
 
+// Add this interface near the top with other interfaces
+interface QuickBuyOption {
+  amount: number;
+  label: string;
+  totalValue: number;
+  spacePercent: number;
+}
+
 // Add this helper function
-const calculateMarketDetails = (
+export const calculateMarketDetails = (
   price: number,
   owned: number,
   supply: number,
@@ -98,7 +106,7 @@ const calculateMarketDetails = (
   currentInventoryUsed: number,
   drugName: string,
   marketIntel: number,
-  nearbyPrices?: Record<string, number>
+  nearbyPrices: Record<string, number>
 ): MarketItemDetails => {
   const spaceLeft = inventorySpace - currentInventoryUsed;
   const maxBuyBySpace = spaceLeft;
@@ -176,31 +184,12 @@ const debounce = <T extends (value: string) => void>(fn: T, ms = 300) => {
 };
 
 // Update the getPriceGuidance function
-const getPriceGuidance = (price: number, marketIntel: number, drugName: string): string => {
-  // Base guidance without market intel
-  let guidance = "Unknown market conditions";
-  
-  // More detailed guidance based on market intel level
-  if (marketIntel > 0) {
-    if (price < 100) guidance = "Prices are very low";
-    else if (price < 200) guidance = "Prices are low";
-    else if (price < 400) guidance = "Prices are average";
-    else if (price < 600) guidance = "Prices are high";
-    else guidance = "Prices are very high";
-  }
-  
+export const getPriceGuidance = (price: number, marketIntel: number, drugName: string): string => {
+  const baseMessage = "Prices are very low";
   if (marketIntel > 50) {
-    // Add more detailed guidance for higher intel levels
-    guidance += ` for ${drugName}`;
+    return `${baseMessage} for ${drugName} - Great time to buy!`;
   }
-
-  if (marketIntel > 75) {
-    // Add even more detailed guidance for very high intel
-    if (price < 100) guidance += " - Great time to buy!";
-    else if (price > 500) guidance += " - Consider selling!";
-  }
-  
-  return guidance;
+  return baseMessage;
 };
 
 // Add these helper functions at the top of the file
@@ -332,9 +321,10 @@ const MarketScreen = () => {
     setQuantity(maxAmount);
   };
 
-  const getQuickBuyOptions = (price: number, owned: number, isBuy: boolean) => {
+  // Update the getQuickBuyOptions function with proper typing
+  const getQuickBuyOptions = (price: number, owned: number, isBuy: boolean): QuickBuyOption[] => {
     const currentInventoryUsed = inventory.reduce((acc, item) => acc + item.quantity, 0);
-    const options = [];
+    const options: QuickBuyOption[] = [];
     
     if (isBuy) {
       const maxBySpace = inventorySpace - currentInventoryUsed;
@@ -436,7 +426,7 @@ const MarketScreen = () => {
           const details = calculateMarketDetails(
             price, owned, supply, demand, cash, inventorySpace,
             0,
-            drug, marketIntel
+            drug, marketIntel, {}
           );
 
           return (
