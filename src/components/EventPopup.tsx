@@ -20,13 +20,24 @@ const EventPopup = () => {
   const event = useSelector((state: RootState) => state.events.activeEvent);
 
   useEffect(() => {
-    // Play siren for police-related events
     if (event?.id.includes('police')) {
       const siren = new Audio('./siren.mp3');
       siren.volume = 0.3;
-      siren.play().catch(err => console.log('Audio playback failed:', err));
+      
+      if (document.documentElement.hasAttribute('data-user-interacted')) {
+        siren.play().catch(err => console.log('Audio playback failed:', err));
+      }
     }
   }, [event]);
+
+  useEffect(() => {
+    const markInteracted = () => {
+      document.documentElement.setAttribute('data-user-interacted', 'true');
+      document.removeEventListener('click', markInteracted);
+    };
+    document.addEventListener('click', markInteracted);
+    return () => document.removeEventListener('click', markInteracted);
+  }, []);
 
   if (!event) return null;
 
