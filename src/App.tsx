@@ -77,18 +77,11 @@ function App() {
       setIsPlaying(true);
     }
 
-    const handleFirstClick = () => {
-      if (savedPlayingState === 'true') {
-        audio.play().catch(err => console.error('Audio playback failed:', err));
-      }
-      document.removeEventListener('click', handleFirstClick);
-    };
-    document.addEventListener('click', handleFirstClick);
+    document.documentElement.setAttribute('data-user-interacted', 'true');
 
     return () => {
       audio.pause();
       audio.currentTime = 0;
-      document.removeEventListener('click', handleFirstClick);
     };
   }, [audio]);
 
@@ -110,14 +103,16 @@ function App() {
   const toggleAudio = () => {
     if (isPlaying) {
       audio.pause();
+      setIsPlaying(false);
     } else {
       audio.loop = true;
       audio.play().catch(err => {
         console.error('Audio playback failed:', err);
+        setIsPlaying(false);
         alert('Audio playback failed. Please check your browser settings.');
       });
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
     localStorage.setItem('boganHustlerAudioPlaying', String(!isPlaying));
   };
 
