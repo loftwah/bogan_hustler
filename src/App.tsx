@@ -22,7 +22,7 @@ import {
   faBolt,
   faLink
 } from '@fortawesome/free-solid-svg-icons';
-import { faGithub, faTwitter } from '@fortawesome/free-brands-svg-icons';
+import { faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -267,7 +267,7 @@ function App() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-surface/50 rounded-full hover:bg-surface/80 transition-colors text-primary hover:text-primary/80"
             >
-              <FontAwesomeIcon icon={faTwitter} />
+              <FontAwesomeIcon icon={faXTwitter} />
               @loftwah
             </a>
             <a 
