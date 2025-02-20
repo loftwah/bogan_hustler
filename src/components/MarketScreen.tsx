@@ -73,8 +73,17 @@ interface MarketItemDetails {
   maxSell: number;
   totalCost: number;
   potentialProfit: number;
+  potentialProfitPercent: string;
   supplyTrend: string;
   demandTrend: string;
+  priceGuidance: string;
+  nearbyComparison: string;
+  buyAdvice: string;
+}
+
+interface InventoryItem {
+  name: string;
+  quantity: number;
 }
 
 // Add this helper function
@@ -85,7 +94,10 @@ const calculateMarketDetails = (
   demand: number,
   cash: number,
   inventorySpace: number,
-  currentInventoryUsed: number
+  currentInventoryUsed: number,
+  drugName: string,
+  marketIntel: number,
+  nearbyPrices?: Record<string, number>
 ): MarketItemDetails => {
   const spaceLeft = inventorySpace - currentInventoryUsed;
   const maxBuyBySpace = spaceLeft;
@@ -104,28 +116,70 @@ const calculateMarketDetails = (
     : demand < 25 ? "Low Demand - Prices Dropping"
     : "Stable Demand";
 
+  const priceGuidance = getPriceGuidance(price, marketIntel, drugName);
+  
+  let nearbyComparison = "";
+  if (nearbyPrices && Object.keys(nearbyPrices).length > 0) {
+    const avgNearbyPrice = Object.values(nearbyPrices).reduce((a, b) => a + b, 0) / Object.values(nearbyPrices).length;
+    const priceDiff = ((price - avgNearbyPrice) / avgNearbyPrice * 100).toFixed(1);
+    nearbyComparison = `${Number(priceDiff) > 0 ? '📈' : '📉'} ${Math.abs(Number(priceDiff))}% vs nearby`;
+  }
+
+  const potentialProfitPercent = price > 0 ? ((potentialProfit - (owned * price)) / (owned * price) * 100).toFixed(1) : '0';
+  
+  const buyAdvice = (() => {
+    if (price <= 0) return "Not available for purchase";
+    if (maxBuy <= 0) return "Can't buy - no space or cash";
+    if (supply < 25 && demand > 75) return "⭐ Hot Deal! High demand, low supply";
+    if (supply > 75 && demand < 25) return "⚠️ Risky Buy - High supply, low demand";
+    if (Number(potentialProfitPercent) > 50) return "💎 High profit potential!";
+    return "📊 Average market conditions";
+  })();
+
   return {
     maxBuy,
     maxSell,
     totalCost,
     potentialProfit,
+    potentialProfitPercent: `${potentialProfitPercent}%`,
     supplyTrend,
-    demandTrend
+    demandTrend,
+    priceGuidance,
+    nearbyComparison,
+    buyAdvice
   };
 };
 
-// Add this helper function
-const debounce = (fn: Function, ms = 300) => {
+// Update the debounce function with proper typing
+const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 300) => {
   let timeoutId: ReturnType<typeof setTimeout>;
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, ...args: Parameters<T>) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
 };
 
+// Add this helper function near the top with other helpers
+const getPriceGuidance = (price: number, marketIntel: number, drugName: string): string => {
+  // These would ideally be moved to a config file and adjusted per drug
+  const priceRanges: Record<string, [number, number]> = {
+    "Ice": [50, 200],
+    "Crack": [40, 180],
+    // ... add ranges for other drugs
+    "default": [30, 150]
+  };
+
+  const [lowPrice, highPrice] = priceRanges[drugName] || priceRanges.default;
+  
+  if (price <= lowPrice) return "Great Buy! 💰";
+  if (price <= (lowPrice + highPrice) / 2) return "Decent Price 👍";
+  if (price <= highPrice) return "High Price ⚠️";
+  return "Very Expensive! ⛔";
+};
+
 const MarketScreen = () => {
   const dispatch = useDispatch();
-  const { inventory, cash, inventorySpace } = useSelector((state: RootState) => state.player);
+  const { inventory, cash, inventorySpace, marketIntel } = useSelector((state: RootState) => state.player);
   const location = useSelector(selectLocation);
   const adultMode = useSelector(selectAdultMode);
   const prices = useSelector(selectPricesForLocation);
@@ -133,19 +187,27 @@ const MarketScreen = () => {
   const [quantity, setQuantity] = useState(1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Memoize market items calculation with proper typing
+  // Add this near other state/refs
+  const nearbyLocations = useMemo(() => {
+    // This is a placeholder - you'll need to implement your own nearby locations logic
+    return {
+      [location]: {
+        prices: {} as Record<string, number>
+      }
+    };
+  }, [location]);
+
+  // Update the market items calculation
   const marketItems = useMemo(() => {
     const items = new Map<string, MarketDataWithOriginal>();
     
-    // Add market prices
     Object.entries(prices).forEach(([drug, market]) => {
       const originalDrug = adultMode ? drug : market.originalName || drug;
-      const owned = inventory.find(item => item.name === originalDrug)?.quantity || 0;
+      const owned = inventory.find((item: InventoryItem) => item.name === originalDrug)?.quantity || 0;
       items.set(drug, { ...market, owned: owned });
     });
 
-    // Add inventory items that aren't in the market
-    inventory.forEach(item => {
+    inventory.forEach((item: InventoryItem) => {
       const displayName = adultMode ? item.name : DRUG_MAPPINGS[item.name] || item.name;
       if (!items.has(displayName)) {
         items.set(displayName, {
@@ -159,7 +221,7 @@ const MarketScreen = () => {
     });
 
     return Array.from(items.entries());
-  }, [prices, inventory, adultMode]);
+  }, [prices, inventory, adultMode, location]);
 
   // Update the quantity input handler
   const handleQuantityChange = useCallback(
@@ -182,9 +244,18 @@ const MarketScreen = () => {
     dispatch(sellDrug({ drug: originalDrug, quantity, price }));
   };
 
+  // Update the max button click handler
+  const handleMaxClick = () => {
+    const maxAmount = Math.max(...marketItems.map(([, market]) => 
+      calculateMaxQuantity(market.price, market.owned, true)
+    ));
+    setQuantity(maxAmount);
+  };
+
+  // Update calculateMaxQuantity
   const calculateMaxQuantity = (price: number, owned = 0, isBuy: boolean): number => {
     if (isBuy) {
-      const maxBySpace = inventorySpace - inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const maxBySpace = inventorySpace - inventory.reduce((acc: number, item: InventoryItem) => acc + item.quantity, 0);
       const maxByCash = Math.floor(cash / price);
       return Math.max(0, Math.min(maxBySpace, maxByCash));
     } else {
@@ -229,12 +300,7 @@ const MarketScreen = () => {
           className="quantity-button"
         >+</button>
         <button
-          onClick={() => {
-            const maxAmount = Math.max(...marketItems.map(([_, market]) => 
-              calculateMaxQuantity(market.price, market.owned, true)
-            ));
-            setQuantity(maxAmount);
-          }}
+          onClick={handleMaxClick}
           className="quantity-button max-button"
         >Max</button>
       </div>
@@ -256,7 +322,10 @@ const MarketScreen = () => {
             demand,
             cash,
             inventorySpace,
-            inventory.reduce((acc, item) => acc + item.quantity, 0)
+            inventory.reduce((acc, item) => acc + item.quantity, 0),
+            drug,
+            marketIntel,
+            nearbyLocations[location]?.prices?.[drug]
           );
 
           return (
@@ -289,75 +358,89 @@ const MarketScreen = () => {
                 </button>
               </div>
 
-              {isExpanded && (
-                <div 
-                  id={`details-${drug}`}
-                  className="market-item-details"
-                  role="region"
-                  aria-label={`Details for ${drug}`}
-                >
-                  <div className="market-stats">
-                    <div className="market-stat">
-                      <span className="market-stat-label">Max Buy Amount</span>
-                      <span className="market-stat-value">{details.maxBuy}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">Max Sell Amount</span>
-                      <span className="market-stat-value">{details.maxSell}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">Cost to Max Buy</span>
-                      <span className="market-stat-value">${details.totalCost}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">Potential Sell Value</span>
-                      <span className="market-stat-value">${details.potentialProfit}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">Supply Trend</span>
-                      <span className="market-stat-value">{details.supplyTrend}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">Demand Trend</span>
-                      <span className="market-stat-value">{details.demandTrend}</span>
+              <div className="market-item-content">
+                {isExpanded && (
+                  <div 
+                    id={`details-${drug}`}
+                    className="market-item-details"
+                    role="region"
+                    aria-label={`Details for ${drug}`}
+                  >
+                    <div className="market-stats">
+                      <div className="market-stat highlight">
+                        <span className="market-stat-label">Price Analysis</span>
+                        <span className="market-stat-value">{details.priceGuidance}</span>
+                        {details.nearbyComparison && (
+                          <span className="market-stat-subvalue">{details.nearbyComparison}</span>
+                        )}
+                      </div>
+                      <div className="market-stat highlight">
+                        <span className="market-stat-label">Buy Advice</span>
+                        <span className="market-stat-value">{details.buyAdvice}</span>
+                      </div>
+                      <div className="market-stat">
+                        <span className="market-stat-label">Potential Profit</span>
+                        <span className="market-stat-value">${details.potentialProfit}</span>
+                        <span className="market-stat-subvalue">({details.potentialProfitPercent} return)</span>
+                      </div>
+                      <div className="market-stat">
+                        <span className="market-stat-label">Max Buy Amount</span>
+                        <span className="market-stat-value">{details.maxBuy}</span>
+                      </div>
+                      <div className="market-stat">
+                        <span className="market-stat-label">Max Sell Amount</span>
+                        <span className="market-stat-value">{details.maxSell}</span>
+                      </div>
+                      <div className="market-stat">
+                        <span className="market-stat-label">Cost to Max Buy</span>
+                        <span className="market-stat-value">${details.totalCost}</span>
+                      </div>
+                      <div className="market-stat">
+                        <span className="market-stat-label">Supply Trend</span>
+                        <span className="market-stat-value">{details.supplyTrend}</span>
+                      </div>
+                      <div className="market-stat">
+                        <span className="market-stat-label">Demand Trend</span>
+                        <span className="market-stat-value">{details.demandTrend}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <div className="drug-actions">
-                {price > 0 && (
-                  <div className="quick-actions">
-                    {getQuickBuyOptions(price, owned, true).map(amount => (
-                      <button
-                        key={`buy-${amount}`}
-                        onClick={() => {
-                          setQuantity(amount);
-                          handleBuy(drug, price);
-                        }}
-                        className="quick-action-button"
-                      >
-                        Buy {amount}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {owned > 0 && (
-                  <div className="quick-actions">
-                    {getQuickBuyOptions(price, owned, false).map(amount => (
-                      <button
-                        key={`sell-${amount}`}
-                        onClick={() => {
-                          setQuantity(amount);
-                          handleSell(drug, price);
-                        }}
-                        className="quick-action-button"
-                      >
-                        Sell {amount}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="drug-actions">
+                  {price > 0 && (
+                    <div className="quick-actions">
+                      {getQuickBuyOptions(price, owned, true).map(amount => (
+                        <button
+                          key={`buy-${amount}`}
+                          onClick={() => {
+                            setQuantity(amount);
+                            handleBuy(drug, price);
+                          }}
+                          className="quick-action-button"
+                        >
+                          Buy {amount}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {owned > 0 && price >= 0 && (
+                    <div className="quick-actions">
+                      {getQuickBuyOptions(price, owned, false).map(amount => (
+                        <button
+                          key={`sell-${amount}`}
+                          onClick={() => {
+                            setQuantity(amount);
+                            handleSell(drug, price);
+                          }}
+                          className="quick-action-button"
+                        >
+                          Sell {amount}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );

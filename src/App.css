@@ -233,9 +233,8 @@ main {
 }
 
 .market-item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
   padding: 1.25rem;
   position: relative;
@@ -253,9 +252,29 @@ main {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
+.market-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+
+.market-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .drug-info {
+  flex: 1;
   min-width: 0;
-  overflow: hidden;
+}
+
+.drug-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .drug-name {
@@ -264,28 +283,12 @@ main {
   text-overflow: ellipsis;
 }
 
-.drug-stats {
-  flex-wrap: wrap;
+.drug-price {
+  color: var(--primary-color);
 }
 
-.stat-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.stat-bar {
-  width: 50px;
-  height: 4px;
-  background: var(--border-color);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.stat-bar-fill {
-  height: 100%;
-  background: var(--primary-color);
-  transition: width 0.3s ease;
+.drug-owned {
+  color: #ccc;
 }
 
 .drug-details {
@@ -881,14 +884,11 @@ img {
 
 /* Add these styles near the market-item related CSS */
 .market-item-details {
-  grid-column: 1 / -1;
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
+  width: 100%;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  margin-top: 0.5rem;
+  padding: 1rem;
 }
 
 .market-item-details h4 {
@@ -898,14 +898,26 @@ img {
 
 .market-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+  padding: 0.5rem;
 }
 
 .market-stat {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.market-stat:hover {
+  transform: translateY(-2px);
+}
+
+.market-stat-value {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--primary-color);
 }
 
 .market-stat-label {
@@ -914,13 +926,20 @@ img {
   opacity: 0.8;
 }
 
-.market-stat-value {
-  font-size: 1.1rem;
-  font-weight: 500;
+.market-stat.highlight {
+  background: rgba(255, 69, 0, 0.1);
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 69, 0, 0.2);
+}
+
+.market-stat-subvalue {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.7;
 }
 
 .market-item-header {
-  grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -963,4 +982,20 @@ img {
 
 .expand-icon {
   transition: transform 0.2s ease;
+}
+
+/* Update responsive styles */
+@media (max-width: 600px) {
+  .market-item-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .expand-button {
+    width: 100%;
+  }
+
+  .market-stats {
+    grid-template-columns: 1fr;
+  }
 }

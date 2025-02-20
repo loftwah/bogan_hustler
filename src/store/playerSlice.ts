@@ -51,14 +51,22 @@ const playerSlice = createSlice({
       const totalCost = price * quantity;
       const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
       
-      if (state.cash >= totalCost && currentSpace + quantity <= state.inventorySpace) {
-        state.cash -= totalCost;
-        const existing = state.inventory.find((item) => item.name === drug);
-        if (existing) {
-          existing.quantity += quantity;
-        } else {
-          state.inventory.push({ name: drug, quantity });
-        }
+      if (totalCost > state.cash) {
+        console.warn(`Insufficient funds: Required ${totalCost}, have ${state.cash}`);
+        return;
+      }
+      
+      if (currentSpace + quantity > state.inventorySpace) {
+        console.warn(`Insufficient space: Required ${quantity}, have ${state.inventorySpace - currentSpace}`);
+        return;
+      }
+
+      state.cash -= totalCost;
+      const existing = state.inventory.find((item) => item.name === drug);
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        state.inventory.push({ name: drug, quantity });
       }
     },
     sellDrug: (state, action: PayloadAction<{ drug: string; quantity: number; price: number }>) => {
@@ -66,12 +74,15 @@ const playerSlice = createSlice({
       const totalEarned = price * quantity;
       const item = state.inventory.find((item) => item.name === drug);
       
-      if (item && item.quantity >= quantity) {
-        state.cash += totalEarned;
-        item.quantity -= quantity;
-        if (item.quantity === 0) {
-          state.inventory = state.inventory.filter((i) => i.name !== drug);
-        }
+      if (!item || item.quantity < quantity) {
+        console.warn(`Insufficient quantity: Required ${quantity}, have ${item?.quantity || 0}`);
+        return;
+      }
+
+      state.cash += totalEarned;
+      item.quantity -= quantity;
+      if (item.quantity === 0) {
+        state.inventory = state.inventory.filter((i) => i.name !== drug);
       }
     },
     takeLoan: (state, action: PayloadAction<number>) => {

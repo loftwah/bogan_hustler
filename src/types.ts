@@ -51,4 +51,12 @@ export interface Event {
       reputation?: number;
     };
   }[];
+}
+
+interface MarketDataWithOriginal extends DrugMarket {
+  originalName?: string;
+  owned: number;
+  price: number;
+  supply: number;
+  demand: number;
 } 
