@@ -12,15 +12,26 @@ const MarketScreen = () => {
   return (
     <div className="market-screen">
       <h2>Market in {location}</h2>
-      <div className="quantity-control">
-        <label>Quantity: </label>
+      
+      {/* Mobile-friendly quantity control */}
+      <div className="quantity-controls">
+        <button 
+          onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+          className="quantity-button"
+        >-</button>
         <input
           type="number"
           min="1"
           value={quantity}
           onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+          className="quantity-input"
         />
+        <button 
+          onClick={() => setQuantity(prev => prev + 1)}
+          className="quantity-button"
+        >+</button>
       </div>
+
       <div className="market-list">
         {Object.entries(prices || {}).map(([drug, market]: [string, { price: number }]) => {
           const { price } = market;
@@ -31,22 +42,26 @@ const MarketScreen = () => {
           return (
             <div key={drug} className="market-item">
               <div className="drug-info">
-                <span className="drug-name">{drug}</span>
-                <span className="drug-price">${price}</span>
-                <span className="drug-owned">Owned: {owned}</span>
+                <h3 className="drug-name">{drug}</h3>
+                <div className="drug-details">
+                  <span className="drug-price">${price}</span>
+                  <span className="drug-owned">Owned: {owned}</span>
+                </div>
               </div>
               <div className="drug-actions">
                 <button
                   onClick={() => dispatch(buyDrug({ drug, quantity, price }))}
                   disabled={!canBuy}
+                  className={`action-button buy-button ${!canBuy ? 'disabled' : ''}`}
                 >
-                  Buy
+                  Buy {quantity}
                 </button>
                 <button
                   onClick={() => dispatch(sellDrug({ drug, quantity, price }))}
                   disabled={!canSell}
+                  className={`action-button sell-button ${!canSell ? 'disabled' : ''}`}
                 >
-                  Sell
+                  Sell {quantity}
                 </button>
               </div>
             </div>
