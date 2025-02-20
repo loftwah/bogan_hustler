@@ -1,6 +1,6 @@
 # Bogan Hustler: The Straya Edition - Full Development Guide with Bun, Vite, React, and Strict TypeScript
 
-This guide walks you through building **Bogan Hustler: The Straya Edition**, an Aussie-flavored web game inspired by *Drugwars*. It uses **Bun** as the package manager, **Vite** for fast builds, **React** for the frontend, and is deployed to **GitHub Pages**.  
+This guide walks you through building **Bogan Hustler: The Straya Edition**, an Aussie-flavored web game inspired by _Drugwars_. It uses **Bun** as the package manager, **Vite** for fast builds, **React** for the frontend, and is deployed to **GitHub Pages**.
 
 **Requirement**: This project uses **strict TypeScript** for type safety and scalability.
 
@@ -10,30 +10,35 @@ This guide walks you through building **Bogan Hustler: The Straya Edition**, an 
 
 ## Step 1: Set Up the Project
 
-1. **Install Bun**  
+1. **Install Bun**
+
    ```
    curl -fsSL https://bun.sh/install | bash
    bun --version
    ```
 
-2. **Scaffold with Vite + React + TypeScript**  
+2. **Scaffold with Vite + React + TypeScript**
+
    ```
    bun create vite bogan-hustler --template react-ts
    cd bogan-hustler
    ```
 
-3. **Install Dependencies**  
+3. **Install Dependencies**
+
    ```
    bun install
    ```
 
-4. **Run the Dev Server**  
+4. **Run the Dev Server**
+
    ```
    bun run dev
    ```
+
    - Open `http://localhost:5173`.
 
-5. **Set Up Git**  
+5. **Set Up Git**
    ```
    git init
    git add .
@@ -53,13 +58,15 @@ bun add --dev gh-pages @types/react @types/react-dom
 
 ## Step 3: Set Up Redux with Strict TypeScript
 
-1. **Redux Store**  
+1. **Redux Store**
+
    - File: `src/store/store.ts`
+
    ```typescript
-   import { configureStore } from '@reduxjs/toolkit';
-   import playerReducer from './playerSlice';
-   import marketReducer from './marketSlice';
-   import eventReducer from './eventSlice';
+   import { configureStore } from "@reduxjs/toolkit";
+   import playerReducer from "./playerSlice";
+   import marketReducer from "./marketSlice";
+   import eventReducer from "./eventSlice";
 
    export const store = configureStore({
      reducer: {
@@ -73,10 +80,12 @@ bun add --dev gh-pages @types/react @types/react-dom
    export type AppDispatch = typeof store.dispatch;
    ```
 
-2. **Player Slice**  
+2. **Player Slice**
+
    - File: `src/store/playerSlice.ts`
+
    ```typescript
-   import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+   import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
    interface Drug {
      name: string;
@@ -98,13 +107,13 @@ bun add --dev gh-pages @types/react @types/react-dom
      inventory: [],
      inventorySpace: 10,
      reputation: 0,
-     location: 'Sydney',
+     location: "Sydney",
      currentDay: 1,
      maxDays: 30,
    };
 
    const playerSlice = createSlice({
-     name: 'player',
+     name: "player",
      initialState,
      reducers: {
        travel: (state, action: PayloadAction<string>) => {
@@ -113,12 +122,22 @@ bun add --dev gh-pages @types/react @types/react-dom
        },
        buyDrug: (
          state,
-         action: PayloadAction<{ drug: string; quantity: number; price: number }>
+         action: PayloadAction<{
+           drug: string;
+           quantity: number;
+           price: number;
+         }>
        ) => {
          const { drug, quantity, price } = action.payload;
          const totalCost = price * quantity;
-         const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
-         if (state.cash >= totalCost && currentSpace + quantity <= state.inventorySpace) {
+         const currentSpace = state.inventory.reduce(
+           (acc, item) => acc + item.quantity,
+           0
+         );
+         if (
+           state.cash >= totalCost &&
+           currentSpace + quantity <= state.inventorySpace
+         ) {
            state.cash -= totalCost;
            const existing = state.inventory.find((item) => item.name === drug);
            if (existing) {
@@ -130,7 +149,11 @@ bun add --dev gh-pages @types/react @types/react-dom
        },
        sellDrug: (
          state,
-         action: PayloadAction<{ drug: string; quantity: number; price: number }>
+         action: PayloadAction<{
+           drug: string;
+           quantity: number;
+           price: number;
+         }>
        ) => {
          const { drug, quantity, price } = action.payload;
          const totalEarned = price * quantity;
@@ -152,14 +175,17 @@ bun add --dev gh-pages @types/react @types/react-dom
      },
    });
 
-   export const { travel, buyDrug, sellDrug, upgradeInventory } = playerSlice.actions;
+   export const { travel, buyDrug, sellDrug, upgradeInventory } =
+     playerSlice.actions;
    export default playerSlice.reducer;
    ```
 
-3. **Market Slice**  
+3. **Market Slice**
+
    - File: `src/store/marketSlice.ts`
+
    ```typescript
-   import { createSlice } from '@reduxjs/toolkit';
+   import { createSlice } from "@reduxjs/toolkit";
 
    interface LocationDrugs {
      [drug: string]: { price: number };
@@ -172,15 +198,15 @@ bun add --dev gh-pages @types/react @types/react-dom
    }
 
    const locations: Record<string, { drugs: string[]; policeRisk: number }> = {
-     Sydney: { drugs: ['Meth', 'Cocaine', 'MDMA'], policeRisk: 0.2 },
-     Melbourne: { drugs: ['Weed', 'Ketamine', 'Xannies'], policeRisk: 0.1 },
-     'Gold Coast': { drugs: ['Meth', 'Steroids'], policeRisk: 0.15 },
-     Perth: { drugs: ['Meth', 'Cocaine'], policeRisk: 0.1 },
-     Darwin: { drugs: ['Weed', 'MDMA'], policeRisk: 0.25 },
-     'Alice Springs': { drugs: ['Weed'], policeRisk: 0.05 },
-     'Byron Bay': { drugs: ['Weed', 'Ketamine'], policeRisk: 0.08 },
-     Adelaide: { drugs: ['Xannies', 'Meth'], policeRisk: 0.1 },
-     Tasmania: { drugs: ['Weed'], policeRisk: 0.05 },
+     Sydney: { drugs: ["Meth", "Cocaine", "MDMA"], policeRisk: 0.2 },
+     Melbourne: { drugs: ["Weed", "Ketamine", "Xannies"], policeRisk: 0.1 },
+     "Gold Coast": { drugs: ["Meth", "Steroids"], policeRisk: 0.15 },
+     Perth: { drugs: ["Meth", "Cocaine"], policeRisk: 0.1 },
+     Darwin: { drugs: ["Weed", "MDMA"], policeRisk: 0.25 },
+     "Alice Springs": { drugs: ["Weed"], policeRisk: 0.05 },
+     "Byron Bay": { drugs: ["Weed", "Ketamine"], policeRisk: 0.08 },
+     Adelaide: { drugs: ["Xannies", "Meth"], policeRisk: 0.1 },
+     Tasmania: { drugs: ["Weed"], policeRisk: 0.05 },
    };
 
    const initialState: MarketState = {
@@ -190,11 +216,11 @@ bun add --dev gh-pages @types/react @types/react-dom
          return drugs;
        }, {} as LocationDrugs);
        return acc;
-     }, {} as MarketState['prices']),
+     }, {} as MarketState["prices"]),
    };
 
    const marketSlice = createSlice({
-     name: 'market',
+     name: "market",
      initialState,
      reducers: {
        updatePrices: (state) => {
@@ -207,7 +233,7 @@ bun add --dev gh-pages @types/react @types/react-dom
              );
            }
            if (Math.random() < 0.1) {
-             state.prices[loc]['Green Script'] = { price: 150 };
+             state.prices[loc]["Green Script"] = { price: 150 };
            }
          }
        },
@@ -218,10 +244,12 @@ bun add --dev gh-pages @types/react @types/react-dom
    export default marketSlice.reducer;
    ```
 
-4. **Event Slice**  
+4. **Event Slice**
+
    - File: `src/store/eventSlice.ts`
+
    ```typescript
-   import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+   import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
    interface Event {
      id: string;
@@ -241,7 +269,7 @@ bun add --dev gh-pages @types/react @types/react-dom
    };
 
    const eventSlice = createSlice({
-     name: 'events',
+     name: "events",
      initialState,
      reducers: {
        triggerEvent: (state, action: PayloadAction<Event>) => {
@@ -257,17 +285,19 @@ bun add --dev gh-pages @types/react @types/react-dom
    export default eventSlice.reducer;
    ```
 
-5. **Integrate Redux**  
-   - File: `src/main.tsx`
-   ```typescript
-   import React from 'react';
-   import ReactDOM from 'react-dom/client';
-   import { Provider } from 'react-redux';
-   import { store } from './store/store';
-   import App from './App';
-   import './index.css';
+5. **Integrate Redux**
 
-   ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+   - File: `src/main.tsx`
+
+   ```typescript
+   import React from "react";
+   import ReactDOM from "react-dom/client";
+   import { Provider } from "react-redux";
+   import { store } from "./store/store";
+   import App from "./App";
+   import "./index.css";
+
+   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
      <React.StrictMode>
        <Provider store={store}>
          <App />
@@ -280,25 +310,34 @@ bun add --dev gh-pages @types/react @types/react-dom
 
 ## Step 4: Create Components
 
-1. **Main App**  
+1. **Main App**
+
    - File: `src/App.tsx`
+
    ```typescript
-   import React, { useState, useEffect } from 'react';
-   import { useSelector } from 'react-redux';
-   import MapScreen from './components/MapScreen';
-   import MarketScreen from './components/MarketScreen';
-   import InventoryScreen from './components/InventoryScreen';
-   import EventPopup from './components/EventPopup';
-   import { RootState } from './store/store';
-   import './App.css';
+   import React, { useState, useEffect } from "react";
+   import { useSelector } from "react-redux";
+   import MapScreen from "./components/MapScreen";
+   import MarketScreen from "./components/MarketScreen";
+   import InventoryScreen from "./components/InventoryScreen";
+   import EventPopup from "./components/EventPopup";
+   import { RootState } from "./store/store";
+   import "./App.css";
 
    function App(): JSX.Element {
-     const [currentScreen, setCurrentScreen] = useState<'main' | 'map' | 'market' | 'inventory'>('main');
-     const { cash, location, currentDay, maxDays } = useSelector((state: RootState) => state.player);
+     const [currentScreen, setCurrentScreen] = useState<
+       "main" | "map" | "market" | "inventory"
+     >("main");
+     const { cash, location, currentDay, maxDays } = useSelector(
+       (state: RootState) => state.player
+     );
      const { activeEvent } = useSelector((state: RootState) => state.events);
 
      useEffect(() => {
-       localStorage.setItem('gameState', JSON.stringify({ cash, location, currentDay }));
+       localStorage.setItem(
+         "gameState",
+         JSON.stringify({ cash, location, currentDay })
+       );
      }, [cash, location, currentDay]);
 
      if (currentDay > maxDays) {
@@ -309,22 +348,27 @@ bun add --dev gh-pages @types/react @types/react-dom
        <div className="app">
          <header>
            <h1>Bogan Hustler: The Straya Edition</h1>
-           <div>Cash: ${cash} | Location: {location} | Day: {currentDay}/{maxDays}</div>
+           <div>
+             Cash: ${cash} | Location: {location} | Day: {currentDay}/{maxDays}
+           </div>
          </header>
          <nav>
-           <button onClick={() => setCurrentScreen('map')}>Travel</button>
-           <button onClick={() => setCurrentScreen('market')}>Market</button>
-           <button onClick={() => setCurrentScreen('inventory')}>Inventory</button>
+           <button onClick={() => setCurrentScreen("map")}>Travel</button>
+           <button onClick={() => setCurrentScreen("market")}>Market</button>
+           <button onClick={() => setCurrentScreen("inventory")}>
+             Inventory
+           </button>
          </nav>
          <main>
-           {currentScreen === 'main' && <p>Welcome, mate! Pick an action.</p>}
-           {currentScreen === 'map' && <MapScreen />}
-           {currentScreen === 'market' && <MarketScreen />}
-           {currentScreen === 'inventory' && <InventoryScreen />}
+           {currentScreen === "main" && <p>Welcome, mate! Pick an action.</p>}
+           {currentScreen === "map" && <MapScreen />}
+           {currentScreen === "market" && <MarketScreen />}
+           {currentScreen === "inventory" && <InventoryScreen />}
          </main>
          {activeEvent && <EventPopup />}
          <footer>
-           Disclaimer: This is a fictional game and does not promote illegal activities.
+           Disclaimer: This is a fictional game and does not promote illegal
+           activities.
          </footer>
        </div>
      );
@@ -333,52 +377,64 @@ bun add --dev gh-pages @types/react @types/react-dom
    export default App;
    ```
 
-2. **Map Screen**  
+2. **Map Screen**
+
    - File: `src/components/MapScreen.tsx`
+
    ```typescript
-   import React from 'react';
-   import { useDispatch, useSelector } from 'react-redux';
-   import { travel } from '../store/playerSlice';
-   import { updatePrices } from '../store/marketSlice';
-   import { triggerEvent } from '../store/eventSlice';
-   import { RootState, AppDispatch } from '../store/store';
+   import React from "react";
+   import { useDispatch, useSelector } from "react-redux";
+   import { travel } from "../store/playerSlice";
+   import { updatePrices } from "../store/marketSlice";
+   import { triggerEvent } from "../store/eventSlice";
+   import { RootState, AppDispatch } from "../store/store";
 
    const locations: string[] = [
-     'Sydney',
-     'Melbourne',
-     'Gold Coast',
-     'Perth',
-     'Darwin',
-     'Alice Springs',
-     'Byron Bay',
-     'Adelaide',
-     'Tasmania',
+     "Sydney",
+     "Melbourne",
+     "Gold Coast",
+     "Perth",
+     "Darwin",
+     "Alice Springs",
+     "Byron Bay",
+     "Adelaide",
+     "Tasmania",
    ];
 
-   const events: { id: string; probability: number; description: string; choices: { text: string; outcome: { cash?: number; inventory?: number } }[] }[] = [
+   const events: {
+     id: string;
+     probability: number;
+     description: string;
+     choices: {
+       text: string;
+       outcome: { cash?: number; inventory?: number };
+     }[];
+   }[] = [
      {
-       id: 'police',
+       id: "police",
        probability: 0.1,
-       description: 'Cops are onto you! Pay a bribe or lose gear?',
+       description: "Cops are onto you! Pay a bribe or lose gear?",
        choices: [
-         { text: 'Bribe ($100)', outcome: { cash: -100 } },
-         { text: 'Run', outcome: { inventory: -2 } },
+         { text: "Bribe ($100)", outcome: { cash: -100 } },
+         { text: "Run", outcome: { inventory: -2 } },
        ],
      },
      {
-       id: 'bikie',
+       id: "bikie",
        probability: 0.05,
-       description: 'Bikies demand a tax! Pay up or fight?',
+       description: "Bikies demand a tax! Pay up or fight?",
        choices: [
-         { text: 'Pay ($200)', outcome: { cash: -200 } },
-         { text: 'Fight', outcome: { inventory: -3 } },
+         { text: "Pay ($200)", outcome: { cash: -200 } },
+         { text: "Fight", outcome: { inventory: -3 } },
        ],
      },
    ];
 
    function MapScreen(): JSX.Element {
      const dispatch: AppDispatch = useDispatch();
-     const currentLocation = useSelector((state: RootState) => state.player.location);
+     const currentLocation = useSelector(
+       (state: RootState) => state.player.location
+     );
 
      const handleTravel = (location: string): void => {
        if (location !== currentLocation) {
@@ -413,18 +469,24 @@ bun add --dev gh-pages @types/react @types/react-dom
    export default MapScreen;
    ```
 
-3. **Market Screen**  
+3. **Market Screen**
+
    - File: `src/components/MarketScreen.tsx`
+
    ```typescript
-   import React, { useState } from 'react';
-   import { useSelector, useDispatch } from 'react-redux';
-   import { buyDrug, sellDrug } from '../store/playerSlice';
-   import { RootState, AppDispatch } from '../store/store';
+   import React, { useState } from "react";
+   import { useSelector, useDispatch } from "react-redux";
+   import { buyDrug, sellDrug } from "../store/playerSlice";
+   import { RootState, AppDispatch } from "../store/store";
 
    function MarketScreen(): JSX.Element {
      const dispatch: AppDispatch = useDispatch();
-     const { location, inventory } = useSelector((state: RootState) => state.player);
-     const prices = useSelector((state: RootState) => state.market.prices[location]);
+     const { location, inventory } = useSelector(
+       (state: RootState) => state.player
+     );
+     const prices = useSelector(
+       (state: RootState) => state.market.prices[location]
+     );
      const [quantity, setQuantity] = useState<number>(1);
 
      const handleBuy = (drug: string, price: number): void => {
@@ -446,7 +508,8 @@ bun add --dev gh-pages @types/react @types/react-dom
          />
          <ul>
            {Object.entries(prices).map(([drug, { price }]) => {
-             const owned = inventory.find((item) => item.name === drug)?.quantity || 0;
+             const owned =
+               inventory.find((item) => item.name === drug)?.quantity || 0;
              return (
                <li key={drug}>
                  {drug} - ${price}
@@ -467,23 +530,30 @@ bun add --dev gh-pages @types/react @types/react-dom
    export default MarketScreen;
    ```
 
-4. **Inventory Screen**  
+4. **Inventory Screen**
+
    - File: `src/components/InventoryScreen.tsx`
+
    ```typescript
-   import React from 'react';
-   import { useSelector, useDispatch } from 'react-redux';
-   import { upgradeInventory } from '../store/playerSlice';
-   import { RootState, AppDispatch } from '../store/store';
+   import React from "react";
+   import { useSelector, useDispatch } from "react-redux";
+   import { upgradeInventory } from "../store/playerSlice";
+   import { RootState, AppDispatch } from "../store/store";
 
    function InventoryScreen(): JSX.Element {
      const dispatch: AppDispatch = useDispatch();
-     const { cash, inventory, inventorySpace } = useSelector((state: RootState) => state.player);
+     const { cash, inventory, inventorySpace } = useSelector(
+       (state: RootState) => state.player
+     );
 
      return (
        <div>
          <h2>Inventory</h2>
          <p>Cash: ${cash}</p>
-         <p>Space: {inventory.reduce((acc, item) => acc + item.quantity, 0)}/{inventorySpace}</p>
+         <p>
+           Space: {inventory.reduce((acc, item) => acc + item.quantity, 0)}/
+           {inventorySpace}
+         </p>
          <ul>
            {inventory.map((item) => (
              <li key={item.name}>
@@ -501,24 +571,33 @@ bun add --dev gh-pages @types/react @types/react-dom
    export default InventoryScreen;
    ```
 
-5. **Event Popup**  
+5. **Event Popup**
+
    - File: `src/components/EventPopup.tsx`
+
    ```typescript
-   import React from 'react';
-   import { useSelector, useDispatch } from 'react-redux';
-   import { clearEvent } from '../store/eventSlice';
-   import { buyDrug } from '../store/playerSlice';
-   import { RootState, AppDispatch } from '../store/store';
+   import React from "react";
+   import { useSelector, useDispatch } from "react-redux";
+   import { clearEvent } from "../store/eventSlice";
+   import { buyDrug } from "../store/playerSlice";
+   import { RootState, AppDispatch } from "../store/store";
 
    function EventPopup(): JSX.Element | null {
      const dispatch: AppDispatch = useDispatch();
      const event = useSelector((state: RootState) => state.events.activeEvent);
 
-     const handleChoice = (outcome: { cash?: number; inventory?: number }): void => {
+     const handleChoice = (outcome: {
+       cash?: number;
+       inventory?: number;
+     }): void => {
        if (outcome.cash) {
-         dispatch(buyDrug({ drug: 'Penalty', quantity: 0, price: -outcome.cash }));
+         dispatch(
+           buyDrug({ drug: "Penalty", quantity: 0, price: -outcome.cash })
+         );
        } else if (outcome.inventory) {
-         dispatch(buyDrug({ drug: 'Penalty', quantity: -outcome.inventory, price: 0 }));
+         dispatch(
+           buyDrug({ drug: "Penalty", quantity: -outcome.inventory, price: 0 })
+         );
        }
        dispatch(clearEvent());
      };
@@ -545,11 +624,13 @@ bun add --dev gh-pages @types/react @types/react-dom
 
 ## Step 5: Add Styling
 
-1. **Global Styles**  
+1. **Global Styles**
+
    - File: `src/index.css`
+
    ```css
    body {
-     font-family: 'Courier New', Courier, monospace;
+     font-family: "Courier New", Courier, monospace;
      background-color: #1a1a1a;
      color: #fff;
      margin: 0;
@@ -557,7 +638,7 @@ bun add --dev gh-pages @types/react @types/react-dom
    }
    ```
 
-2. **App Styles**  
+2. **App Styles**
    - File: `src/App.css`
    ```css
    .app {
@@ -613,6 +694,7 @@ bun add --dev gh-pages @types/react @types/react-dom
 ## Step 6: Update package.json
 
 - File: `package.json`
+
 ```json
 {
   "name": "bogan-hustler",
@@ -643,23 +725,26 @@ bun add --dev gh-pages @types/react @types/react-dom
   }
 }
 ```
+
 - Replace `yourusername` with your GitHub username.
 
 ---
 
 ## Step 7: Test and Deploy
 
-1. **Test Locally**  
+1. **Test Locally**
+
    ```
    bun run dev
    ```
 
-2. **Build for Production**  
+2. **Build for Production**
+
    ```
    bun run build
    ```
 
-3. **Deploy to GitHub Pages**  
+3. **Deploy to GitHub Pages**
    - Set up repo:
      ```
      git remote add origin https://github.com/yourusername/bogan-hustler.git
@@ -678,17 +763,21 @@ bun add --dev gh-pages @types/react @types/react-dom
 ## Step 8: Documentation
 
 - File: `README.md`
+
 ```markdown
 # Bogan Hustler: The Straya Edition
+
 A web-based game built with Bun, Vite, React, and strict TypeScript.
 
 ## How to Play
+
 - **Travel**: Hit up different Aussie cities.
 - **Market**: Buy cheap, flog it for a profit.
 - **Inventory**: Keep your stash in check.
 - **Survive**: Avoid the coppers and bikies for 30 days.
 
 ## Installation
+
 1. Install Bun: `curl -fsSL https://bun.sh/install | bash`
 2. Clone: `git clone https://github.com/yourusername/bogan-hustler.git`
 3. Install: `bun install`
@@ -698,6 +787,7 @@ A web-based game built with Bun, Vite, React, and strict TypeScript.
 ---
 
 ## Notes
+
 - **Directory Structure**:
   ```
   bogan-hustler/
