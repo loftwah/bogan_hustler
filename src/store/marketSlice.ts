@@ -14,28 +14,77 @@ interface MarketState {
 }
 
 const locations: Record<string, { drugs: string[]; policeRisk: number }> = {
-  Sydney: { drugs: ["Bundy Rum", "Tooheys Extra Dry", "Passion Pop", "Illegal Durries"], policeRisk: 0.2 },
-  Melbourne: { drugs: ["VB", "Goon", "Emu Export", "Durries"], policeRisk: 0.1 },
-  "Gold Coast": { drugs: ["Bundy Rum", "Four'N Twenty Pies", "Durries"], policeRisk: 0.15 },
-  Perth: { drugs: ["Bundy Rum", "Tooheys Extra Dry", "West End Draught"], policeRisk: 0.1 },
-  Darwin: { drugs: ["VB", "Passion Pop", "Goon"], policeRisk: 0.25 },
-  "Alice Springs": { drugs: ["VB", "Emu Export"], policeRisk: 0.05 },
-  "Byron Bay": { drugs: ["VB", "Goon", "West End Draught"], policeRisk: 0.08 },
-  Adelaide: { drugs: ["Emu Export", "Bundy Rum", "Illegal Durries"], policeRisk: 0.1 },
-  Tasmania: { drugs: ["VB", "Durries", "West End Draught"], policeRisk: 0.05 },
+  // NSW
+  "Kings Cross": { drugs: ["Ice", "Cocaine", "Pingas", "Xannies", "Durries"], policeRisk: 0.4 },
+  "Redfern": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.35 },
+  "Cabramatta": { drugs: ["Heroin", "Ice", "Xannies", "Durries"], policeRisk: 0.3 },
+  "Mount Druitt": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.35 },
+  "Blacktown": { drugs: ["Ice", "Heroin", "Pingas", "Durries"], policeRisk: 0.3 },
+  "Nimbin": { drugs: ["Bush Weed", "Hydro", "Shrooms", "Acid", "Nangs"], policeRisk: 0.4 },
+  "Penrith": { drugs: ["Ice", "Xannies", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Campbelltown": { drugs: ["Ice", "Crack", "Durries", "Pingas"], policeRisk: 0.3 },
+  "Wollongong": { drugs: ["Ice", "Heroin", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Newcastle": { drugs: ["Ice", "Crack", "Pingas", "Durries"], policeRisk: 0.3 },
+
+  // VIC
+  "Frankston": { drugs: ["Ice", "Nangs", "Durries", "Crack"], policeRisk: 0.25 },
+  "Broadmeadows": { drugs: ["Ice", "Heroin", "Xannies", "Durries"], policeRisk: 0.3 },
+  "Dandenong": { drugs: ["Ice", "Crack", "Pingas", "Durries"], policeRisk: 0.25 },
+  "Sunshine": { drugs: ["Heroin", "Ice", "Xannies", "Durries"], policeRisk: 0.3 },
+  "Werribee": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Melton": { drugs: ["Ice", "Pingas", "Durries", "Xannies"], policeRisk: 0.2 },
+  "Norlane": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Moe": { drugs: ["Ice", "Heroin", "Durries", "Xannies"], policeRisk: 0.2 },
+
+  // QLD
+  "Logan Central": { drugs: ["Ice", "Crack", "Xannies", "Durries"], policeRisk: 0.3 },
+  "Inala": { drugs: ["Ice", "Heroin", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Woodridge": { drugs: ["Ice", "Crack", "Durries", "Pingas"], policeRisk: 0.3 },
+  "Caboolture": { drugs: ["Ice", "Xannies", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Ipswich": { drugs: ["Ice", "Crack", "Durries", "Pingas"], policeRisk: 0.25 },
+  "Toowoomba": { drugs: ["Ice", "Heroin", "Durries", "Xannies"], policeRisk: 0.2 },
+  "Cairns": { drugs: ["Ice", "Pingas", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Townsville": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.3 },
+
+  // WA
+  "Rockingham": { drugs: ["Ice", "Crack", "Pingas", "Durries"], policeRisk: 0.25 },
+  "Armadale": { drugs: ["Ice", "Heroin", "Durries", "Nangs"], policeRisk: 0.3 },
+  "Mandurah": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.25 },
+  "Midland": { drugs: ["Ice", "Heroin", "Durries", "Pingas"], policeRisk: 0.3 },
+  "Balga": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Gosnells": { drugs: ["Ice", "Xannies", "Durries", "Pingas"], policeRisk: 0.25 },
+  "Kalgoorlie-Boulder": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.15 },
+  "Port Hedland": { drugs: ["Ice", "Pingas", "Durries", "Nangs"], policeRisk: 0.2 },
+
+  // NT
+  "Palmerston": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.25 },
+  "Katherine": { drugs: ["Ice", "Heroin", "Durries"], policeRisk: 0.15 },
+  "Tennant Creek": { drugs: ["Ice", "Crack", "Durries"], policeRisk: 0.1 },
+  "Karama": { drugs: ["Ice", "Pingas", "Durries", "Nangs"], policeRisk: 0.2 },
+  "Malak": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.2 },
+
+  // SA
+  "Elizabeth": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Salisbury": { drugs: ["Ice", "Heroin", "Xannies", "Durries"], policeRisk: 0.2 },
+  "Davoren Park": { drugs: ["Ice", "Crack", "Durries", "Pingas"], policeRisk: 0.3 },
+  "Christie Downs": { drugs: ["Ice", "Heroin", "Durries", "Nangs"], policeRisk: 0.25 },
+  "Hackham West": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.2 },
+  "Port Adelaide": { drugs: ["Ice", "Heroin", "Durries", "Pingas"], policeRisk: 0.25 },
 };
 
-const itemData: Record<string, { basePrice: number; volatility: number; isIllegal?: boolean }> = {
-  VB: { basePrice: 10, volatility: 0.5 },
-  Goon: { basePrice: 5, volatility: 0.8 },
-  Durries: { basePrice: 30, volatility: 0.6 },
-  "Illegal Durries": { basePrice: 100, volatility: 1.3, isIllegal: true },
-  "West End Draught": { basePrice: 80, volatility: 1.2 },
-  "Emu Export": { basePrice: 15, volatility: 0.7 },
-  "Bundy Rum": { basePrice: 70, volatility: 1.1 },
-  "Tooheys Extra Dry": { basePrice: 100, volatility: 1.0 },
-  "Passion Pop": { basePrice: 60, volatility: 1.0 },
-  "Four'N Twenty Pies": { basePrice: 20, volatility: 0.9 },
+const itemData: Record<string, { basePrice: number; volatility: number; isIllegal: boolean }> = {
+  "Ice": { basePrice: 350, volatility: 1.5, isIllegal: true },
+  "Crack": { basePrice: 250, volatility: 1.4, isIllegal: true },
+  "Heroin": { basePrice: 400, volatility: 1.6, isIllegal: true },
+  "Cocaine": { basePrice: 300, volatility: 1.3, isIllegal: true },
+  "Pingas": { basePrice: 25, volatility: 0.8, isIllegal: true },
+  "Xannies": { basePrice: 15, volatility: 0.6, isIllegal: true },
+  "Durries": { basePrice: 40, volatility: 0.4, isIllegal: false },
+  "Nangs": { basePrice: 10, volatility: 0.3, isIllegal: false },
+  "Bush Weed": { basePrice: 250, volatility: 0.7, isIllegal: true },
+  "Hydro": { basePrice: 350, volatility: 0.9, isIllegal: true },
+  "Shrooms": { basePrice: 200, volatility: 1.1, isIllegal: true },
+  "Acid": { basePrice: 30, volatility: 1.2, isIllegal: true },
 };
 
 interface MarketEvent {
@@ -46,34 +95,59 @@ interface MarketEvent {
 
 const marketEvents: MarketEvent[] = [
   {
-    id: "booze_shortage",
-    description: "A truck crash in %location% cuts VB supply!",
+    id: "lab_bust",
+    description: "Massive ice lab bust in %location%! Prices are going mental!",
     effect: (market) => {
-      if (market.VB) {
-        market.VB.price *= 1.5;
-        market.VB.supply /= 2;
+      if (market.Ice) {
+        market.Ice.price *= 2;
+        market.Ice.supply -= 40;
+        market.Ice.demand += 50;
       }
     },
   },
   {
-    id: "party_boom",
-    description: "A festival in %location% spikes Passion Pop demand!",
+    id: "gang_war",
+    description: "Bikie gang war kicks off in %location%! Everything's scarce!",
     effect: (market) => {
-      if (market["Passion Pop"]) {
-        market["Passion Pop"].demand += 30;
-        market["Passion Pop"].price *= 1.2;
+      Object.values(market).forEach(drug => {
+        drug.price *= 1.5;
+        drug.supply -= 30;
+        drug.demand += 20;
+      });
+    },
+  },
+  {
+    id: "police_raid",
+    description: "Massive police raids in %location%! Watch yourself!",
+    effect: (market) => {
+      Object.values(market).forEach(drug => {
+        if (drug.supply > 20) {
+          drug.supply -= 20;
+          drug.price *= 1.3;
+        }
+      });
+    },
+  },
+  {
+    id: "overdose_crisis",
+    description: "OD crisis hits %location%! Heroin demand plummets!",
+    effect: (market) => {
+      if (market.Heroin) {
+        market.Heroin.price *= 0.5;
+        market.Heroin.demand -= 40;
       }
     },
   },
   {
-    id: "firebombing",
-    description: "Rival bogans firebomb a servo in %location%! Illegal Durries are hot.",
+    id: "festival_season",
+    description: "Bush doof season in %location%! Party drugs are gold!",
     effect: (market) => {
-      if (market["Illegal Durries"]) {
-        market["Illegal Durries"].price *= 2;
-        market["Illegal Durries"].supply -= 30;
-        market["Illegal Durries"].demand += 40;
-      }
+      ["Pingas", "Acid", "Shrooms"].forEach(drug => {
+        if (market[drug]) {
+          market[drug].price *= 2;
+          market[drug].demand += 60;
+        }
+      });
     },
   },
 ];
