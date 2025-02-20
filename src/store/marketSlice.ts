@@ -32,27 +32,34 @@ const itemData: Record<string, { basePrice: number; volatility: number; isIllega
   "Shrooms": { basePrice: 200, volatility: 1.1, isIllegal: true },
   // Prescription
   "Xannies": { basePrice: 15, volatility: 0.6, isIllegal: true },
-  // Legal
+  // Legal & Grey Market
   "Durries": { basePrice: 40, volatility: 0.4, isIllegal: false },
-  "Nangs": { basePrice: 10, volatility: 0.3, isIllegal: false }
+  "Nangs": { basePrice: 10, volatility: 0.3, isIllegal: false },
+  // New Items
+  "Chop Chop": { basePrice: 80, volatility: 0.7, isIllegal: true }, // Illegal tobacco
+  "Bootleg Spirits": { basePrice: 120, volatility: 0.8, isIllegal: true },
+  "Black Market Vapes": { basePrice: 35, volatility: 0.5, isIllegal: true },
+  "Counterfeit Cigs": { basePrice: 60, volatility: 0.6, isIllegal: true },
+  "Moonshine": { basePrice: 90, volatility: 0.7, isIllegal: true },
+  "Research Chems": { basePrice: 180, volatility: 1.3, isIllegal: true },
 };
 
 // Define location types and their drug distributions
 const locationTypes = {
   cityCenter: {
-    drugs: ["Ice", "Cocaine", "Pingas", "MDMA", "Xannies", "Durries"] as string[],
+    drugs: ["Ice", "Cocaine", "Pingas", "MDMA", "Xannies", "Durries", "Black Market Vapes", "Counterfeit Cigs"] as string[],
     policeRisk: 0.4
   },
   suburb: {
-    drugs: ["Ice", "Crack", "Durries", "Nangs", "Xannies"] as string[],
+    drugs: ["Ice", "Crack", "Durries", "Nangs", "Xannies", "Chop Chop", "Black Market Vapes"] as string[],
     policeRisk: 0.3
   },
   ruralTown: {
-    drugs: ["Bush Weed", "Ice", "Durries", "Xannies"] as string[],
+    drugs: ["Bush Weed", "Ice", "Durries", "Xannies", "Moonshine", "Chop Chop"] as string[],
     policeRisk: 0.2
   },
   partyArea: {
-    drugs: ["MDMA", "Pingas", "Ketamine", "Acid", "Nangs"] as string[],
+    drugs: ["MDMA", "Pingas", "Ketamine", "Acid", "Nangs", "Research Chems", "Black Market Vapes"] as string[],
     policeRisk: 0.35
   }
 };

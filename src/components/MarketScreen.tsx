@@ -21,7 +21,13 @@ const DRUG_MAPPINGS: Record<string, string> = {
   "MDMA": "Energy Tablets",
   "Ketamine": "Sleep Aid",
   "Weed": "Green Tea",
-  "Steroids": "Protein Bars"
+  "Steroids": "Protein Bars",
+  "Chop Chop": "Loose Leaf Tea",
+  "Bootleg Spirits": "Craft Soda",
+  "Black Market Vapes": "Essential Oils",
+  "Counterfeit Cigs": "Herbal Cigarettes",
+  "Moonshine": "Apple Juice",
+  "Research Chems": "Dietary Supplements"
 };
 
 // Define interfaces for better type safety

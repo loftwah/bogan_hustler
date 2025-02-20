@@ -17,6 +17,11 @@ export const locationsByRegion = {
     "Campbelltown",
     "Wollongong",
     "Newcastle",
+    "Sydney CBD",
+    "Parramatta",
+    "Byron Bay",
+    "Lismore",
+    "Dubbo",
   ],
   "Victoria": [
     "Frankston",
@@ -27,6 +32,11 @@ export const locationsByRegion = {
     "Melton",
     "Norlane",
     "Moe",
+    "Melbourne CBD",
+    "St Kilda",
+    "Footscray",
+    "Geelong",
+    "Bendigo",
   ],
   "Queensland": [
     "Logan Central",
