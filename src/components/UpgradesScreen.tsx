@@ -9,58 +9,72 @@ const UpgradesScreen = () => {
   );
 
   return (
-    <div className="upgrades-screen">
-      <h2>Upgrades, Mate!</h2>
-      <p>Cash: ${cash}</p>
-      <div className="upgrade-list">
-        <div className="upgrade-item">
-          <div className="upgrade-info">
-            <h3>Inventory Space</h3>
-            <p>Current: {inventorySpace}</p>
-            <p>Cost: $500</p>
-            <p>Effect: +5 space</p>
-          </div>
-          <button 
-            onClick={() => dispatch(upgradeInventory())}
-            disabled={cash < 500}
-            className="quick-action-button"
-            aria-label="Upgrade inventory space"
-          >
-            Upgrade Space
-          </button>
+    <div className="max-w-7xl mx-auto p-4 space-y-6">
+      <div className="card space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Upgrades</h2>
+          <span className="px-3 py-1 bg-background/50 rounded-md text-sm">
+            Cash: ${cash}
+          </span>
         </div>
 
-        <div className="upgrade-item">
-          <div className="upgrade-info">
-            <h3>Police Evasion</h3>
-            <p>Current: {policeEvasion}%</p>
-            <p>Cost: $1000</p>
-            <p>Effect: +20% evasion</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Inventory Space Upgrade */}
+          <div className="card bg-background/50 space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Inventory Space</h3>
+              <div className="space-y-1">
+                <p className="text-sm text-text/70">Current: {inventorySpace} units</p>
+                <p className="text-sm text-text/70">Effect: +5 space</p>
+                <p className="text-sm font-medium text-primary">Cost: $500</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => dispatch(upgradeInventory())}
+              disabled={cash < 500}
+              className="btn btn-primary w-full"
+            >
+              Upgrade Space
+            </button>
           </div>
-          <button 
-            onClick={() => dispatch(upgradePoliceEvasion())}
-            disabled={cash < 1000 || policeEvasion >= 100}
-            className="quick-action-button"
-            aria-label="Upgrade police evasion"
-          >
-            Upgrade Evasion
-          </button>
-        </div>
 
-        <div className="upgrade-item">
-          <div className="upgrade-info">
-            <h3>Market Intel</h3>
-            <p>Current: {marketIntel}%</p>
-            <p>Cost: $750</p>
-            <p>Effect: +25% market info</p>
+          {/* Police Evasion Upgrade */}
+          <div className="card bg-background/50 space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Police Evasion</h3>
+              <div className="space-y-1">
+                <p className="text-sm text-text/70">Current: {policeEvasion}%</p>
+                <p className="text-sm text-text/70">Effect: +20% evasion</p>
+                <p className="text-sm font-medium text-primary">Cost: $1,000</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => dispatch(upgradePoliceEvasion())}
+              disabled={cash < 1000 || policeEvasion >= 100}
+              className="btn btn-primary w-full"
+            >
+              Upgrade Evasion
+            </button>
           </div>
-          <button 
-            onClick={() => dispatch(upgradeMarketIntel())} 
-            disabled={cash < 750 || marketIntel >= 100}
-            className="upgrade-button"
-          >
-            Upgrade Intel
-          </button>
+
+          {/* Market Intel Upgrade */}
+          <div className="card bg-background/50 space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Market Intel</h3>
+              <div className="space-y-1">
+                <p className="text-sm text-text/70">Current: {marketIntel}%</p>
+                <p className="text-sm text-text/70">Effect: +15% market info</p>
+                <p className="text-sm font-medium text-primary">Cost: $750</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => dispatch(upgradeMarketIntel())}
+              disabled={cash < 750 || marketIntel >= 100}
+              className="btn btn-primary w-full"
+            >
+              Upgrade Intel
+            </button>
+          </div>
         </div>
       </div>
     </div>

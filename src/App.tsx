@@ -53,6 +53,20 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const savedPlayingState = localStorage.getItem('boganHustlerAudioPlaying');
+    if (savedPlayingState === 'true') {
+      audio.loop = true;
+      audio.play().catch(err => console.error('Audio playback failed:', err));
+      setIsPlaying(true);
+    }
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [audio]);
+
   const toggleAudio = () => {
     if (isPlaying) {
       audio.pause();
@@ -105,18 +119,29 @@ function App() {
               <h1 className="text-4xl font-bold text-primary">Bogan Hustler</h1>
             </div>
             
-            {/* Add Adult Mode Toggle */}
-            <button
-              onClick={() => dispatch(toggleAdultMode())}
-              className={`px-3 py-1 rounded-md text-sm ${
-                adultMode 
-                  ? 'bg-red-600 hover:bg-red-700' 
-                  : 'bg-green-600 hover:bg-green-700'
-              }`}
-              aria-label="Toggle adult mode"
-            >
-              {adultMode ? '18+ Mode On' : 'Family Friendly'}
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Add Music Toggle Button */}
+              <button
+                onClick={toggleAudio}
+                className="px-3 py-1 rounded-md text-sm bg-surface hover:bg-surface/80"
+                aria-label={isPlaying ? "Mute music" : "Play music"}
+              >
+                {isPlaying ? '🔊 Mute' : '🔈 Play'}
+              </button>
+              
+              {/* Add Adult Mode Toggle */}
+              <button
+                onClick={() => dispatch(toggleAdultMode())}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  adultMode 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-green-600 hover:bg-green-700'
+                }`}
+                aria-label="Toggle adult mode"
+              >
+                {adultMode ? '18+ Mode On' : 'Family Friendly'}
+              </button>
+            </div>
           </div>
           
           {/* Stats Grid */}

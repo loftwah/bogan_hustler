@@ -250,13 +250,17 @@ const MarketScreen = () => {
   const handleBuy = (drug: string, price: number) => {
     const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
       .find(([, censored]) => censored === drug)?.[0] || drug;
-    dispatch(buyDrug({ drug: originalDrug, quantity, price }));
+    if (quantity > 0) {
+      dispatch(buyDrug({ drug: originalDrug, quantity, price }));
+    }
   };
 
   const handleSell = (drug: string, price: number) => {
     const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
       .find(([, censored]) => censored === drug)?.[0] || drug;
-    dispatch(sellDrug({ drug: originalDrug, quantity, price }));
+    if (quantity > 0) {
+      dispatch(sellDrug({ drug: originalDrug, quantity, price }));
+    }
   };
 
   // Update the max button click handler
@@ -413,6 +417,26 @@ const MarketScreen = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Replace the new buttons section with this improved version */}
+              {price > 0 && (
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleBuy(drug, price)}
+                    disabled={!calculateMaxQuantity(price, owned, true) || quantity <= 0}
+                    className="btn btn-surface flex-1 text-sm hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-text"
+                  >
+                    Buy {quantity}
+                  </button>
+                  <button
+                    onClick={() => handleSell(drug, price)}
+                    disabled={quantity > owned || quantity <= 0}
+                    className="btn btn-surface flex-1 text-sm hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-text"
+                  >
+                    Sell {quantity}
+                  </button>
+                </div>
+              )}
 
               {/* Expanded Content */}
               {isExpanded && (
