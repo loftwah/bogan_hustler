@@ -82,9 +82,7 @@ const locationsByRegion = {
 
 const MapScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const currentLocation = useSelector((state: RootState) => state.player.location);
-  const policeEvasion = useSelector((state: RootState) => state.player.policeEvasion);
-  const reputation = useSelector((state: RootState) => state.player.reputation);
+  const { location: currentLocation, policeEvasion, reputation, adultMode } = useSelector((state: RootState) => state.player);
 
   const handleTravel = (location: string) => {
     if (location !== currentLocation) {

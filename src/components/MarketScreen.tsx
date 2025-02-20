@@ -23,6 +23,10 @@ const DRUG_MAPPINGS: Record<string, string> = {
   "Steroids": "Protein Bars"
 };
 
+interface MarketDataWithOriginal extends DrugMarket {
+  originalName?: string;
+}
+
 const MarketScreen = () => {
   const dispatch = useDispatch();
   const { location, inventory, cash, adultMode } = useSelector((state: RootState) => state.player);
@@ -33,10 +37,10 @@ const MarketScreen = () => {
         const censoredName = DRUG_MAPPINGS[drug] || drug;
         acc[censoredName] = {
           ...data,
-          originalName: drug // Keep track of original name for inventory management
+          originalName: drug
         };
         return acc;
-      }, {} as Record<string, DrugMarket & { originalName?: string }>);
+      }, {} as Record<string, MarketDataWithOriginal>);
     }
     return marketData;
   });
@@ -78,10 +82,12 @@ const MarketScreen = () => {
       </div>
 
       <div className="market-list">
-        {Object.entries(prices || {}).map(([drug, market]) => {
+        {Object.entries(prices || {}).map(([drug, market]: [string, MarketDataWithOriginal]) => {
           const { price } = market;
           const originalDrug = adultMode ? drug : market.originalName || drug;
-          const owned = inventory.find((item) => item.name === originalDrug)?.quantity || 0;
+          const owned = inventory.find((item: { name: string; quantity: number }) => 
+            item.name === originalDrug
+          )?.quantity || 0;
           const canBuy = cash >= price * quantity;
           const canSell = owned >= quantity;
 
