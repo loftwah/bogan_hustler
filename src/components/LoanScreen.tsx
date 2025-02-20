@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { takeLoan, repayLoan } from "../store/playerSlice";
+import { takeLoan, payLoan } from "../store/playerSlice";
 import type { RootState } from "../types";
 
 const LoanScreen = () => {
@@ -43,7 +43,7 @@ const LoanScreen = () => {
             />
             <button 
               onClick={() => {
-                dispatch(repayLoan(repayAmount));
+                dispatch(payLoan(repayAmount));
                 setRepayAmount(0);
               }}
               className="loan-button"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "./types";
+import { RootState } from "./store/store";
 import MapScreen from "./components/MapScreen";
 import MarketScreen from "./components/MarketScreen";
 import LoanScreen from "./components/LoanScreen";
@@ -35,46 +35,31 @@ function App() {
 
   return (
     <div className="app">
-      <div className="banner">
-        <img src="/banner.jpg" alt="Bogan Hustler Banner" className="banner-image" />
-      </div>
-      <h1>Bogan Hustler</h1>
-      
-      <div className="status-bar">
-        <div className="status-item">
-          <img src="/assets/cash.png" alt="Cash Icon" className="status-icon" />
-          <span>Cash: ${cash}</span>
+      <header>
+        <h1>Bogan Hustler</h1>
+        <div className="status-bar">
+          <div>Cash: ${cash}</div>
+          <div>Location: {location}</div>
+          <div>Day: {currentDay}/{maxDays}</div>
+          <div>Rep: {reputation}</div>
+          {debt > 0 && <div>Debt: ${debt.toFixed(2)}</div>}
         </div>
-        <div className="status-item">
-          <img src="/assets/location.png" alt="Location Icon" className="status-icon" />
-          <span>Location: {location}</span>
-        </div>
-        <div className="status-item">
-          <img src="/assets/day.png" alt="Day Icon" className="status-icon" />
-          <span>Day: {currentDay}/{maxDays}</span>
-        </div>
-        <div className="status-item">
-          <img src="/assets/rep.png" alt="Rep Icon" className="status-icon" />
-          <span>Rep: {reputation}</span>
-        </div>
-        {debt > 0 && (
-          <div className="status-item">
-            <span>Debt: ${debt.toFixed(2)}</span>
-          </div>
-        )}
-      </div>
+      </header>
 
-      <div className="nav-buttons">
-        <button onClick={() => setCurrentScreen("map")}>Travel</button>
+      <nav className="nav-buttons">
+        <button onClick={() => setCurrentScreen("map")}>Map</button>
         <button onClick={() => setCurrentScreen("market")}>Market</button>
         <button onClick={() => setCurrentScreen("loan")}>Loan Shark</button>
         <button onClick={() => setCurrentScreen("upgrades")}>Upgrades</button>
-      </div>
+      </nav>
 
-      {currentScreen === "map" && <MapScreen />}
-      {currentScreen === "market" && <MarketScreen />}
-      {currentScreen === "loan" && <LoanScreen />}
-      {currentScreen === "upgrades" && <UpgradesScreen />}
+      <main>
+        {currentScreen === "map" && <MapScreen />}
+        {currentScreen === "market" && <MarketScreen />}
+        {currentScreen === "loan" && <LoanScreen />}
+        {currentScreen === "upgrades" && <UpgradesScreen />}
+      </main>
+
       <EventPopup />
     </div>
   );

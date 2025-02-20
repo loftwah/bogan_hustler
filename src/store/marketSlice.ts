@@ -14,6 +14,15 @@ interface MarketState {
 }
 
 const locations: Record<string, { drugs: string[]; policeRisk: number }> = {
+  Sydney: { drugs: ["Ice", "Cocaine", "MDMA"], policeRisk: 0.3 },
+  Melbourne: { drugs: ["Weed", "Ketamine", "Xannies"], policeRisk: 0.2 },
+  "Gold Coast": { drugs: ["Ice", "Steroids"], policeRisk: 0.25 },
+  Perth: { drugs: ["Ice", "Cocaine"], policeRisk: 0.2 },
+  Darwin: { drugs: ["Weed", "MDMA"], policeRisk: 0.15 },
+  "Alice Springs": { drugs: ["Weed", "Ice"], policeRisk: 0.1 },
+  "Byron Bay": { drugs: ["Weed", "Ketamine", "MDMA"], policeRisk: 0.15 },
+  Adelaide: { drugs: ["Xannies", "Ice"], policeRisk: 0.2 },
+  Tasmania: { drugs: ["Weed", "Ice", "Xannies"], policeRisk: 0.1 },
   // NSW
   "Kings Cross": { drugs: ["Ice", "Cocaine", "Pingas", "Xannies", "Durries"], policeRisk: 0.4 },
   "Redfern": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.35 },
@@ -70,6 +79,21 @@ const locations: Record<string, { drugs: string[]; policeRisk: number }> = {
   "Christie Downs": { drugs: ["Ice", "Heroin", "Durries", "Nangs"], policeRisk: 0.25 },
   "Hackham West": { drugs: ["Ice", "Crack", "Durries", "Xannies"], policeRisk: 0.2 },
   "Port Adelaide": { drugs: ["Ice", "Heroin", "Durries", "Pingas"], policeRisk: 0.25 },
+
+  // Tasmania
+  "Hobart": { drugs: ["Bush Weed", "Ice", "Xannies", "Durries"], policeRisk: 0.2 },
+  "Launceston": { drugs: ["Ice", "Pingas", "Durries", "Nangs"], policeRisk: 0.15 },
+  "Devonport": { drugs: ["Ice", "Bush Weed", "Durries", "Xannies"], policeRisk: 0.15 },
+  "Burnie": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.2 },
+  "Glenorchy": { drugs: ["Ice", "Heroin", "Durries", "Pingas"], policeRisk: 0.25 },
+  "Bridgewater": { drugs: ["Ice", "Bush Weed", "Durries", "Xannies"], policeRisk: 0.3 },
+
+  // ACT
+  "Civic": { drugs: ["Cocaine", "MDMA", "Pingas", "Nangs", "Acid"], policeRisk: 0.35 },
+  "Belconnen": { drugs: ["Ice", "Xannies", "Durries", "Pingas"], policeRisk: 0.25 },
+  "Tuggeranong": { drugs: ["Ice", "Crack", "Durries", "Nangs"], policeRisk: 0.2 },
+  "Gungahlin": { drugs: ["Ice", "Heroin", "Durries", "Xannies"], policeRisk: 0.2 },
+  "Woden": { drugs: ["Ice", "Pingas", "Durries", "Nangs"], policeRisk: 0.25 },
 };
 
 const itemData: Record<string, { basePrice: number; volatility: number; isIllegal: boolean }> = {
@@ -85,6 +109,10 @@ const itemData: Record<string, { basePrice: number; volatility: number; isIllega
   "Hydro": { basePrice: 350, volatility: 0.9, isIllegal: true },
   "Shrooms": { basePrice: 200, volatility: 1.1, isIllegal: true },
   "Acid": { basePrice: 30, volatility: 1.2, isIllegal: true },
+  "MDMA": { basePrice: 100, volatility: 1.0, isIllegal: true },
+  "Ketamine": { basePrice: 150, volatility: 1.1, isIllegal: true },
+  "Weed": { basePrice: 280, volatility: 0.8, isIllegal: true },
+  "Steroids": { basePrice: 200, volatility: 0.9, isIllegal: true }
 };
 
 interface MarketEvent {
@@ -96,23 +124,21 @@ interface MarketEvent {
 const marketEvents: MarketEvent[] = [
   {
     id: "lab_bust",
-    description: "Massive ice lab bust in %location%! Prices are going mental!",
+    description: "Major ice lab busted in %location%. Prices are spiking.",
     effect: (market) => {
       if (market.Ice) {
-        market.Ice.price *= 2;
-        market.Ice.supply -= 40;
-        market.Ice.demand += 50;
+        market.Ice.price *= 2.5;
+        market.Ice.supply -= 50;
       }
     },
   },
   {
     id: "gang_war",
-    description: "Bikie gang war kicks off in %location%! Everything's scarce!",
+    description: "Gang war erupts in %location%. Everything's scarce.",
     effect: (market) => {
       Object.values(market).forEach(drug => {
-        drug.price *= 1.5;
-        drug.supply -= 30;
-        drug.demand += 20;
+        drug.price *= 1.8;
+        drug.supply -= 40;
       });
     },
   },
@@ -155,11 +181,13 @@ const marketEvents: MarketEvent[] = [
 const initialState: MarketState = {
   prices: Object.keys(locations).reduce((acc, loc) => {
     acc[loc] = locations[loc].drugs.reduce((items, item) => {
-      items[item] = {
-        price: itemData[item].basePrice,
-        supply: 50 + Math.floor(Math.random() * 20) - 10,
-        demand: 50 + Math.floor(Math.random() * 20) - 10,
-      };
+      if (itemData[item]) {
+        items[item] = {
+          price: itemData[item].basePrice,
+          supply: 50 + Math.floor(Math.random() * 20) - 10,
+          demand: 50 + Math.floor(Math.random() * 20) - 10,
+        };
+      }
       return items;
     }, {} as Record<string, DrugMarket>);
     return acc;

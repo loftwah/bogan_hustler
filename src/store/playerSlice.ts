@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Drug {
+interface InventoryItem {
   name: string;
   quantity: number;
 }
 
 interface PlayerState {
   cash: number;
-  inventory: Drug[];
+  inventory: InventoryItem[];
   inventorySpace: number;
   reputation: number;
   location: string;
@@ -48,6 +48,7 @@ const playerSlice = createSlice({
       const { drug, quantity, price } = action.payload;
       const totalCost = price * quantity;
       const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
+      
       if (state.cash >= totalCost && currentSpace + quantity <= state.inventorySpace) {
         state.cash -= totalCost;
         const existing = state.inventory.find((item) => item.name === drug);
@@ -62,6 +63,7 @@ const playerSlice = createSlice({
       const { drug, quantity, price } = action.payload;
       const totalEarned = price * quantity;
       const item = state.inventory.find((item) => item.name === drug);
+      
       if (item && item.quantity >= quantity) {
         state.cash += totalEarned;
         item.quantity -= quantity;
@@ -74,11 +76,11 @@ const playerSlice = createSlice({
       state.cash += action.payload;
       state.debt += action.payload;
     },
-    repayLoan: (state, action: PayloadAction<number>) => {
-      const amount = Math.min(action.payload, state.debt);
-      if (state.cash >= amount) {
-        state.cash -= amount;
-        state.debt -= amount;
+    payLoan: (state, action: PayloadAction<number>) => {
+      const payment = Math.min(action.payload, state.debt);
+      if (state.cash >= payment) {
+        state.cash -= payment;
+        state.debt -= payment;
       }
     },
     upgradeInventory: (state) => {
@@ -88,20 +90,16 @@ const playerSlice = createSlice({
       }
     },
     upgradePoliceEvasion: (state) => {
-      if (state.cash >= 1000) {
+      if (state.cash >= 1000 && state.policeEvasion < 100) {
         state.cash -= 1000;
         state.policeEvasion = Math.min(100, state.policeEvasion + 20);
       }
     },
     upgradeMarketIntel: (state) => {
-      if (state.cash >= 750) {
+      if (state.cash >= 750 && state.marketIntel < 100) {
         state.cash -= 750;
-        state.marketIntel = Math.min(100, state.marketIntel + 25);
+        state.marketIntel = Math.min(100, state.marketIntel + 15);
       }
-    },
-    adjustReputation: (state, action: PayloadAction<number>) => {
-      state.reputation += action.payload;
-      state.reputation = Math.max(-50, Math.min(100, state.reputation));
     },
   },
 });
@@ -111,11 +109,10 @@ export const {
   buyDrug,
   sellDrug,
   takeLoan,
-  repayLoan,
+  payLoan,
   upgradeInventory,
   upgradePoliceEvasion,
   upgradeMarketIntel,
-  adjustReputation,
 } = playerSlice.actions;
 
 export default playerSlice.reducer; 

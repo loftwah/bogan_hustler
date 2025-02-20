@@ -63,6 +63,21 @@ const locationsByRegion = {
     "Hackham West",
     "Port Adelaide",
   ],
+  "Tasmania": [
+    "Hobart",
+    "Launceston",
+    "Devonport",
+    "Burnie",
+    "Glenorchy",
+    "Bridgewater",
+  ],
+  "Australian Capital Territory": [
+    "Civic",
+    "Belconnen",
+    "Tuggeranong",
+    "Gungahlin",
+    "Woden",
+  ],
 };
 
 const MapScreen = () => {
