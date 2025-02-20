@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import eventReducer, { 
   triggerEvent, 
   triggerRandomEventAsync,
@@ -10,7 +10,15 @@ import type { AppDispatch } from '../../store/store';
 interface GameEvent {
   id: string;
   description: string;
-  choices: any[];
+  choices: Array<{
+    text: string;
+    outcome: {
+      cash?: number;
+      inventory?: Record<string, number>;
+      reputation?: number;
+      policeEvasion?: number;
+    };
+  }>;
   conditions?: {
     minReputation?: number;
     chance?: number;
@@ -58,8 +66,8 @@ describe('Event Slice', () => {
       const store = createTestStore();
       const dispatch = store.dispatch as AppDispatch;
       
-      // First trigger should work
-      const firstResult = await dispatch(triggerRandomEventAsync('Kings Cross'));
+      // First trigger - we need to trigger it but don't care about the result
+      await dispatch(triggerRandomEventAsync('Kings Cross'));
       
       // Second trigger should fail due to cooldown
       const secondResult = await dispatch(triggerRandomEventAsync('Kings Cross'));
