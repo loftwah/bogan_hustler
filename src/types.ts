@@ -56,4 +56,24 @@ export interface Event {
 export interface MarketDataWithOriginal extends DrugMarket {
   originalName?: string;
   owned: number;
+}
+
+export interface MarketTrend {
+  direction: 'up' | 'down' | 'stable';
+  strength: number;
+  description: string;
+}
+
+export interface MarketItemDetails {
+  maxBuy: number;
+  maxSell: number;
+  totalCost: number;
+  potentialProfit: number;
+  potentialProfitPercent: string;
+  supplyTrend: string;
+  demandTrend: string;
+  priceGuidance: string;
+  nearbyComparison: string;
+  buyAdvice: string;
+  priceChange?: string;
 } 

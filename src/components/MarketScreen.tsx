@@ -7,7 +7,23 @@ import type { DrugMarket } from "../store/marketSlice";
 import { adjustMarket } from "../store/marketSlice";
 import { DEBUG } from '../config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faArrowTrendUp, 
+  faArrowTrendDown, 
+  faMinus, 
+  faPlus, 
+  faInfinity,
+  faBoxOpen,
+  faHistory,
+  faChartPie,
+  faFire,
+  faBalanceScale,
+  faChartBar,
+  faWallet,
+  faBoxes,
+  faSpinner
+} from '@fortawesome/free-solid-svg-icons';
+import { calculateMarketDetails, analyzeTrend } from '../utils/marketCalculations';
 
 const DRUG_MAPPINGS: Record<string, string> = {
   "Ice": "Energy Drinks",
@@ -98,84 +114,21 @@ interface QuickBuyOption {
   spacePercent: number;
 }
 
-// Add this helper function
-export const calculateMarketDetails = (
-  price: number,
-  owned: number,
-  supply: number,
-  demand: number,
-  cash: number,
-  inventorySpace: number,
-  currentInventoryUsed: number,
-  drugName: string,
-  marketIntel: number,
-  nearbyPrices: Record<string, number>
-): MarketItemDetails => {
-  const spaceLeft = inventorySpace - currentInventoryUsed;
-  const maxBuyBySpace = spaceLeft;
-  const maxBuyByCash = Math.floor(cash / price);
-  const maxBuy = Math.min(maxBuyBySpace, maxBuyByCash);
-  
-  const maxSell = owned;
-  const totalCost = maxBuy * price;
-  const potentialProfit = maxSell * price;
-  
-  const supplyTrend = (() => {
-    if (marketIntel < 25) return "Unknown supply levels";
-    if (supply > 75) return "High Supply - Prices Dropping 📉"; 
-    if (supply < 25) return "Low Supply - Prices Rising 📈";
-    return "Stable Supply";
-  })();
-    
-  const demandTrend = (() => {
-    if (marketIntel < 25) return "Unknown demand levels";
-    if (demand > 75) return "High Demand - Prices Rising 📈";
-    if (demand < 25) return "Low Demand - Prices Dropping 📉";
-    return "Stable Demand";
-  })();
+// Add these new interfaces near the top with other interfaces
+interface MarketTrend {
+  direction: 'up' | 'down' | 'stable';
+  strength: number; // 0-100
+  description: string;
+}
 
-  const priceGuidance = getPriceGuidance(marketIntel, drugName);
-  
-  let nearbyComparison = "";
-  if (nearbyPrices && Object.keys(nearbyPrices).length > 0) {
-    const avgNearbyPrice = Object.values(nearbyPrices).reduce((a, b) => a + b, 0) / Object.values(nearbyPrices).length;
-    const priceDiff = ((price - avgNearbyPrice) / avgNearbyPrice * 100).toFixed(1);
-    nearbyComparison = `${Number(priceDiff) > 0 ? '📈' : '📉'} ${Math.abs(Number(priceDiff))}% vs nearby`;
-  }
-
-  const potentialProfitPercent = (() => {
-    if (price <= 0 || owned <= 0) return '0';
-    const buyValue = owned * price;
-    const sellValue = potentialProfit;
-    const profit = sellValue - buyValue;
-    return (profit / buyValue * 100).toFixed(1);
-  })();
-  
-  const buyAdvice = (() => {
-    if (marketIntel < 25) return "Need more market intel";
-    if (price <= 0) return "Not available for purchase";
-    if (maxBuy <= 0) return "Can't buy - no space or cash";
-    if (supply < 25 && demand > 75) return "⭐ Hot Deal! High demand, low supply";
-    if (supply > 75 && demand < 25) return "⚠️ Risky Buy - High supply, low demand";
-    if (Number(potentialProfitPercent) > 50) return "💎 High profit potential!";
-    if (supply < 40 && demand > 60) return "👍 Good conditions to buy";
-    if (supply > 60 && demand < 40) return "👎 Poor conditions to buy";
-    return "📊 Average market conditions";
-  })();
-
-  return {
-    maxBuy,
-    maxSell,
-    totalCost,
-    potentialProfit,
-    potentialProfitPercent: `${potentialProfitPercent}%`,
-    supplyTrend,
-    demandTrend,
-    priceGuidance,
-    nearbyComparison,
-    buyAdvice
-  };
-};
+interface TransactionHistory {
+  type: 'buy' | 'sell';
+  drug: string;
+  quantity: number;
+  price: number;
+  timestamp: number;
+  profit?: number;
+}
 
 // Fix debounce to handle string input specifically
 const debounce = <T extends (value: string) => void>(fn: T, ms = 300) => {
@@ -231,8 +184,10 @@ const MarketScreen = () => {
   
   const [quantity, setQuantity] = useState(1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [isTransacting, setIsTransacting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
+  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+  const [marketAlerts, setMarketAlerts] = useState<string[]>([]);
 
   // Update the market items calculation
   const marketItems = useMemo(() => {
@@ -293,12 +248,28 @@ const MarketScreen = () => {
       await dispatch(buyDrug({ drug: originalDrug, quantity: finalQuantity, price }));
       await dispatch(adjustMarket({ location, item: originalDrug, quantity: finalQuantity, isBuy: true }));
       logTransaction('buy', originalDrug, finalQuantity, price, true);
+
+      // Add transaction to history
+      const transaction: TransactionHistory = {
+        type: 'buy',
+        drug: originalDrug,
+        quantity: finalQuantity,
+        price,
+        timestamp: Date.now()
+      };
+      setTransactionHistory(prev => [transaction, ...prev].slice(0, 50));
+
+      // Check for good deals using market data
+      const marketData = prices[drug];
+      if (marketData && marketData.supply < 30 && marketData.demand > 70) {
+        setMarketAlerts(prev => [`Hot Deal Alert: ${drug} has high demand!`, ...prev]);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSell = (drug: string, price: number) => {
+  const handleSell = async (drug: string, price: number) => {
     try {
       // Convert display name back to original name if in non-adult mode
       const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
@@ -310,9 +281,24 @@ const MarketScreen = () => {
         return;
       }
 
-      dispatch(sellDrug({ drug: originalDrug, quantity, price }));
-      dispatch(adjustMarket({ location, item: originalDrug, quantity, isBuy: false }));
+      await dispatch(sellDrug({ drug: originalDrug, quantity, price }));
+      await dispatch(adjustMarket({ location, item: originalDrug, quantity, isBuy: false }));
       logTransaction('sell', originalDrug, quantity, price, true);
+
+      // Add transaction to history with profit calculation
+      const boughtAt = transactionHistory.find(t => 
+        t.type === 'buy' && t.drug === originalDrug
+      )?.price || price;
+      
+      const transaction: TransactionHistory = {
+        type: 'sell',
+        drug: originalDrug,
+        quantity,
+        price,
+        timestamp: Date.now(),
+        profit: (price - boughtAt) * quantity
+      };
+      setTransactionHistory(prev => [transaction, ...prev].slice(0, 50));
     } catch (error) {
       console.error('Sell transaction failed:', error);
     }
@@ -395,40 +381,119 @@ const MarketScreen = () => {
     return options.sort((a, b) => a.amount - b.amount);
   };
 
+  // Update the MarketTrendIndicator component
+  const MarketTrendIndicator: React.FC<{ trend: MarketTrend }> = ({ trend }) => {
+    const styles = {
+      up: {
+        text: 'text-green-500',
+        bg: 'bg-green-500',
+        icon: faArrowTrendUp
+      },
+      down: {
+        text: 'text-red-500',
+        bg: 'bg-red-500',
+        icon: faArrowTrendDown
+      },
+      stable: {
+        text: 'text-gray-500',
+        bg: 'bg-gray-500',
+        icon: faBalanceScale
+      }
+    };
+
+    const style = styles[trend.direction];
+
+    return (
+      <div className={`flex items-center gap-3 ${style.text} p-3 rounded-lg bg-surface/50 backdrop-blur transition-all duration-300 hover:scale-102`}>
+        <FontAwesomeIcon icon={style.icon} className="text-xl" />
+        <div className="flex-1">
+          <div className="text-sm font-medium">{trend.description}</div>
+          <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden mt-2">
+            <div 
+              className={`h-full ${style.bg} transition-all duration-500 ease-out`}
+              style={{ width: `${trend.strength}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-2 sm:p-4 pb-24 space-y-4">
       <h2 className="text-xl sm:text-2xl font-bold">Market in {location}</h2>
       
-      <div className="quantity-controls flex items-center gap-1 sm:gap-2">
+      <div className="quantity-controls flex items-center gap-2 bg-surface/30 p-2 rounded-lg backdrop-blur">
         <button 
           onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-          className="btn btn-surface p-2 sm:px-4"
+          className="btn btn-surface p-3 hover:bg-primary hover:text-white transition-colors"
           aria-label="Decrease quantity"
-        >-</button>
+        >
+          <FontAwesomeIcon icon={faMinus} />
+        </button>
         <input
           type="number"
           min="1"
           value={quantity}
           onChange={(e) => handleQuantityChange(e.target.value)}
-          className="w-16 sm:w-20 text-center text-sm sm:text-base"
+          className="w-20 text-center text-lg font-medium bg-surface/50 rounded-md"
           aria-label="Quantity"
         />
         <button 
           onClick={() => setQuantity(prev => prev + 1)}
-          className="btn btn-surface p-2 sm:px-4"
+          className="btn btn-surface p-3 hover:bg-primary hover:text-white transition-colors"
           aria-label="Increase quantity"
-        >+</button>
+        >
+          <FontAwesomeIcon icon={faPlus} />
+        </button>
         <button
           onClick={handleMaxClick}
-          className="btn btn-primary px-2 sm:px-4 text-sm sm:text-base"
+          className="btn btn-primary px-4 py-3 text-sm font-medium flex items-center gap-2"
           aria-label="Set maximum quantity"
-        >Max</button>
+        >
+          <FontAwesomeIcon icon={faInfinity} />
+          Max
+        </button>
       </div>
 
-      <div className="flex justify-between text-xs sm:text-sm mb-2 sm:mb-4">
-        <span>Space: {currentInventoryUsed} / {inventorySpace}</span>
-        <span>Cash: ${cash}</span>
+      <div className="flex gap-4 mb-4">
+        <div className="flex-1 bg-surface/30 rounded-lg p-3 backdrop-blur">
+          <div className="flex items-center gap-2 text-sm text-text/70">
+            <FontAwesomeIcon icon={faBoxes} />
+            <span>Inventory Space</span>
+          </div>
+          <div className="mt-1 text-lg font-medium">
+            {currentInventoryUsed} / {inventorySpace}
+          </div>
+          <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden mt-2">
+            <div 
+              className="h-full bg-primary transition-all duration-500"
+              style={{ width: `${(currentInventoryUsed / inventorySpace) * 100}%` }}
+            />
+          </div>
+        </div>
+        <div className="flex-1 bg-surface/30 rounded-lg p-3 backdrop-blur">
+          <div className="flex items-center gap-2 text-sm text-text/70">
+            <FontAwesomeIcon icon={faWallet} />
+            <span>Cash</span>
+          </div>
+          <div className="mt-1 text-lg font-medium">${cash.toLocaleString()}</div>
+        </div>
       </div>
+
+      {marketAlerts.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {marketAlerts.map((alert, index) => (
+            <div 
+              key={index}
+              className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm flex items-center gap-3 animate-fadeIn"
+            >
+              <FontAwesomeIcon icon={faFire} className="text-orange-500 text-lg" />
+              <span className="flex-1">{alert}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-2 sm:space-y-3">
         {marketItems.map(([drug, market]) => {
@@ -437,7 +502,7 @@ const MarketScreen = () => {
           const details = calculateMarketDetails(
             price, owned, supply, demand, cash, inventorySpace,
             currentInventoryUsed,
-            drug, marketIntel, {}
+            drug, marketIntel, {}, price
           );
 
           return (
@@ -498,6 +563,16 @@ const MarketScreen = () => {
               {/* Expanded Content */}
               {isExpanded && (
                 <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
+                  {/* Market Trend Analysis */}
+                  <div className="p-2 sm:p-3 bg-background rounded-md">
+                    <MarketTrendIndicator trend={details.trend} />
+                    {details.priceChange && (
+                      <div className="text-xs mt-1">
+                        Price change: {details.priceChange}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Market Stats */}
                   <div className="grid grid-cols-1 gap-2 sm:gap-4">
                     <div className="p-2 sm:p-3 bg-background rounded-md">
@@ -517,7 +592,7 @@ const MarketScreen = () => {
                   {/* Quick Actions */}
                   {price > 0 && (
                     <div className="space-y-2">
-                      {/* Quick Buy/Sell Options */}
+                      {/* Enhanced Quick Buy/Sell Options */}
                       <div className="grid grid-cols-2 gap-1 sm:gap-2">
                         {/* Quick Buy Options */}
                         <div className="space-y-1 sm:space-y-2">
@@ -558,18 +633,100 @@ const MarketScreen = () => {
                     </div>
                   )}
 
-                  {/* Add tooltips to the market stats */}
-                  <div className="flex items-center gap-2" title="Current market supply">
-                    <span>Supply: {supply}%</span>
-                  </div>
-                  <div className="flex items-center gap-2" title="Current market demand">
-                    <span>Demand: {demand}%</span>
+                  {/* Market Stats with Tooltips */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div 
+                      className="stat-card group hover:bg-surface/50 transition-colors"
+                      title="Higher supply means lower prices"
+                    >
+                      <div className="flex items-center gap-2 text-text/70">
+                        <FontAwesomeIcon icon={faBoxOpen} className="group-hover:text-primary transition-colors" />
+                        <span>Supply</span>
+                      </div>
+                      <div className="text-2xl font-bold mt-1">{supply}%</div>
+                      <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden mt-2">
+                        <div 
+                          className="h-full bg-blue-500 transition-all duration-500"
+                          style={{ width: `${supply}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div 
+                      className="stat-card group hover:bg-surface/50 transition-colors"
+                      title="Higher demand means higher prices"
+                    >
+                      <div className="flex items-center gap-2 text-text/70">
+                        <FontAwesomeIcon icon={faChartBar} className="group-hover:text-primary transition-colors" />
+                        <span>Demand</span>
+                      </div>
+                      <div className="text-2xl font-bold mt-1">{demand}%</div>
+                      <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden mt-2">
+                        <div 
+                          className="h-full bg-green-500 transition-all duration-500"
+                          style={{ width: `${demand}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
           );
         })}
+      </div>
+
+      {/* Add Transaction History Panel */}
+      <div className="fixed bottom-24 right-4 z-50">
+        <button
+          onClick={() => setShowTransactionHistory(prev => !prev)}
+          className="btn btn-primary rounded-full p-4 shadow-lg hover:scale-105 transition-transform"
+        >
+          <FontAwesomeIcon icon={faHistory} className="text-xl" />
+        </button>
+        {showTransactionHistory && (
+          <div className="absolute bottom-full right-0 mb-2 w-96 max-h-[70vh] overflow-y-auto card bg-surface/95 backdrop-blur shadow-xl rounded-lg border border-primary/20 animate-slideIn">
+            <div className="sticky top-0 bg-surface/95 backdrop-blur p-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <FontAwesomeIcon icon={faChartPie} className="text-primary text-xl" />
+                <h3 className="text-lg font-bold">Transaction History</h3>
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              {transactionHistory.map((t, i) => (
+                <div 
+                  key={i}
+                  className={`p-3 rounded-lg transition-all duration-300 hover:scale-102 ${
+                    t.type === 'buy' 
+                      ? 'bg-green-900/20 hover:bg-green-900/30' 
+                      : 'bg-red-900/20 hover:bg-red-900/30'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2">
+                      <FontAwesomeIcon 
+                        icon={t.type === 'buy' ? faArrowTrendDown : faArrowTrendUp} 
+                        className={t.type === 'buy' ? 'text-green-400' : 'text-red-400'} 
+                      />
+                      {t.type === 'buy' ? 'Bought' : 'Sold'} {t.quantity} {t.drug}
+                    </span>
+                    <span className="font-medium">${t.price}</span>
+                  </div>
+                  {t.profit && (
+                    <div className={`mt-1 text-sm font-medium flex items-center gap-2 ${
+                      t.profit > 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      <FontAwesomeIcon icon={t.profit > 0 ? faArrowTrendUp : faArrowTrendDown} />
+                      Profit: ${Math.abs(t.profit).toLocaleString()}
+                    </div>
+                  )}
+                  <div className="text-xs text-text/50 mt-1">
+                    {new Date(t.timestamp).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
