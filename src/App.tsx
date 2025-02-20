@@ -19,9 +19,10 @@ import {
   faMap,
   faStore,
   faLandmark,
-  faBolt
+  faBolt,
+  faLink
 } from '@fortawesome/free-solid-svg-icons';
-import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { faGithub, faTwitter } from '@fortawesome/free-brands-svg-icons';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -248,15 +249,35 @@ function App() {
         {/* Add Footer */}
         <footer className="text-center mb-24 text-sm text-text/70 space-y-4">
           <p>Made with ❤️ in Australia</p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface/50 rounded-full hover:bg-surface/80 transition-colors">
-            <FontAwesomeIcon icon={faGithub} />
+          <div className="flex justify-center gap-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface/50 rounded-full hover:bg-surface/80 transition-colors">
+              <FontAwesomeIcon icon={faGithub} />
+              <a 
+                href="https://github.com/loftwah/bogan_hustler"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:text-primary/80"
+              >
+                Open Source on GitHub
+              </a>
+            </div>
             <a 
-              href="https://github.com/loftwah/bogan_hustler"
+              href="https://x.com/loftwah"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:text-primary/80"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-surface/50 rounded-full hover:bg-surface/80 transition-colors text-primary hover:text-primary/80"
             >
-              Open Source on GitHub
+              <FontAwesomeIcon icon={faTwitter} />
+              @loftwah
+            </a>
+            <a 
+              href="https://linkarooie.com/loftwah"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-surface/50 rounded-full hover:bg-surface/80 transition-colors text-primary hover:text-primary/80"
+            >
+              <FontAwesomeIcon icon={faLink} />
+              More Links
             </a>
           </div>
         </footer>
