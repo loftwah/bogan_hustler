@@ -14,12 +14,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  body {
-    @apply m-0 p-0 min-w-[320px] min-h-screen bg-background text-text;
+  html, body, #root {
+    @apply h-full w-full bg-background text-text m-0 p-0 overflow-x-hidden;
   }
 
-  #root {
-    @apply w-full min-h-screen flex flex-col;
+  input[type="number"] {
+    @apply bg-background border-border text-text rounded-md focus:ring-primary focus:border-primary;
   }
 
   h1 {
@@ -37,15 +37,11 @@
 
 @layer components {
   .btn {
-    @apply cursor-pointer rounded-lg transition-all duration-200 
-           inline-flex items-center justify-center gap-2 
-           min-h-[44px] px-4 py-2 text-base font-medium
-           border-2 border-transparent
-           hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 rounded-md transition-colors duration-200;
   }
 
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary/90;
+    @apply bg-primary text-white hover:bg-opacity-80;
   }
 
   .btn-outline {
@@ -54,18 +50,21 @@
   }
 
   .btn-surface {
-    @apply bg-surface text-text border-border
-           hover:bg-surface/80;
+    @apply bg-surface text-text hover:bg-opacity-80;
   }
 
   .card {
-    @apply bg-surface rounded-lg border border-border p-4 shadow-lg;
+    @apply bg-surface rounded-lg p-6 border border-border;
   }
 
   .input {
     @apply bg-background border border-border rounded-lg px-3 py-2
            focus:outline-none focus:ring-2 focus:ring-primary
            text-text placeholder-text/50;
+  }
+
+  .quick-action-button {
+    @apply bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-80 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 }
 

@@ -10,10 +10,9 @@ const FloatingInventory = () => {
   if (!isOpen) {
     return (
       <button 
-        className="floating-inventory-toggle"
+        className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-opacity-80"
         onClick={() => setIsOpen(true)}
         aria-label="Show inventory"
-        title="Show Inventory"
       >
         📦
       </button>
@@ -21,26 +20,30 @@ const FloatingInventory = () => {
   }
 
   return (
-    <div className="floating-inventory">
-      <div className="floating-inventory-header">
-        <h3>Inventory</h3>
+    <div className="fixed bottom-4 right-4 w-80 md:w-96 bg-surface rounded-lg shadow-lg border border-border">
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h3 className="text-lg font-bold">Inventory</h3>
         <button 
           onClick={() => setIsOpen(false)}
-          className="close-button"
+          className="text-2xl hover:text-primary"
           aria-label="Close inventory"
         >×</button>
       </div>
-      <div className="inventory-summary">
-        <span>Space: {currentSpace}/{inventorySpace}</span>
-        <span>Cash: ${cash}</span>
-      </div>
-      <div className="floating-inventory-list">
-        {inventory.map(item => (
-          <div key={item.name} className="floating-inventory-item">
-            <span>{item.name}</span>
-            <span>{item.quantity}</span>
-          </div>
-        ))}
+      
+      <div className="p-4 space-y-4">
+        <div className="flex justify-between text-sm">
+          <span>Space: {currentSpace}/{inventorySpace}</span>
+          <span>Cash: ${cash}</span>
+        </div>
+        
+        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+          {inventory.map(item => (
+            <div key={item.name} className="flex justify-between py-1 border-b border-border last:border-0">
+              <span>{item.name}</span>
+              <span>{item.quantity}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

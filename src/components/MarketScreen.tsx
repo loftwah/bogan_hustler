@@ -287,22 +287,20 @@ const MarketScreen = () => {
       const maxByCash = Math.floor(cash / price);
       const maxBuy = Math.min(maxBySpace, maxByCash);
 
-      // Fixed quantities
+      // Fixed quantities - always show all options
       [1, 5, 10, 25, 50].forEach(qty => {
-        if (qty <= maxBuy) {
-          options.push({
-            amount: qty,
-            label: `Buy ${qty}`,
-            totalValue: qty * price,
-            spacePercent: (qty / inventorySpace) * 100
-          });
-        }
+        options.push({
+          amount: qty,
+          label: `Buy ${qty}`,
+          totalValue: qty * price,
+          spacePercent: (qty / inventorySpace) * 100
+        });
       });
 
       // Percentage-based options
       [0.25, 0.5, 0.75, 1].forEach(percent => {
-        const qty = Math.floor(maxBuy * percent);
-        if (qty > 0 && !options.some(opt => opt.amount === qty)) {
+        const qty = Math.floor(Math.max(1, maxBuy * percent));
+        if (!options.some(opt => opt.amount === qty)) {
           options.push({
             amount: qty,
             label: `${(percent * 100)}%`,
@@ -312,30 +310,26 @@ const MarketScreen = () => {
         }
       });
     } else {
-      // Selling options
-      if (owned <= 0) return options;
-
+      // Selling options - always show these options regardless of owned amount
       // Fixed quantities
       [1, 5, 10, 25, 50].forEach(qty => {
-        if (qty <= owned) {
-          options.push({
-            amount: qty,
-            label: `Sell ${qty}`,
-            totalValue: qty * price,
-            spacePercent: (qty / owned) * 100
-          });
-        }
+        options.push({
+          amount: qty,
+          label: `Sell ${qty}`,
+          totalValue: qty * price,
+          spacePercent: owned > 0 ? (qty / owned) * 100 : 0
+        });
       });
 
       // Percentage-based options
       [0.25, 0.5, 0.75, 1].forEach(percent => {
-        const qty = Math.floor(owned * percent);
-        if (qty > 0 && !options.some(opt => opt.amount === qty)) {
+        const qty = Math.floor(Math.max(1, owned * percent));
+        if (!options.some(opt => opt.amount === qty)) {
           options.push({
             amount: qty,
             label: `${(percent * 100)}%`,
             totalValue: qty * price,
-            spacePercent: (qty / owned) * 100
+            spacePercent: owned > 0 ? (qty / owned) * 100 : 0
           });
         }
       });
@@ -345,13 +339,13 @@ const MarketScreen = () => {
   };
 
   return (
-    <div className="market-screen">
-      <h2>Market in {location}</h2>
+    <div className="p-2 sm:p-4 pb-24 space-y-4">
+      <h2 className="text-xl sm:text-2xl font-bold">Market in {location}</h2>
       
-      <div className="quantity-controls">
+      <div className="quantity-controls flex items-center gap-1 sm:gap-2">
         <button 
           onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-          className="quantity-button"
+          className="btn btn-surface p-2 sm:px-4"
           aria-label="Decrease quantity"
         >-</button>
         <input
@@ -359,148 +353,93 @@ const MarketScreen = () => {
           min="1"
           value={quantity}
           onChange={(e) => handleQuantityChange(e.target.value)}
-          className="quantity-input"
+          className="w-16 sm:w-20 text-center text-sm sm:text-base"
           aria-label="Quantity"
         />
         <button 
           onClick={() => setQuantity(prev => prev + 1)}
-          className="quantity-button"
+          className="btn btn-surface p-2 sm:px-4"
           aria-label="Increase quantity"
         >+</button>
         <button
           onClick={handleMaxClick}
-          className="quantity-button"
+          className="btn btn-primary px-2 sm:px-4 text-sm sm:text-base"
           aria-label="Set maximum quantity"
         >Max</button>
       </div>
 
-      <div className="inventory-summary">
+      <div className="flex justify-between text-xs sm:text-sm mb-2 sm:mb-4">
         <span>Space: {inventory.reduce((acc: number, item: { quantity: number }) => acc + item.quantity, 0)} / {inventorySpace}</span>
         <span>Cash: ${cash}</span>
       </div>
 
-      <div className="market-list">
+      <div className="space-y-2 sm:space-y-3">
         {marketItems.map(([drug, market]) => {
           const { price, owned, supply, demand } = market;
           const isExpanded = expandedItems.has(drug);
           const details = calculateMarketDetails(
-            price,
-            owned,
-            supply,
-            demand,
-            cash,
-            inventorySpace,
+            price, owned, supply, demand, cash, inventorySpace,
             inventory.reduce((acc, item) => acc + item.quantity, 0),
-            drug,
-            marketIntel,
-            undefined // We'll implement proper nearby location price comparison later
+            drug, marketIntel
           );
 
           return (
-            <div key={drug} className={`market-item ${price === 0 ? 'unavailable' : ''}`}>
-              <div className="market-item-header">
-                <div className="drug-info">
-                  <h3 className="drug-name">{drug}</h3>
-                  <div className="drug-stats">
-                    <span className="drug-price" data-price={price}>
-                      {price > 0 ? `$${price}` : 'Not available'}
-                    </span>
-                    <span className="drug-owned">Owned: {owned}</span>
+            <div key={drug} className={`card p-3 sm:p-4 ${price === 0 ? 'opacity-50' : ''}`}>
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold">{drug}</h3>
+                  <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm">
+                    <span>{price > 0 ? `$${price}` : 'Not available'}</span>
+                    <span>Owned: {owned}</span>
                   </div>
                 </div>
-                <button
-                  className="expand-button"
-                  onClick={() => {
-                    const newExpanded = new Set(expandedItems);
-                    if (isExpanded) {
-                      newExpanded.delete(drug);
-                    } else {
-                      newExpanded.add(drug);
-                    }
-                    setExpandedItems(newExpanded);
-                  }}
-                  aria-expanded={isExpanded}
-                  aria-controls={`details-${drug}`}
-                >
-                  {isExpanded ? '▼' : '▶'}
-                </button>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <button
+                    className="p-1.5 sm:p-2 hover:text-primary transition-colors"
+                    onClick={() => {
+                      const newExpanded = new Set(expandedItems);
+                      if (isExpanded) {
+                        newExpanded.delete(drug);
+                      } else {
+                        newExpanded.add(drug);
+                      }
+                      setExpandedItems(newExpanded);
+                    }}
+                    aria-expanded={isExpanded}
+                    aria-controls={`details-${drug}`}
+                  >
+                    {isExpanded ? '▼' : '▶'}
+                  </button>
+                </div>
               </div>
 
-              <div className="market-item-content">
-                {isExpanded && (
-                  <div 
-                    id={`details-${drug}`}
-                    className="market-item-details"
-                    role="region"
-                    aria-label={`Details for ${drug}`}
-                  >
-                    <div className="market-stats">
-                      <div className="market-stat highlight">
-                        <span className="market-stat-label">Price Analysis</span>
-                        <span className="market-stat-value">{details.priceGuidance}</span>
-                        {details.nearbyComparison && (
-                          <span className="market-stat-subvalue">{details.nearbyComparison}</span>
-                        )}
-                      </div>
-                      <div className="market-stat highlight">
-                        <span className="market-stat-label">Buy Advice</span>
-                        <span className="market-stat-value">{details.buyAdvice}</span>
-                      </div>
-                      <div className="market-stat">
-                        <span className="market-stat-label">Potential Profit</span>
-                        <span className="market-stat-value">${details.potentialProfit}</span>
-                        <span className="market-stat-subvalue">({details.potentialProfitPercent} return)</span>
-                      </div>
-                      <div className="market-stat">
-                        <span className="market-stat-label">Max Buy Amount</span>
-                        <span className="market-stat-value">{details.maxBuy}</span>
-                      </div>
-                      <div className="market-stat">
-                        <span className="market-stat-label">Max Sell Amount</span>
-                        <span className="market-stat-value">{details.maxSell}</span>
-                      </div>
-                      <div className="market-stat">
-                        <span className="market-stat-label">Cost to Max Buy</span>
-                        <span className="market-stat-value">${details.totalCost}</span>
-                      </div>
-                      <div className="market-stat">
-                        <span className="market-stat-label">Supply Trend</span>
-                        <span className="market-stat-value">{details.supplyTrend}</span>
-                      </div>
-                      <div className="market-stat">
-                        <span className="market-stat-label">Demand Trend</span>
-                        <span className="market-stat-value">{details.demandTrend}</span>
-                      </div>
+              {/* Expanded Content */}
+              {isExpanded && (
+                <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
+                  {/* Market Stats */}
+                  <div className="grid grid-cols-1 gap-2 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-background rounded-md">
+                      <div className="text-sm sm:text-base font-medium mb-1">Price Analysis</div>
+                      <div className="text-xs sm:text-sm">{details.priceGuidance}</div>
+                      {details.nearbyComparison && (
+                        <div className="text-xs sm:text-sm text-gray-400">{details.nearbyComparison}</div>
+                      )}
+                    </div>
+                    
+                    <div className="p-2 sm:p-3 bg-background rounded-md">
+                      <div className="text-sm sm:text-base font-medium mb-1">Buy Advice</div>
+                      <div className="text-xs sm:text-sm">{details.buyAdvice}</div>
                     </div>
                   </div>
-                )}
 
-                <div className="quick-actions">
+                  {/* Quick Actions */}
                   {price > 0 && (
-                    <div className="action-section">
-                      <div className="primary-actions">
-                        <button
-                          onClick={() => handleBuy(drug, price)}
-                          disabled={quantity * price > cash || quantity + owned > inventorySpace}
-                          className="quick-action-button buy-button"
-                          aria-label={`Buy ${quantity} ${drug}`}
-                        >
-                          Buy {quantity}
-                        </button>
-                        {owned > 0 && (
-                          <button
-                            onClick={() => handleSell(drug, price)}
-                            disabled={quantity > owned}
-                            className="quick-action-button sell-button"
-                            aria-label={`Sell ${quantity} ${drug}`}
-                          >
-                            Sell {quantity}
-                          </button>
-                        )}
-                      </div>
-                      
-                      <div className="percentage-actions">
-                        <div className="buy-options">
+                    <div className="space-y-2">
+                      {/* Quick Buy/Sell Options */}
+                      <div className="grid grid-cols-2 gap-1 sm:gap-2">
+                        {/* Quick Buy Options */}
+                        <div className="space-y-1 sm:space-y-2">
                           {getQuickBuyOptions(price, owned, true).map(option => (
                             <button
                               key={`buy-${option.amount}`}
@@ -508,40 +447,37 @@ const MarketScreen = () => {
                                 setQuantity(option.amount);
                                 handleBuy(drug, price);
                               }}
-                              className="quick-action-button percentage-button buy"
+                              className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-green-800 hover:bg-green-700 text-white disabled:opacity-30 disabled:bg-green-900"
                               disabled={option.totalValue > cash || option.amount + owned > inventorySpace}
-                              title={`Buy ${option.amount} for $${option.totalValue.toFixed(2)}`}
                             >
                               {option.label}
-                              <span className="action-value">${option.totalValue.toFixed(0)}</span>
+                              <span className="text-green-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
                             </button>
                           ))}
                         </div>
-                        
-                        {owned > 0 && (
-                          <div className="sell-options">
-                            {getQuickBuyOptions(price, owned, false).map(option => (
-                              <button
-                                key={`sell-${option.amount}`}
-                                onClick={() => {
-                                  setQuantity(option.amount);
-                                  handleSell(drug, price);
-                                }}
-                                className="quick-action-button percentage-button sell"
-                                disabled={option.amount > owned}
-                                title={`Sell ${option.amount} for $${option.totalValue.toFixed(2)}`}
-                              >
-                                {option.label}
-                                <span className="action-value">${option.totalValue.toFixed(0)}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
+
+                        {/* Quick Sell Options */}
+                        <div className="space-y-1 sm:space-y-2">
+                          {getQuickBuyOptions(price, owned, false).map(option => (
+                            <button
+                              key={`sell-${option.amount}`}
+                              onClick={() => {
+                                setQuantity(option.amount);
+                                handleSell(drug, price);
+                              }}
+                              className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-red-800 hover:bg-red-700 text-white disabled:opacity-30 disabled:bg-red-900"
+                              disabled={!owned || option.amount > owned}
+                            >
+                              {option.label}
+                              <span className="text-red-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
+              )}
             </div>
           );
         })}

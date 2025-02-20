@@ -8,6 +8,8 @@ import UpgradesScreen from "./components/UpgradesScreen";
 import EventPopup from "./components/EventPopup";
 import FloatingInventory from './components/FloatingInventory';
 import { toggleAdultMode } from "./store/playerSlice";
+import bannerImage from './assets/banner.jpg'
+import squareImage from './assets/square.jpg'
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -83,9 +85,39 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-4">
+        {/* Banner Image at the top */}
+        <img 
+          src={bannerImage} 
+          alt="Bogan Hustler Banner" 
+          className="w-full h-32 object-cover rounded-lg mb-6"
+        />
+
         {/* Game Header */}
         <div className="card mb-6">
-          <h1 className="text-4xl font-bold text-primary text-center mb-4">Bogan Hustler</h1>
+          <div className="flex justify-between items-center mb-4">
+            {/* Square logo image */}
+            <div className="flex items-center gap-4">
+              <img 
+                src={squareImage} 
+                alt="Bogan Hustler Logo" 
+                className="w-12 h-12 rounded-lg"
+              />
+              <h1 className="text-4xl font-bold text-primary">Bogan Hustler</h1>
+            </div>
+            
+            {/* Add Adult Mode Toggle */}
+            <button
+              onClick={() => dispatch(toggleAdultMode())}
+              className={`px-3 py-1 rounded-md text-sm ${
+                adultMode 
+                  ? 'bg-red-600 hover:bg-red-700' 
+                  : 'bg-green-600 hover:bg-green-700'
+              }`}
+              aria-label="Toggle adult mode"
+            >
+              {adultMode ? '18+ Mode On' : 'Family Friendly'}
+            </button>
+          </div>
           
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

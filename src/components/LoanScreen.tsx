@@ -10,55 +10,62 @@ const LoanScreen = () => {
   const [repayAmount, setRepayAmount] = useState(0);
 
   return (
-    <div className="loan-screen">
-      <h2>Loan Shark</h2>
-      <p>Debt: ${debt.toFixed(2)} (5% daily interest)</p>
-      <p>Cash: ${cash}</p>
-      <div className="loan-controls">
-        <div className="loan-action">
-          <label htmlFor="loan-amount">Borrow: </label>
-          <input
-            id="loan-amount"
-            type="number"
-            min="100"
-            step="100"
-            value={loanAmount}
-            onChange={(e) => setLoanAmount(Math.max(100, parseInt(e.target.value) || 100))}
-          />
-          <button 
-            onClick={() => dispatch(takeLoan(loanAmount))}
-            className="quick-action-button"
-            aria-label={`Take loan of $${loanAmount}`}
-          >
-            Take Loan
-          </button>
-        </div>
-        {debt > 0 && (
-          <div className="loan-action">
-            <label htmlFor="repay-amount">Repay: </label>
+    <div className="card">
+      <h2 className="text-2xl font-bold mb-4">Loan Shark</h2>
+      <p className="mb-2">Debt: ${debt.toFixed(2)} (5% daily interest)</p>
+      <p className="mb-4">Cash: ${cash}</p>
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-2">
+          <label htmlFor="loan-amount" className="block font-medium">Borrow:</label>
+          <div className="flex gap-2">
             <input
-              id="repay-amount"
+              id="loan-amount"
               type="number"
-              min="0"
-              max={Math.min(cash, debt)}
-              value={repayAmount}
-              onChange={(e) => setRepayAmount(Math.min(cash, Math.max(0, parseInt(e.target.value) || 0)))}
+              min="100"
+              step="100"
+              value={loanAmount}
+              onChange={(e) => setLoanAmount(Math.max(100, parseInt(e.target.value) || 100))}
+              className="w-full"
             />
             <button 
-              onClick={() => {
-                dispatch(payLoan(repayAmount));
-                setRepayAmount(0);
-              }}
-              className="quick-action-button"
-              disabled={repayAmount <= 0 || repayAmount > cash}
-              aria-label={`Repay $${repayAmount} of loan`}
+              onClick={() => dispatch(takeLoan(loanAmount))}
+              className="btn btn-primary whitespace-nowrap"
             >
-              Repay
+              Take Loan
             </button>
+          </div>
+        </div>
+
+        {debt > 0 && (
+          <div className="space-y-2">
+            <label htmlFor="repay-amount" className="block font-medium">Repay:</label>
+            <div className="flex gap-2">
+              <input
+                id="repay-amount"
+                type="number"
+                min="0"
+                max={Math.min(cash, debt)}
+                value={repayAmount}
+                onChange={(e) => setRepayAmount(Math.min(cash, Math.max(0, parseInt(e.target.value) || 0)))}
+                className="w-full"
+              />
+              <button 
+                onClick={() => {
+                  dispatch(payLoan(repayAmount));
+                  setRepayAmount(0);
+                }}
+                className="btn btn-primary whitespace-nowrap"
+                disabled={repayAmount <= 0 || repayAmount > cash}
+              >
+                Repay
+              </button>
+            </div>
           </div>
         )}
       </div>
-      <div className="loan-warning">
+
+      <div className="mt-6 text-yellow-400 space-y-1">
         <p>⚠️ Warning: Unpaid debt accrues 5% interest daily!</p>
         <p>The loan shark might take inventory as payment if you can't keep up.</p>
       </div>

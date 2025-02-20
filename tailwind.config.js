@@ -13,6 +13,9 @@ export default {
         text: '#e0e0e0',
         border: '#333',
       },
+      screens: {
+        'xs': '475px',
+      },
       spacing: {
         'safe-bottom': 'env(safe-area-inset-bottom)',
         'safe-top': 'env(safe-area-inset-top)',
@@ -21,5 +24,7 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
 } 
