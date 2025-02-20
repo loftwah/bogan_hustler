@@ -8,6 +8,7 @@ import UpgradesScreen from "./components/UpgradesScreen";
 import EventPopup from "./components/EventPopup";
 import "./App.css";
 import bannerImage from '../public/banner.jpg';
+import squareImage from '../public/square.jpg';
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -55,24 +56,24 @@ function App() {
         <h1>Bogan Hustler</h1>
         <div className="status-bar">
           <div className="status-item">
-            <img src="/square.jpg" alt="Cash Icon" className="status-icon" />
+            <img src={squareImage} alt="Cash Icon" className="status-icon" />
             <span>Cash: ${cash}</span>
           </div>
           <div className="status-item">
-            <img src="/square.jpg" alt="Location Icon" className="status-icon" />
+            <img src={squareImage} alt="Location Icon" className="status-icon" />
             <span>Location: {location}</span>
           </div>
           <div className="status-item">
-            <img src="/square.jpg" alt="Day Icon" className="status-icon" />
+            <img src={squareImage} alt="Day Icon" className="status-icon" />
             <span>Day: {currentDay}/{maxDays}</span>
           </div>
           <div className="status-item">
-            <img src="/square.jpg" alt="Reputation Icon" className="status-icon" />
+            <img src={squareImage} alt="Reputation Icon" className="status-icon" />
             <span>Rep: {reputation}</span>
           </div>
           {debt > 0 && (
             <div className="status-item">
-              <img src="/square.jpg" alt="Debt Icon" className="status-icon" />
+              <img src={squareImage} alt="Debt Icon" className="status-icon" />
               <span>Debt: ${debt.toFixed(2)}</span>
             </div>
           )}
