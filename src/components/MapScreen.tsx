@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { travel, PlayerState } from "../store/playerSlice";
+import { travel } from "../store/playerSlice";
 import { updatePrices } from "../store/marketSlice";
 import { triggerRandomEvent } from "../store/eventSlice";
 import { RootState, AppDispatch } from "../store/store";

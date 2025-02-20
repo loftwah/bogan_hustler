@@ -6,7 +6,7 @@ interface DrugMarket {
   demand: number;  // 0-100, higher means pricier
 }
 
-interface MarketState {
+export interface MarketState {
   prices: {
     [location: string]: Record<string, DrugMarket>;
   };

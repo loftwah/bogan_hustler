@@ -4,6 +4,17 @@ import { buyDrug, sellDrug } from "../store/playerSlice";
 import { RootState } from "../store/store";
 import { useEffect } from "react";
 
+// Add type for choice parameter
+interface EventChoice {
+  text: string;
+  outcome: {
+    cash?: number;
+    inventory?: Record<string, number>;
+    reputation?: number;
+    policeEvasion?: number;
+  };
+}
+
 const EventPopup = () => {
   const dispatch = useDispatch();
   const event = useSelector((state: RootState) => state.events.activeEvent);
@@ -43,7 +54,7 @@ const EventPopup = () => {
       <h3>Warning</h3>
       <p>{event.description}</p>
       <div className="event-choices">
-        {event.choices.map((choice, index) => (
+        {event.choices.map((choice: EventChoice, index: number) => (
           <button 
             key={index} 
             onClick={() => handleChoice(choice.outcome)}

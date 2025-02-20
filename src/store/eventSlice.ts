@@ -16,7 +16,7 @@ interface Event {
   choices: EventChoice[];
 }
 
-interface EventState {
+export interface EventState {
   activeEvent: Event | null;
 }
 

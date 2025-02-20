@@ -22,7 +22,8 @@ const MarketScreen = () => {
         />
       </div>
       <div className="market-list">
-        {Object.entries(prices || {}).map(([drug, { price }]) => {
+        {Object.entries(prices || {}).map(([drug, market]: [string, { price: number }]) => {
+          const { price } = market;
           const owned = inventory.find((item) => item.name === drug)?.quantity || 0;
           const canBuy = cash >= price * quantity;
           const canSell = owned >= quantity;
