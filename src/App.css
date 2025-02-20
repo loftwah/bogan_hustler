@@ -1146,12 +1146,13 @@ img {
 .audio-controls {
   display: flex;
   align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 
-/* Remove volume slider styles
-.audio-controls input[type="range"] {
-  width: 100px;
-} */
+.audio-controls button {
+  min-width: 100px;
+}
 
 /* Add these styles for the new market actions */
 .action-section {
