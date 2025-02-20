@@ -111,76 +111,88 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-4">
-        {/* Banner Image at the top */}
-        <img 
-          src={bannerImage} 
-          alt="Bogan Hustler Banner" 
-          className="w-full h-32 object-cover rounded-lg mb-6"
-        />
+        {/* Banner Image with Overlay */}
+        <div className="relative mb-6">
+          <img 
+            src={bannerImage} 
+            alt="Bogan Hustler Banner" 
+            className="w-full h-48 object-cover rounded-lg shadow-lg"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent rounded-lg" />
+        </div>
 
-        {/* Game Header */}
-        <div className="card mb-6">
-          <div className="flex justify-between items-center mb-4">
-            {/* Square logo image */}
+        {/* Game Header Card */}
+        <div className="card mb-6 -mt-20 relative z-10 shadow-xl border-t-4 border-t-primary">
+          {/* Top Section with Logo and Controls */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            {/* Logo and Title */}
             <div className="flex items-center gap-4">
-              <img 
-                src={squareImage} 
-                alt="Bogan Hustler Logo" 
-                className="w-12 h-12 rounded-lg"
-              />
-              <h1 className="text-4xl font-bold text-primary">Bogan Hustler</h1>
+              <div className="relative">
+                <img 
+                  src={squareImage} 
+                  alt="Bogan Hustler Logo" 
+                  className="w-16 h-16 rounded-lg shadow-md border-2 border-border"
+                />
+                <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-xs font-bold">
+                  AU
+                </div>
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-0">Bogan Hustler</h1>
+                <p className="text-sm text-text/70">Your Underground Empire Awaits</p>
+              </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              {/* Add Music Toggle Button */}
+            {/* Control Buttons */}
+            <div className="flex items-center gap-3">
               <button
                 onClick={toggleAudio}
-                className="px-3 py-1 rounded-md text-sm bg-surface hover:bg-surface/80"
+                className="btn btn-surface flex items-center gap-2 hover:scale-105 transform transition-all"
                 aria-label={isPlaying ? "Mute music" : "Play music"}
               >
-                <FontAwesomeIcon icon={isPlaying ? faVolumeUp : faVolumeMute} className="mr-2" />
-                {isPlaying ? 'Mute' : 'Play'}
+                <FontAwesomeIcon icon={isPlaying ? faVolumeUp : faVolumeMute} />
+                <span className="hidden sm:inline">{isPlaying ? 'Mute' : 'Play'}</span>
               </button>
               
-              {/* Add Adult Mode Toggle */}
               <button
                 onClick={() => dispatch(toggleAdultMode())}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`btn flex items-center gap-2 hover:scale-105 transform transition-all ${
                   adultMode 
-                    ? 'bg-red-600 hover:bg-red-700' 
-                    : 'bg-green-600 hover:bg-green-700'
+                    ? 'bg-red-600 hover:bg-red-700 text-white' 
+                    : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
                 aria-label="Toggle adult mode"
               >
-                <FontAwesomeIcon icon={adultMode ? faShieldAlt : faChild} className="mr-2" />
-                {adultMode ? '18+ Mode On' : 'Family Friendly'}
+                <FontAwesomeIcon icon={adultMode ? faShieldAlt : faChild} />
+                <span className="hidden sm:inline">{adultMode ? '18+ Mode' : 'Family'}</span>
               </button>
             </div>
           </div>
           
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-background/50 p-3 rounded-lg group relative">
-              <span className="font-medium">Cash:</span> ${cash}
-              <div className="absolute hidden group-hover:block bg-surface border border-border p-2 rounded-md text-xs -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                Your available money
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="stat-card">
+              <div className="text-sm text-text/70">Cash</div>
+              <div className="text-xl font-bold">${cash.toLocaleString()}</div>
             </div>
-            <div className="bg-background/50 p-3 rounded-lg group relative">
-              <span className="font-medium">Location:</span> {location}
-              <div className="absolute hidden group-hover:block bg-surface border border-border p-2 rounded-md text-xs -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                Your current city
-              </div>
+            <div className="stat-card">
+              <div className="text-sm text-text/70">Location</div>
+              <div className="text-xl font-bold truncate">{location}</div>
             </div>
-            <div className="bg-background/50 p-3 rounded-lg">
-              <span className="font-medium">Day:</span> {currentDay}/{maxDays}
+            <div className="stat-card">
+              <div className="text-sm text-text/70">Day</div>
+              <div className="text-xl font-bold">{currentDay}/{maxDays}</div>
             </div>
-            <div className="bg-background/50 p-3 rounded-lg">
-              <span className="font-medium">Rep:</span> {reputation}
+            <div className="stat-card">
+              <div className="text-sm text-text/70">Reputation</div>
+              <div className="text-xl font-bold">{reputation}</div>
             </div>
             {debt > 0 && (
-              <div className="bg-background/50 p-3 rounded-lg text-red-400">
-                <span className="font-medium">Debt:</span> ${debt.toFixed(2)}
+              <div className="col-span-2 sm:col-span-4">
+                <div className="stat-card bg-red-900/20 border-red-500/20">
+                  <div className="text-sm text-red-400">Outstanding Debt</div>
+                  <div className="text-xl font-bold text-red-400">${debt.toLocaleString()}</div>
+                </div>
               </div>
             )}
           </div>
