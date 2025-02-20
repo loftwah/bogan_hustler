@@ -38,6 +38,13 @@ const initialState: PlayerState = {
 const MAX_DEBT = 1000000; // $1M max debt
 const MIN_DEBT = 0;
 
+// Add new action for handling event outcomes
+export interface EventOutcomePayload {
+  cash?: number;
+  reputation?: number;
+  policeEvasion?: number;
+}
+
 const playerSlice = createSlice({
   name: "player",
   initialState,
@@ -137,6 +144,12 @@ const playerSlice = createSlice({
     adjustCashFromEvent: (state, action: PayloadAction<number>) => {
       state.cash += action.payload;
     },
+    adjustStatsFromEvent: (state, action: PayloadAction<EventOutcomePayload>) => {
+      const { cash, reputation, policeEvasion } = action.payload;
+      if (cash) state.cash = Math.max(0, state.cash + cash);
+      if (reputation) state.reputation = Math.max(-100, Math.min(100, state.reputation + reputation));
+      if (policeEvasion) state.policeEvasion = Math.max(0, Math.min(100, state.policeEvasion + policeEvasion));
+    },
   },
 });
 
@@ -151,6 +164,7 @@ export const {
   upgradeMarketIntel,
   toggleAdultMode,
   adjustCashFromEvent,
+  adjustStatsFromEvent,
 } = playerSlice.actions;
 
 export default playerSlice.reducer; 
