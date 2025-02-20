@@ -115,6 +115,25 @@ const itemData: Record<string, { basePrice: number; volatility: number; isIllega
   "Steroids": { basePrice: 200, volatility: 0.9, isIllegal: true }
 };
 
+const censoredItemData: Record<string, { basePrice: number; volatility: number; isIllegal: boolean }> = {
+  "Energy Drinks": { basePrice: 350, volatility: 1.5, isIllegal: false },
+  "Supplements": { basePrice: 250, volatility: 1.4, isIllegal: false },
+  "Protein Powder": { basePrice: 400, volatility: 1.6, isIllegal: false },
+  "Pre-workout": { basePrice: 300, volatility: 1.3, isIllegal: false },
+  "Vitamins": { basePrice: 25, volatility: 0.8, isIllegal: false },
+  "Pain Relief": { basePrice: 15, volatility: 0.6, isIllegal: false },
+  "Cigarettes": { basePrice: 40, volatility: 0.4, isIllegal: false },
+  "Cream Chargers": { basePrice: 10, volatility: 0.3, isIllegal: false },
+  "Herbal Tea": { basePrice: 250, volatility: 0.7, isIllegal: false },
+  "Coffee Beans": { basePrice: 350, volatility: 0.9, isIllegal: false },
+  "Mushroom Extract": { basePrice: 200, volatility: 1.1, isIllegal: false },
+  "Caffeine Pills": { basePrice: 30, volatility: 1.2, isIllegal: false },
+  "Energy Tablets": { basePrice: 100, volatility: 1.0, isIllegal: false },
+  "Sleep Aid": { basePrice: 150, volatility: 1.1, isIllegal: false },
+  "Green Tea": { basePrice: 280, volatility: 0.8, isIllegal: false },
+  "Protein Bars": { basePrice: 200, volatility: 0.9, isIllegal: false }
+};
+
 interface MarketEvent {
   id: string;
   description: string;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "./store/store";
 import MapScreen from "./components/MapScreen";
 import MarketScreen from "./components/MarketScreen";
@@ -9,6 +9,7 @@ import EventPopup from "./components/EventPopup";
 import "./App.css";
 import bannerImage from '../public/banner.jpg';
 import squareImage from '../public/square.jpg';
+import { toggleAdultMode } from "./store/playerSlice";
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -17,6 +18,8 @@ function App() {
   const { cash, location, currentDay, maxDays, reputation, debt } = useSelector(
     (state: RootState) => state.player
   );
+  const dispatch = useDispatch();
+  const adultMode = useSelector((state: RootState) => state.player.adultMode);
 
   useEffect(() => {
     localStorage.setItem(
@@ -24,6 +27,16 @@ function App() {
       JSON.stringify({ cash, location, currentDay, reputation })
     );
   }, [cash, location, currentDay, reputation]);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("boganHustlerAdultMode");
+    if (savedMode !== null) {
+      const isAdult = JSON.parse(savedMode);
+      if (isAdult !== adultMode) {
+        dispatch(toggleAdultMode());
+      }
+    }
+  }, []);
 
   if (currentDay > maxDays) {
     return (
@@ -77,6 +90,16 @@ function App() {
               <span>Debt: ${debt.toFixed(2)}</span>
             </div>
           )}
+        </div>
+        <div className="adult-mode-toggle">
+          <label className="toggle-label">
+            <input
+              type="checkbox"
+              checked={adultMode}
+              onChange={() => dispatch(toggleAdultMode())}
+            />
+            18+ Mode
+          </label>
         </div>
       </header>
 

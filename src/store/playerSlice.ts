@@ -17,6 +17,7 @@ export interface PlayerState {
   debtInterest: number;
   policeEvasion: number;
   marketIntel: number;
+  adultMode: boolean;
 }
 
 const initialState: PlayerState = {
@@ -31,6 +32,7 @@ const initialState: PlayerState = {
   debtInterest: 0.05,
   policeEvasion: 0,
   marketIntel: 0,
+  adultMode: false,
 };
 
 const playerSlice = createSlice({
@@ -101,6 +103,10 @@ const playerSlice = createSlice({
         state.marketIntel = Math.min(100, state.marketIntel + 15);
       }
     },
+    toggleAdultMode: (state) => {
+      state.adultMode = !state.adultMode;
+      localStorage.setItem("boganHustlerAdultMode", JSON.stringify(state.adultMode));
+    },
   },
 });
 
@@ -113,6 +119,7 @@ export const {
   upgradeInventory,
   upgradePoliceEvasion,
   upgradeMarketIntel,
+  toggleAdultMode,
 } = playerSlice.actions;
 
 export default playerSlice.reducer; 

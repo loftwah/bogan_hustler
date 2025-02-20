@@ -3,11 +3,55 @@ import { useDispatch, useSelector } from "react-redux";
 import { buyDrug, sellDrug } from "../store/playerSlice";
 import { RootState } from "../store/store";
 
+const DRUG_MAPPINGS: Record<string, string> = {
+  "Ice": "Energy Drinks",
+  "Crack": "Supplements",
+  "Heroin": "Protein Powder",
+  "Cocaine": "Pre-workout",
+  "Pingas": "Vitamins",
+  "Xannies": "Pain Relief",
+  "Durries": "Cigarettes",
+  "Nangs": "Cream Chargers",
+  "Bush Weed": "Herbal Tea",
+  "Hydro": "Coffee Beans",
+  "Shrooms": "Mushroom Extract",
+  "Acid": "Caffeine Pills",
+  "MDMA": "Energy Tablets",
+  "Ketamine": "Sleep Aid",
+  "Weed": "Green Tea",
+  "Steroids": "Protein Bars"
+};
+
 const MarketScreen = () => {
   const dispatch = useDispatch();
-  const { location, inventory, cash } = useSelector((state: RootState) => state.player);
-  const prices = useSelector((state: RootState) => state.market.prices[location]);
+  const { location, inventory, cash, adultMode } = useSelector((state: RootState) => state.player);
+  const prices = useSelector((state: RootState) => {
+    const marketData = state.market.prices[location];
+    if (!adultMode) {
+      return Object.entries(marketData).reduce((acc, [drug, data]) => {
+        const censoredName = DRUG_MAPPINGS[drug] || drug;
+        acc[censoredName] = {
+          ...data,
+          originalName: drug // Keep track of original name for inventory management
+        };
+        return acc;
+      }, {} as Record<string, DrugMarket & { originalName?: string }>);
+    }
+    return marketData;
+  });
   const [quantity, setQuantity] = useState(1);
+
+  const handleBuy = (drug: string, price: number) => {
+    const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
+      .find(([_, censored]) => censored === drug)?.[0] || drug;
+    dispatch(buyDrug({ drug: originalDrug, quantity, price }));
+  };
+
+  const handleSell = (drug: string, price: number) => {
+    const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
+      .find(([_, censored]) => censored === drug)?.[0] || drug;
+    dispatch(sellDrug({ drug: originalDrug, quantity, price }));
+  };
 
   return (
     <div className="market-screen">
@@ -33,9 +77,10 @@ const MarketScreen = () => {
       </div>
 
       <div className="market-list">
-        {Object.entries(prices || {}).map(([drug, market]: [string, { price: number }]) => {
+        {Object.entries(prices || {}).map(([drug, market]) => {
           const { price } = market;
-          const owned = inventory.find((item) => item.name === drug)?.quantity || 0;
+          const originalDrug = adultMode ? drug : market.originalName || drug;
+          const owned = inventory.find((item) => item.name === originalDrug)?.quantity || 0;
           const canBuy = cash >= price * quantity;
           const canSell = owned >= quantity;
 
@@ -50,14 +95,14 @@ const MarketScreen = () => {
               </div>
               <div className="drug-actions">
                 <button
-                  onClick={() => dispatch(buyDrug({ drug, quantity, price }))}
+                  onClick={() => handleBuy(drug, price)}
                   disabled={!canBuy}
                   className={`action-button buy-button ${!canBuy ? 'disabled' : ''}`}
                 >
                   Buy {quantity}
                 </button>
                 <button
-                  onClick={() => dispatch(sellDrug({ drug, quantity, price }))}
+                  onClick={() => handleSell(drug, price)}
                   disabled={!canSell}
                   className={`action-button sell-button ${!canSell ? 'disabled' : ''}`}
                 >
