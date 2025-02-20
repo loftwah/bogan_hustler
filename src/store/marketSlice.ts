@@ -276,6 +276,9 @@ export const updatePricesWithLocation = createAsyncThunk(
       // Time-based effects
       if (isNighttime) variation += 0.1; // 10% premium at night
       
+      // Add reputation effect - higher reputation gives slightly better prices
+      variation -= (reputation / 100) * 0.15; // Up to 15% discount with max reputation
+      
       // Prevent negative prices
       const finalPrice = Math.max(1, Math.round(data.basePrice * (1 + variation)));
       
