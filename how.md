@@ -20,8 +20,7 @@ This guide walks you through building **Bogan Hustler: The Straya Edition**, an 
 2. **Scaffold with Vite + React + TypeScript**
 
    ```
-   bun create vite bogan-hustler --template react-ts
-   cd bogan-hustler
+   bun create vite . --template react-ts
    ```
 
 3. **Install Dependencies**
@@ -37,13 +36,6 @@ This guide walks you through building **Bogan Hustler: The Straya Edition**, an 
    ```
 
    - Open `http://localhost:5173`.
-
-5. **Set Up Git**
-   ```
-   git init
-   git add .
-   git commit -m "Initial commit with Bun, Vite, React, and strict TypeScript"
-   ```
 
 ---
 
