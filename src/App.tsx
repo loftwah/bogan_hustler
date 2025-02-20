@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "./store/store";
+import { RootState } from "./types";
 import MapScreen from "./components/MapScreen";
 import MarketScreen from "./components/MarketScreen";
+import LoanScreen from "./components/LoanScreen";
+import UpgradesScreen from "./components/UpgradesScreen";
 import EventPopup from "./components/EventPopup";
 import "./App.css";
 
+type Screen = "map" | "market" | "loan" | "upgrades";
+
 function App() {
-  const [currentScreen, setCurrentScreen] = useState<"map" | "market">("map");
-  const { cash, location, currentDay, maxDays, reputation } = useSelector(
+  const [currentScreen, setCurrentScreen] = useState<Screen>("map");
+  const { cash, location, currentDay, maxDays, reputation, debt } = useSelector(
     (state: RootState) => state.player
   );
 
@@ -53,15 +57,24 @@ function App() {
           <img src="/assets/rep.png" alt="Rep Icon" className="status-icon" />
           <span>Rep: {reputation}</span>
         </div>
+        {debt > 0 && (
+          <div className="status-item">
+            <span>Debt: ${debt.toFixed(2)}</span>
+          </div>
+        )}
       </div>
 
       <div className="nav-buttons">
         <button onClick={() => setCurrentScreen("map")}>Travel</button>
         <button onClick={() => setCurrentScreen("market")}>Market</button>
+        <button onClick={() => setCurrentScreen("loan")}>Loan Shark</button>
+        <button onClick={() => setCurrentScreen("upgrades")}>Upgrades</button>
       </div>
 
       {currentScreen === "map" && <MapScreen />}
       {currentScreen === "market" && <MarketScreen />}
+      {currentScreen === "loan" && <LoanScreen />}
+      {currentScreen === "upgrades" && <UpgradesScreen />}
       <EventPopup />
     </div>
   );
