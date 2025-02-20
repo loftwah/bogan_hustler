@@ -20,6 +20,8 @@ function App() {
   );
   const dispatch = useDispatch();
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
+  const [audio] = useState(new Audio('./themesong.mp3'));
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(
@@ -37,6 +39,17 @@ function App() {
       }
     }
   }, []);
+
+  const toggleAudio = () => {
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.volume = 0.2;
+      audio.loop = true;
+      audio.play().catch(err => console.log('Audio playback failed:', err));
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   if (currentDay > maxDays) {
     return (
@@ -108,6 +121,12 @@ function App() {
         <button onClick={() => setCurrentScreen("market")}>Market</button>
         <button onClick={() => setCurrentScreen("loan")}>Loan Shark</button>
         <button onClick={() => setCurrentScreen("upgrades")}>Upgrades</button>
+        <button 
+          onClick={toggleAudio}
+          title={isPlaying ? "Mute Music" : "Play Music"}
+        >
+          {isPlaying ? "🔊 Mute" : "🔈 Play"}
+        </button>
       </nav>
 
       <main>
