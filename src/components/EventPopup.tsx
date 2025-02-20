@@ -50,15 +50,15 @@ const EventPopup = () => {
   };
 
   return (
-    <div className="event-popup">
-      <h3>Warning</h3>
+    <div className="fixed inset-0 bg-surface rounded-lg shadow-lg border border-border p-4">
+      <h3 className="text-xl font-bold">Warning</h3>
       <p>{event.description}</p>
-      <div className="event-choices">
+      <div className="grid gap-2 mt-4">
         {event.choices.map((choice: EventChoice, index: number) => (
           <button 
             key={index}
             onClick={() => handleChoice(choice.outcome)}
-            className="quick-action-button"
+            className="btn btn-primary text-sm hover:bg-primary hover:text-white"
             aria-label={choice.text}
           >
             {choice.text}

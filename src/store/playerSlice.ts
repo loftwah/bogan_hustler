@@ -54,47 +54,51 @@ const playerSlice = createSlice({
     },
     buyDrug: (state, action: PayloadAction<{ drug: string; quantity: number; price: number }>) => {
       const { drug, quantity, price } = action.payload;
-      const totalCost = price * quantity;
+      // Round quantity and price to ensure integers
+      const intQuantity = Math.round(quantity);
+      const intPrice = Math.round(price);
+      const totalCost = intQuantity * intPrice;
       
-      // Calculate current space excluding the drug being purchased
-      const currentSpace = state.inventory.reduce((acc, item) => 
-        item.name === drug ? acc : acc + item.quantity, 0);
-      
-      // Add the total quantity including existing amount of this drug
-      const existing = state.inventory.find(item => item.name === drug);
-      const totalQuantity = (existing?.quantity || 0) + quantity;
+      const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const spaceNeeded = intQuantity;
       
       if (totalCost > state.cash) {
         console.warn(`Insufficient funds: Required ${totalCost}, have ${state.cash}`);
         return;
       }
       
-      if (currentSpace + totalQuantity > state.inventorySpace) {
-        console.warn(`Insufficient space: Required ${totalQuantity}, have ${state.inventorySpace - currentSpace}`);
+      if (currentSpace + spaceNeeded > state.inventorySpace) {
+        console.warn(`Insufficient space: Required ${spaceNeeded}, have ${state.inventorySpace - currentSpace}`);
         return;
       }
 
       state.cash -= totalCost;
-      if (existing) {
-        existing.quantity = totalQuantity;
+      
+      const existingItem = state.inventory.find(item => item.name === drug);
+      if (existingItem) {
+        existingItem.quantity += intQuantity;
       } else {
-        state.inventory.push({ name: drug, quantity });
+        state.inventory.push({ name: drug, quantity: intQuantity });
       }
     },
     sellDrug: (state, action: PayloadAction<{ drug: string; quantity: number; price: number }>) => {
       const { drug, quantity, price } = action.payload;
-      const totalEarned = price * quantity;
-      const item = state.inventory.find((item) => item.name === drug);
+      // Round quantity and price to ensure integers
+      const intQuantity = Math.round(quantity);
+      const intPrice = Math.round(price);
+      const totalEarned = intQuantity * intPrice;
       
-      if (!item || item.quantity < quantity) {
-        console.warn(`Insufficient quantity: Required ${quantity}, have ${item?.quantity || 0}`);
+      const existingItem = state.inventory.find(item => item.name === drug);
+      if (!existingItem || existingItem.quantity < intQuantity) {
+        console.warn(`Insufficient quantity: Required ${intQuantity}, have ${existingItem?.quantity || 0}`);
         return;
       }
 
       state.cash += totalEarned;
-      item.quantity -= quantity;
-      if (item.quantity === 0) {
-        state.inventory = state.inventory.filter((i) => i.name !== drug);
+      existingItem.quantity -= intQuantity;
+      
+      if (existingItem.quantity === 0) {
+        state.inventory = state.inventory.filter(item => item.name !== drug);
       }
     },
     takeLoan: (state, action: PayloadAction<number>) => {

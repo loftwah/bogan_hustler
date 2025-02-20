@@ -4,6 +4,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { buyDrug, sellDrug } from "../store/playerSlice";
 import { RootState } from "../store/store";
 import type { DrugMarket } from "../store/marketSlice";
+import { adjustMarket } from "../store/marketSlice";
 
 const DRUG_MAPPINGS: Record<string, string> = {
   "Ice": "Energy Drinks",
@@ -202,6 +203,33 @@ const getPriceGuidance = (price: number, marketIntel: number, drugName: string):
   return guidance;
 };
 
+// Add these helper functions at the top of the file
+const calculateMaxQuantity = (
+  price: number,
+  owned: number,
+  isBuy: boolean,
+  cash: number,
+  inventorySpace: number,
+  currentInventoryUsed: number
+) => {
+  if (isBuy) {
+    const maxBySpace = inventorySpace - currentInventoryUsed;
+    const maxByCash = Math.floor(cash / price);
+    return Math.max(0, Math.min(maxBySpace, maxByCash));
+  } else {
+    return owned;
+  }
+};
+
+// Add this near your other imports
+const DEBUG = true;
+
+const logTransaction = (type: 'buy' | 'sell', drug: string, quantity: number, price: number, success: boolean) => {
+  if (DEBUG) {
+    console.log(`Transaction ${success ? 'SUCCESS' : 'FAILED'}: ${type} ${quantity} ${drug} at $${price}`);
+  }
+};
+
 const MarketScreen = () => {
   const dispatch = useDispatch();
   const { inventory, cash, inventorySpace, marketIntel } = useSelector((state: RootState) => state.player);
@@ -247,39 +275,50 @@ const MarketScreen = () => {
     []
   );
 
+  // Update the handlers to use proper quantity calculations
   const handleBuy = (drug: string, price: number) => {
-    const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
-      .find(([, censored]) => censored === drug)?.[0] || drug;
-    if (quantity > 0) {
+    try {
+      // Convert display name back to original name if in non-adult mode
+      const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
+        .find(([, censored]) => censored === drug)?.[0] || drug;
+      
+      const currentInventoryUsed = inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const maxQuantity = calculateMaxQuantity(price, 0, true, cash, inventorySpace, currentInventoryUsed);
+      
+      if (quantity <= 0 || quantity > maxQuantity) {
+        logTransaction('buy', originalDrug, quantity, price, false);
+        return;
+      }
+
       dispatch(buyDrug({ drug: originalDrug, quantity, price }));
+      dispatch(adjustMarket({ location, item: originalDrug, quantity, isBuy: true }));
+      logTransaction('buy', originalDrug, quantity, price, true);
+    } catch (error) {
+      console.error('Buy transaction failed:', error);
     }
   };
 
   const handleSell = (drug: string, price: number) => {
+    // Convert display name back to original name if in non-adult mode
     const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
       .find(([, censored]) => censored === drug)?.[0] || drug;
-    if (quantity > 0) {
-      dispatch(sellDrug({ drug: originalDrug, quantity, price }));
+    
+    const drugItem = inventory.find(item => item.name === originalDrug);
+    if (!drugItem || quantity <= 0 || quantity > drugItem.quantity) {
+      console.warn('Invalid sell quantity');
+      return;
     }
+
+    dispatch(sellDrug({ drug: originalDrug, quantity, price }));
+    dispatch(adjustMarket({ location, item: originalDrug, quantity, isBuy: false }));
   };
 
   // Update the max button click handler
   const handleMaxClick = () => {
     const maxAmount = Math.max(...marketItems.map(([, market]) => 
-      calculateMaxQuantity(market.price, market.owned, true)
+      calculateMaxQuantity(market.price, market.owned, true, cash, inventorySpace, 0)
     ));
     setQuantity(maxAmount);
-  };
-
-  // Update calculateMaxQuantity
-  const calculateMaxQuantity = (price: number, owned = 0, isBuy: boolean): number => {
-    if (isBuy) {
-      const maxBySpace = inventorySpace - inventory.reduce((acc: number, item: InventoryItem) => acc + item.quantity, 0);
-      const maxByCash = Math.floor(cash / price);
-      return Math.max(0, Math.min(maxBySpace, maxByCash));
-    } else {
-      return owned;
-    }
   };
 
   const getQuickBuyOptions = (price: number, owned: number, isBuy: boolean): { amount: number; label: string; totalValue: number; spacePercent: number }[] => {
@@ -287,11 +326,12 @@ const MarketScreen = () => {
     
     if (isBuy) {
       // Calculate max possible buy amount
-      const maxBySpace = inventorySpace - inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const currentInventoryUsed = inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const maxBySpace = inventorySpace - currentInventoryUsed;
       const maxByCash = Math.floor(cash / price);
-      const maxBuy = Math.min(maxBySpace, maxByCash);
+      const maxBuy = Math.max(1, Math.min(maxBySpace, maxByCash));
 
-      // Fixed quantities - always show all options
+      // Fixed quantities - show all options
       [1, 5, 10, 25, 50].forEach(qty => {
         options.push({
           amount: qty,
@@ -303,7 +343,7 @@ const MarketScreen = () => {
 
       // Percentage-based options
       [0.25, 0.5, 0.75, 1].forEach(percent => {
-        const qty = Math.floor(Math.max(1, maxBuy * percent));
+        const qty = Math.max(1, Math.floor(maxBuy * percent));
         if (!options.some(opt => opt.amount === qty)) {
           options.push({
             amount: qty,
@@ -314,8 +354,7 @@ const MarketScreen = () => {
         }
       });
     } else {
-      // Selling options - always show these options regardless of owned amount
-      // Fixed quantities
+      // Selling options - show all options
       [1, 5, 10, 25, 50].forEach(qty => {
         options.push({
           amount: qty,
@@ -327,7 +366,7 @@ const MarketScreen = () => {
 
       // Percentage-based options
       [0.25, 0.5, 0.75, 1].forEach(percent => {
-        const qty = Math.floor(Math.max(1, owned * percent));
+        const qty = Math.max(1, Math.floor(owned * percent));
         if (!options.some(opt => opt.amount === qty)) {
           options.push({
             amount: qty,
@@ -339,7 +378,7 @@ const MarketScreen = () => {
       });
     }
 
-    return options;
+    return options.sort((a, b) => a.amount - b.amount);
   };
 
   return (
@@ -383,7 +422,7 @@ const MarketScreen = () => {
           const isExpanded = expandedItems.has(drug);
           const details = calculateMarketDetails(
             price, owned, supply, demand, cash, inventorySpace,
-            inventory.reduce((acc, item) => acc + item.quantity, 0),
+            0,
             drug, marketIntel
           );
 
@@ -423,7 +462,7 @@ const MarketScreen = () => {
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => handleBuy(drug, price)}
-                    disabled={!calculateMaxQuantity(price, owned, true) || quantity <= 0}
+                    disabled={!calculateMaxQuantity(price, owned, true, cash, inventorySpace, 0) || quantity <= 0}
                     className="btn btn-surface flex-1 text-sm hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-text"
                   >
                     Buy {quantity}
@@ -464,38 +503,48 @@ const MarketScreen = () => {
                       <div className="grid grid-cols-2 gap-1 sm:gap-2">
                         {/* Quick Buy Options */}
                         <div className="space-y-1 sm:space-y-2">
-                          {getQuickBuyOptions(price, owned, true).map(option => (
-                            <button
-                              key={`buy-${option.amount}`}
-                              onClick={() => {
-                                setQuantity(option.amount);
-                                handleBuy(drug, price);
-                              }}
-                              className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-green-800 hover:bg-green-700 text-white disabled:opacity-30 disabled:bg-green-900"
-                              disabled={option.totalValue > cash || option.amount + owned > inventorySpace}
-                            >
-                              {option.label}
-                              <span className="text-green-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
-                            </button>
-                          ))}
+                          {getQuickBuyOptions(price, owned, true).map(option => {
+                            const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
+                              .find(([, censored]) => censored === drug)?.[0] || drug;
+                            
+                            return (
+                              <button
+                                key={`buy-${option.amount}`}
+                                onClick={() => {
+                                  setQuantity(option.amount);
+                                  handleBuy(originalDrug, price);
+                                }}
+                                className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-green-800 hover:bg-green-700 text-white disabled:opacity-30 disabled:bg-green-900"
+                                disabled={option.totalValue > cash || option.amount + owned > inventorySpace}
+                              >
+                                {option.label}
+                                <span className="text-green-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
+                              </button>
+                            );
+                          })}
                         </div>
 
                         {/* Quick Sell Options */}
                         <div className="space-y-1 sm:space-y-2">
-                          {getQuickBuyOptions(price, owned, false).map(option => (
-                            <button
-                              key={`sell-${option.amount}`}
-                              onClick={() => {
-                                setQuantity(option.amount);
-                                handleSell(drug, price);
-                              }}
-                              className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-red-800 hover:bg-red-700 text-white disabled:opacity-30 disabled:bg-red-900"
-                              disabled={!owned || option.amount > owned}
-                            >
-                              {option.label}
-                              <span className="text-red-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
-                            </button>
-                          ))}
+                          {getQuickBuyOptions(price, owned, false).map(option => {
+                            const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
+                              .find(([, censored]) => censored === drug)?.[0] || drug;
+                            
+                            return (
+                              <button
+                                key={`sell-${option.amount}`}
+                                onClick={() => {
+                                  setQuantity(option.amount);
+                                  handleSell(originalDrug, price);
+                                }}
+                                className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-red-800 hover:bg-red-700 text-white disabled:opacity-30 disabled:bg-red-900"
+                                disabled={!owned || option.amount > owned}
+                              >
+                                {option.label}
+                                <span className="text-red-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>

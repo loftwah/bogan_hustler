@@ -26,9 +26,9 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', color: 'red' }}>
-          <h1>Something went wrong.</h1>
-          <pre>{this.state.error?.toString()}</pre>
+        <div className="p-5 text-primary">
+          <h1>Something's stuffed.</h1>
+          <p>Refresh and hope for the best.</p>
         </div>
       );
     }

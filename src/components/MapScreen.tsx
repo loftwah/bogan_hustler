@@ -130,27 +130,16 @@ const MapScreen = () => {
             
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2">
               {locations.map((loc) => {
-                const isCurrentLocation = loc === currentLocation;
                 return (
                   <button
                     key={loc}
                     onClick={() => handleTravel(loc)}
-                    disabled={isCurrentLocation}
-                    className={`
-                      relative px-3 py-2 rounded-lg text-sm font-medium
-                      transition-all duration-200 
-                      ${isCurrentLocation 
-                        ? 'bg-primary text-white shadow-md shadow-primary/30'
-                        : 'bg-background hover:bg-primary/10 active:bg-primary/20'
-                      }
-                      flex items-center justify-between gap-1
-                      group
-                    `}
+                    disabled={loc === currentLocation}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-between gap-1 
+                      ${loc === currentLocation ? 'bg-primary text-white shadow-md' : 'bg-background hover:bg-primary/10'}`}
                   >
                     <span className="truncate">{loc}</span>
-                    {isCurrentLocation && (
-                      <span className="text-xs opacity-90 shrink-0">📍 Here</span>
-                    )}
+                    {loc === currentLocation && <span className="text-xs opacity-90 shrink-0">📍 Here</span>}
                   </button>
                 );
               })}

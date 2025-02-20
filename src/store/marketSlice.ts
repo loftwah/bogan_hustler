@@ -209,18 +209,27 @@ const marketSlice = createSlice({
     },
     adjustMarket: (state, action: PayloadAction<{ location: string; item: string; quantity: number; isBuy: boolean }>) => {
       const { location, item, quantity, isBuy } = action.payload;
-      if (state.prices[location][item]) {
-        const market = state.prices[location][item];
-        if (isBuy) {
-          market.supply += quantity * 2;
-          market.demand -= quantity;
-        } else {
-          market.supply -= quantity;
-          market.demand += quantity * 2;
-        }
-        market.supply = Math.max(0, Math.min(100, market.supply));
-        market.demand = Math.max(0, Math.min(100, market.demand));
+      const market = state.prices[location][item];
+      
+      if (!market) {
+        console.warn(`Market not found for ${item} in ${location}`);
+        return;
       }
+
+      // Round the quantity to ensure integers
+      const intQuantity = Math.round(quantity);
+
+      // Only adjust supply and demand, don't change price during transactions
+      if (isBuy) {
+        market.supply = Math.max(0, Math.min(100, market.supply - intQuantity));
+        market.demand = Math.max(0, Math.min(100, market.demand + intQuantity * 0.5));
+      } else {
+        market.supply = Math.max(0, Math.min(100, market.supply + intQuantity));
+        market.demand = Math.max(0, Math.min(100, market.demand - intQuantity * 0.5));
+      }
+
+      // Price stays the same during individual transactions
+      // It will update when traveling or during periodic updates
     },
     triggerMarketEvent: (state, action: PayloadAction<string>) => {
       const location = action.payload;
