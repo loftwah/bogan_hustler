@@ -108,13 +108,19 @@ const calculateMarketDetails = (
   const totalCost = maxBuy * price;
   const potentialProfit = maxSell * price;
   
-  const supplyTrend = supply > 75 ? "High Supply - Prices Dropping" 
-    : supply < 25 ? "Low Supply - Prices Rising"
-    : "Stable Supply";
+  const supplyTrend = (() => {
+    if (marketIntel < 25) return "Unknown supply levels";
+    if (supply > 75) return "High Supply - Prices Dropping 📉"; 
+    if (supply < 25) return "Low Supply - Prices Rising 📈";
+    return "Stable Supply";
+  })();
     
-  const demandTrend = demand > 75 ? "High Demand - Prices Rising"
-    : demand < 25 ? "Low Demand - Prices Dropping"
-    : "Stable Demand";
+  const demandTrend = (() => {
+    if (marketIntel < 25) return "Unknown demand levels";
+    if (demand > 75) return "High Demand - Prices Rising 📈";
+    if (demand < 25) return "Low Demand - Prices Dropping 📉";
+    return "Stable Demand";
+  })();
 
   const priceGuidance = getPriceGuidance(price, marketIntel, drugName);
   
@@ -134,11 +140,14 @@ const calculateMarketDetails = (
   })();
   
   const buyAdvice = (() => {
+    if (marketIntel < 25) return "Need more market intel";
     if (price <= 0) return "Not available for purchase";
     if (maxBuy <= 0) return "Can't buy - no space or cash";
     if (supply < 25 && demand > 75) return "⭐ Hot Deal! High demand, low supply";
     if (supply > 75 && demand < 25) return "⚠️ Risky Buy - High supply, low demand";
     if (Number(potentialProfitPercent) > 50) return "💎 High profit potential!";
+    if (supply < 40 && demand > 60) return "👍 Good conditions to buy";
+    if (supply > 60 && demand < 40) return "👎 Poor conditions to buy";
     return "📊 Average market conditions";
   })();
 
@@ -165,21 +174,29 @@ const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 300) => {
   };
 };
 
-// Add this helper function near the top with other helpers
+// Update the getPriceGuidance function
 const getPriceGuidance = (price: number, marketIntel: number, drugName: string): string => {
   // Base guidance without market intel
   let guidance = "Unknown market conditions";
   
   // More detailed guidance based on market intel level
   if (marketIntel > 0) {
-    if (price < 50) guidance = "Prices seem low";
-    else if (price > 200) guidance = "Prices seem high";
-    else guidance = "Prices seem average";
+    if (price < 100) guidance = "Prices are very low";
+    else if (price < 200) guidance = "Prices are low";
+    else if (price < 400) guidance = "Prices are average";
+    else if (price < 600) guidance = "Prices are high";
+    else guidance = "Prices are very high";
   }
   
   if (marketIntel > 50) {
     // Add more detailed guidance for higher intel levels
     guidance += ` for ${drugName}`;
+  }
+
+  if (marketIntel > 75) {
+    // Add even more detailed guidance for very high intel
+    if (price < 100) guidance += " - Great time to buy!";
+    else if (price > 500) guidance += " - Consider selling!";
   }
   
   return guidance;
