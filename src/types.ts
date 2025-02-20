@@ -53,10 +53,7 @@ export interface Event {
   }[];
 }
 
-interface MarketDataWithOriginal extends DrugMarket {
+export interface MarketDataWithOriginal extends DrugMarket {
   originalName?: string;
   owned: number;
-  price: number;
-  supply: number;
-  demand: number;
 } 

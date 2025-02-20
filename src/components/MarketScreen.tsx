@@ -167,20 +167,22 @@ const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 300) => {
 
 // Add this helper function near the top with other helpers
 const getPriceGuidance = (price: number, marketIntel: number, drugName: string): string => {
-  // These would ideally be moved to a config file and adjusted per drug
-  const priceRanges: Record<string, [number, number]> = {
-    "Ice": [50, 200],
-    "Crack": [40, 180],
-    // ... add ranges for other drugs
-    "default": [30, 150]
-  };
-
-  const [lowPrice, highPrice] = priceRanges[drugName] || priceRanges.default;
+  // Base guidance without market intel
+  let guidance = "Unknown market conditions";
   
-  if (price <= lowPrice) return "Great Buy! 💰";
-  if (price <= (lowPrice + highPrice) / 2) return "Decent Price 👍";
-  if (price <= highPrice) return "High Price ⚠️";
-  return "Very Expensive! ⛔";
+  // More detailed guidance based on market intel level
+  if (marketIntel > 0) {
+    if (price < 50) guidance = "Prices seem low";
+    else if (price > 200) guidance = "Prices seem high";
+    else guidance = "Prices seem average";
+  }
+  
+  if (marketIntel > 50) {
+    // Add more detailed guidance for higher intel levels
+    guidance += ` for ${drugName}`;
+  }
+  
+  return guidance;
 };
 
 const MarketScreen = () => {
@@ -192,16 +194,6 @@ const MarketScreen = () => {
   
   const [quantity, setQuantity] = useState(1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-
-  // Add this near other state/refs
-  const nearbyLocations = useMemo(() => {
-    // This is a placeholder - you'll need to implement your own nearby locations logic
-    return {
-      [location]: {
-        prices: {} as Record<string, number>
-      }
-    };
-  }, [location]);
 
   // Update the market items calculation
   const marketItems = useMemo(() => {
@@ -331,7 +323,7 @@ const MarketScreen = () => {
             inventory.reduce((acc, item) => acc + item.quantity, 0),
             drug,
             marketIntel,
-            nearbyLocations[location]?.prices?.[drug]
+            undefined // We'll implement proper nearby location price comparison later
           );
 
           return (
