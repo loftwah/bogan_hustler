@@ -261,18 +261,69 @@ const MarketScreen = () => {
     }
   };
 
-  const getQuickBuyOptions = (price: number, owned: number, isBuy: boolean): number[] => {
-    const max = calculateMaxQuantity(price, owned, isBuy);
-    if (max <= 0) return [];
+  const getQuickBuyOptions = (price: number, owned: number, isBuy: boolean): { amount: number; label: string; totalValue: number; spacePercent: number }[] => {
+    const options: { amount: number; label: string; totalValue: number; spacePercent: number }[] = [];
     
-    const options: number[] = [];
-    // Add options for 25%, 50%, 75%, and 100% of max
-    for (let i = 1; i <= 4; i++) {
-      const amount = Math.floor(max * (i / 4));
-      if (amount > 0 && !options.includes(amount)) {
-        options.push(amount);
-      }
+    if (isBuy) {
+      // Calculate max possible buy amount
+      const maxBySpace = inventorySpace - inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const maxByCash = Math.floor(cash / price);
+      const maxBuy = Math.min(maxBySpace, maxByCash);
+
+      // Fixed quantities
+      [1, 5, 10, 25, 50].forEach(qty => {
+        if (qty <= maxBuy) {
+          options.push({
+            amount: qty,
+            label: `Buy ${qty}`,
+            totalValue: qty * price,
+            spacePercent: (qty / inventorySpace) * 100
+          });
+        }
+      });
+
+      // Percentage-based options
+      [0.25, 0.5, 0.75, 1].forEach(percent => {
+        const qty = Math.floor(maxBuy * percent);
+        if (qty > 0 && !options.some(opt => opt.amount === qty)) {
+          options.push({
+            amount: qty,
+            label: `${(percent * 100)}%`,
+            totalValue: qty * price,
+            spacePercent: (qty / inventorySpace) * 100
+          });
+        }
+      });
+    } else {
+      // Selling options
+      if (owned <= 0) return options;
+
+      // Fixed quantities
+      [1, 5, 10, 25, 50].forEach(qty => {
+        if (qty <= owned) {
+          options.push({
+            amount: qty,
+            label: `Sell ${qty}`,
+            totalValue: qty * price,
+            spacePercent: (qty / owned) * 100
+          });
+        }
+      });
+
+      // Percentage-based options
+      [0.25, 0.5, 0.75, 1].forEach(percent => {
+        const qty = Math.floor(owned * percent);
+        if (qty > 0 && !options.some(opt => opt.amount === qty)) {
+          options.push({
+            amount: qty,
+            label: `${(percent * 100)}%`,
+            totalValue: qty * price,
+            spacePercent: (qty / owned) * 100
+          });
+        }
+      });
     }
+
     return options;
   };
 
@@ -352,7 +403,7 @@ const MarketScreen = () => {
                   aria-expanded={isExpanded}
                   aria-controls={`details-${drug}`}
                 >
-                  {isExpanded ? 'Less Info' : 'More Info'}
+                  {isExpanded ? '▼' : '▶'}
                 </button>
               </div>
 
@@ -405,37 +456,67 @@ const MarketScreen = () => {
                   </div>
                 )}
 
-                <div className="drug-actions">
+                <div className="quick-actions">
                   {price > 0 && (
-                    <div className="quick-actions">
-                      {getQuickBuyOptions(price, owned, true).map(amount => (
+                    <div className="action-section">
+                      <div className="primary-actions">
                         <button
-                          key={`buy-${amount}`}
-                          onClick={() => {
-                            setQuantity(amount);
-                            handleBuy(drug, price);
-                          }}
-                          className="quick-action-button"
+                          onClick={() => handleBuy(drug, price)}
+                          disabled={quantity * price > cash || quantity + owned > inventorySpace}
+                          className="quick-action-button buy-button"
                         >
-                          Buy {amount}
+                          Buy {quantity}
                         </button>
-                      ))}
-                    </div>
-                  )}
-                  {owned > 0 && price >= 0 && (
-                    <div className="quick-actions">
-                      {getQuickBuyOptions(price, owned, false).map(amount => (
-                        <button
-                          key={`sell-${amount}`}
-                          onClick={() => {
-                            setQuantity(amount);
-                            handleSell(drug, price);
-                          }}
-                          className="quick-action-button"
-                        >
-                          Sell {amount}
-                        </button>
-                      ))}
+                        {owned > 0 && (
+                          <button
+                            onClick={() => handleSell(drug, price)}
+                            disabled={quantity > owned}
+                            className="quick-action-button sell-button"
+                          >
+                            Sell {quantity}
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="percentage-actions">
+                        <div className="buy-options">
+                          {getQuickBuyOptions(price, owned, true).map(option => (
+                            <button
+                              key={`buy-${option.amount}`}
+                              onClick={() => {
+                                setQuantity(option.amount);
+                                handleBuy(drug, price);
+                              }}
+                              className="quick-action-button percentage-button buy"
+                              disabled={option.totalValue > cash || option.amount + owned > inventorySpace}
+                              title={`Buy ${option.amount} for $${option.totalValue.toFixed(2)}`}
+                            >
+                              {option.label}
+                              <span className="action-value">${option.totalValue.toFixed(0)}</span>
+                            </button>
+                          ))}
+                        </div>
+                        
+                        {owned > 0 && (
+                          <div className="sell-options">
+                            {getQuickBuyOptions(price, owned, false).map(option => (
+                              <button
+                                key={`sell-${option.amount}`}
+                                onClick={() => {
+                                  setQuantity(option.amount);
+                                  handleSell(drug, price);
+                                }}
+                                className="quick-action-button percentage-button sell"
+                                disabled={option.amount > owned}
+                                title={`Sell ${option.amount} for $${option.totalValue.toFixed(2)}`}
+                              >
+                                {option.label}
+                                <span className="action-value">${option.totalValue.toFixed(0)}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

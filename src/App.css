@@ -836,49 +836,142 @@ img {
 /* Add these styles */
 .quick-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.primary-actions {
+  display: flex;
   gap: 0.5rem;
-  justify-content: flex-start;
+  justify-content: center;
+  width: 100%;
+  max-width: 300px;
+}
+
+.percentage-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.buy-options,
+.sell-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .quick-action-button {
   position: relative;
-  overflow: hidden;
-  background: var(--surface-color);
-  border: 1px solid var(--primary-color);
-  color: var(--text-color);
-  padding: 0.5rem 1rem;
+  padding: 0.5rem;
   border-radius: 4px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transform: translate3d(0, 0, 0);
-  transition: background-color 0.2s ease, color 0.2s ease;
-  will-change: background-color, color;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 80px;
+  width: 100%;
+  height: 100%;
+  min-height: 50px;
 }
 
-.quick-action-button:hover {
-  background-color: var(--primary-color);
+.quick-action-button.buy-button,
+.quick-action-button.sell-button {
+  width: 100%;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  min-width: 120px;
+}
+
+.quick-action-button.percentage-button {
+  background: #333;
   color: white;
+  font-size: 0.85rem;
 }
 
-.max-button {
-  background: var(--primary-color);
-  font-weight: bold;
-  letter-spacing: 0.5px;
+.quick-action-button.percentage-button.buy {
+  border-color: var(--primary-color);
+  background: rgba(255, 69, 0, 0.1);
 }
 
-/* Responsive adjustments */
+.quick-action-button.percentage-button.sell {
+  border-color: #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.quick-action-button .action-value {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.quick-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quick-action-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.quick-action-button.percentage-button.buy:not(:disabled):hover {
+  background: rgba(255, 69, 0, 0.2);
+}
+
+.quick-action-button.percentage-button.sell:not(:disabled):hover {
+  background: rgba(76, 175, 80, 0.2);
+}
+
 @media (max-width: 600px) {
-  .market-item {
-    grid-template-columns: 1fr;
+  .buy-options,
+  .sell-options {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    padding: 0 0.5rem;
   }
-  
-  .drug-actions {
-    min-width: 100%;
+
+  .quick-action-button {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+    min-height: 45px;
   }
-  
-  .quick-actions {
-    justify-content: center;
+
+  .quick-action-button.buy-button,
+  .quick-action-button.sell-button {
+    min-width: 100px;
+    padding: 0.5rem 1rem;
+  }
+
+  .primary-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .market-item-content {
+    align-items: center;
+  }
+
+  .market-stats {
+    text-align: center;
   }
 }
 
@@ -889,6 +982,7 @@ img {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 1rem;
+  text-align: center;
 }
 
 .market-item-details h4 {
@@ -901,6 +995,8 @@ img {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   padding: 0.5rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .market-stat {
@@ -908,6 +1004,8 @@ img {
   flex-direction: column;
   gap: 0.25rem;
   transition: transform 0.2s ease;
+  align-items: center;
+  text-align: center;
 }
 
 .market-stat:hover {
@@ -1009,3 +1107,121 @@ img {
 .audio-controls input[type="range"] {
   width: 100px;
 }
+
+/* Add these styles for the new market actions */
+.action-section {
+  background: var(--surface-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.buy-section {
+  border: 1px solid #ff4500;
+}
+
+.sell-section {
+  border: 1px solid #4caf50;
+}
+
+.action-header {
+  color: var(--text-color);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.total-cost,
+.total-profit {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.total-cost {
+  background: rgba(255, 69, 0, 0.1);
+  color: #ff4500;
+}
+
+.total-profit {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+}
+
+.quick-action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.quick-action-button.buy-button {
+  background: rgba(255, 69, 0, 0.1);
+  color: var(--text-color);
+  border-color: rgba(255, 69, 0, 0.2);
+}
+
+.quick-action-button.sell-button {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--text-color);
+  border-color: rgba(76, 175, 80, 0.2);
+}
+
+.quick-action-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.quick-action-button.buy-button:hover:not(:disabled) {
+  background: rgba(255, 69, 0, 0.2);
+  border-color: rgba(255, 69, 0, 0.4);
+}
+
+.quick-action-button.sell-button:hover:not(:disabled) {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.4);
+}
+
+.quick-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-label {
+  font-weight: 500;
+}
+
+.action-cost,
+.action-profit {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.action-space,
+.action-inventory {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-action-button {
+    padding: 0.5rem;
+  }
+}
+
