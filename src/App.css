@@ -233,34 +233,93 @@ main {
 }
 
 .market-item {
-  background: var(--surface-color);
-  border-radius: 8px;
-  padding: 1rem;
-  text-align: center;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  position: relative;
+  background: linear-gradient(to right, var(--surface-color), var(--bg-color));
   border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.market-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .drug-info {
-  margin-bottom: 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.drug-stats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.stat-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-bar {
+  width: 50px;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
 }
 
 .drug-name {
   font-size: 1.2rem;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .drug-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.drug-stat {
   display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.drug-stat-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 2rem;
-  margin-bottom: 0.5rem;
+  background: var(--primary-color);
+  border-radius: 4px;
+  font-size: 0.8rem;
 }
 
 .drug-actions {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
 }
 
 .action-button {
@@ -691,4 +750,131 @@ img {
 
 .market-item.unavailable {
   opacity: 0.8;
+}
+
+/* Add inventory summary styling */
+.inventory-summary {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--surface-color);
+  border-radius: 8px;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+}
+
+.inventory-summary span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inventory-summary span::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 50%;
+}
+
+/* Add floating inventory panel */
+.floating-inventory {
+  backdrop-filter: blur(8px);
+  background: rgba(26, 26, 26, 0.9);
+  border: 1px solid rgba(255, 69, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  border-radius: 8px;
+  padding: 1rem;
+  max-width: 300px;
+  z-index: 100;
+}
+
+.floating-inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.floating-inventory-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.floating-inventory-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.floating-inventory-toggle {
+  box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
+  transition: all 0.3s ease;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+}
+
+.floating-inventory-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Add these styles */
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.quick-action-button {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-color);
+  border: 1px solid var(--primary-color);
+  color: var(--text-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-action-button:hover::after {
+  transform: translate(-50%, -50%) scale(2);
+}
+
+.max-button {
+  background: var(--primary-color);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .market-item {
+    grid-template-columns: 1fr;
+  }
+  
+  .drug-actions {
+    min-width: 100%;
+  }
+  
+  .quick-actions {
+    justify-content: center;
+  }
 }

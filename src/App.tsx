@@ -6,6 +6,7 @@ import MarketScreen from "./components/MarketScreen";
 import LoanScreen from "./components/LoanScreen";
 import UpgradesScreen from "./components/UpgradesScreen";
 import EventPopup from "./components/EventPopup";
+import FloatingInventory from './components/FloatingInventory';
 import "./App.css";
 import bannerImage from '../public/banner.jpg';
 import squareImage from '../public/square.jpg';
@@ -137,6 +138,7 @@ function App() {
       </main>
 
       <EventPopup />
+      <FloatingInventory />
     </div>
   );
 }
