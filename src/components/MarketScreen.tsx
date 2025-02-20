@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { buyDrug, sellDrug } from "../store/playerSlice";
 import { RootState } from "../store/store";
+import type { DrugMarket } from "../store/marketSlice";
 
 const DRUG_MAPPINGS: Record<string, string> = {
   "Ice": "Energy Drinks",

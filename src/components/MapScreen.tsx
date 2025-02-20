@@ -89,7 +89,7 @@ const MapScreen = () => {
   const handleTravel = (location: string) => {
     if (location !== currentLocation) {
       dispatch(travel(location));
-      dispatch(updatePrices({ reputation, location }));
+      dispatch(updatePrices({ reputation, location, adultMode }));
       // Police risk is reduced by player's evasion skill
       const baseRisk = 0.2;
       const modifiedRisk = baseRisk * (1 - policeEvasion / 100);

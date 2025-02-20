@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface DrugMarket {
+export interface DrugMarket {
   price: number;
   supply: number;  // 0-100, higher means cheaper
   demand: number;  // 0-100, higher means pricier
@@ -197,12 +197,15 @@ const marketEvents: MarketEvent[] = [
   },
 ];
 
+const getItemData = (adultMode: boolean) => adultMode ? itemData : censoredItemData;
+
 const initialState: MarketState = {
   prices: Object.keys(locations).reduce((acc, loc) => {
     acc[loc] = locations[loc].drugs.reduce((items, item) => {
-      if (itemData[item]) {
+      const data = getItemData(true)[item];
+      if (data) {
         items[item] = {
-          price: itemData[item].basePrice,
+          price: data.basePrice,
           supply: 50 + Math.floor(Math.random() * 20) - 10,
           demand: 50 + Math.floor(Math.random() * 20) - 10,
         };
@@ -218,26 +221,30 @@ const marketSlice = createSlice({
   name: "market",
   initialState,
   reducers: {
-    updatePrices: (state, action: PayloadAction<{ reputation: number; location: string }>) => {
-      const { reputation, location } = action.payload;
+    updatePrices: (state, action: PayloadAction<{ reputation: number; location: string; adultMode: boolean }>) => {
+      const { reputation, location, adultMode } = action.payload;
       const riskFactor = locations[location].policeRisk * (1 - reputation / 100);
+      const currentItemData = getItemData(adultMode);
       
       for (const loc in state.prices) {
         for (const item in state.prices[loc]) {
           const itemInfo = state.prices[loc][item];
-          const volatility = itemData[item].volatility;
-          const base = itemData[item].basePrice;
-          const supplyEffect = (50 - itemInfo.supply) * 0.2;
-          const demandEffect = (itemInfo.demand - 50) * 0.3;
-          const randomShift = (Math.random() * 10 - 5) * volatility;
-          
-          itemInfo.price = Math.max(5, Math.min(300,
-            base + supplyEffect + demandEffect + randomShift + 
-            (itemData[item].isIllegal ? riskFactor * 20 : riskFactor * 10)
-          ));
-          
-          itemInfo.supply = Math.max(0, Math.min(100, itemInfo.supply + (Math.random() * 4 - 2)));
-          itemInfo.demand = Math.max(0, Math.min(100, itemInfo.demand + (Math.random() * 4 - 2)));
+          const baseData = currentItemData[item];
+          if (baseData) {
+            const volatility = baseData.volatility;
+            const base = baseData.basePrice;
+            const supplyEffect = (50 - itemInfo.supply) * 0.2;
+            const demandEffect = (itemInfo.demand - 50) * 0.3;
+            const randomShift = (Math.random() * 10 - 5) * volatility;
+            
+            itemInfo.price = Math.max(5, Math.min(300,
+              base + supplyEffect + demandEffect + randomShift + 
+              (baseData.isIllegal ? riskFactor * 20 : riskFactor * 10)
+            ));
+            
+            itemInfo.supply = Math.max(0, Math.min(100, itemInfo.supply + (Math.random() * 4 - 2)));
+            itemInfo.demand = Math.max(0, Math.min(100, itemInfo.demand + (Math.random() * 4 - 2)));
+          }
         }
       }
     },
