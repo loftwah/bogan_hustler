@@ -228,6 +228,10 @@ const marketSlice = createSlice({
         market.demand = Math.max(0, Math.min(100, market.demand - intQuantity * 0.5));
       }
 
+      // The supply/demand adjustments might be too aggressive for large quantities
+      // Consider using a logarithmic scale or smaller multiplier for larger quantities
+      const adjustmentFactor = Math.min(0.5, intQuantity / 20); // Caps the effect for large quantities
+
       // Price stays the same during individual transactions
       // It will update when traveling or during periodic updates
     },
@@ -335,6 +339,15 @@ interface LocationCoordinates {
 const LOCATION_COORDS: Record<string, LocationCoordinates> = {
   "Kings Cross": { lat: -33.8775, lng: 151.2252 },
   // Add coordinates for other locations...
+};
+
+// The market intel level doesn't affect price visibility or accuracy
+// Add price uncertainty based on market intel:
+const getPriceWithUncertainty = (basePrice: number, marketIntel: number) => {
+  if (marketIntel >= 100) return basePrice;
+  const uncertainty = (100 - marketIntel) / 100;
+  const variation = (Math.random() - 0.5) * uncertainty * basePrice;
+  return Math.max(1, Math.round(basePrice + variation));
 };
 
 export default marketSlice.reducer; 

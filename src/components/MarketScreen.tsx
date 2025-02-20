@@ -278,7 +278,6 @@ const MarketScreen = () => {
   // Update the handleBuy function
   const handleBuy = (drug: string, price: number) => {
     try {
-      // Convert display name back to original name if in non-adult mode
       const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
         .find(([, censored]) => censored === drug)?.[0] || drug;
       
@@ -287,10 +286,11 @@ const MarketScreen = () => {
       const maxByCash = Math.floor(cash / price);
       const maxBuy = Math.min(maxBySpace, maxByCash);
       
-      // Use the actual quantity or maxBuy if quantity is greater than maxBuy
       const finalQuantity = Math.min(quantity, maxBuy);
       
-      if (finalQuantity <= 0) {
+      // Add inventory space check
+      const totalAfterPurchase = currentInventoryUsed + finalQuantity;
+      if (finalQuantity <= 0 || totalAfterPurchase > inventorySpace) {
         logTransaction('buy', originalDrug, finalQuantity, price, false);
         return;
       }
@@ -304,18 +304,23 @@ const MarketScreen = () => {
   };
 
   const handleSell = (drug: string, price: number) => {
-    // Convert display name back to original name if in non-adult mode
-    const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
-      .find(([, censored]) => censored === drug)?.[0] || drug;
-    
-    const drugItem = inventory.find(item => item.name === originalDrug);
-    if (!drugItem || quantity <= 0 || quantity > drugItem.quantity) {
-      console.warn('Invalid sell quantity');
-      return;
-    }
+    try {
+      // Convert display name back to original name if in non-adult mode
+      const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
+        .find(([, censored]) => censored === drug)?.[0] || drug;
+      
+      const drugItem = inventory.find(item => item.name === originalDrug);
+      if (!drugItem || quantity <= 0 || quantity > drugItem.quantity) {
+        logTransaction('sell', originalDrug, quantity, price, false);
+        return;
+      }
 
-    dispatch(sellDrug({ drug: originalDrug, quantity, price }));
-    dispatch(adjustMarket({ location, item: originalDrug, quantity, isBuy: false }));
+      dispatch(sellDrug({ drug: originalDrug, quantity, price }));
+      dispatch(adjustMarket({ location, item: originalDrug, quantity, isBuy: false }));
+      logTransaction('sell', originalDrug, quantity, price, true);
+    } catch (error) {
+      console.error('Sell transaction failed:', error);
+    }
   };
 
   // Update the handleMaxClick function
@@ -327,30 +332,32 @@ const MarketScreen = () => {
     setQuantity(maxAmount);
   };
 
-  const getQuickBuyOptions = (price: number, owned: number, isBuy: boolean): { amount: number; label: string; totalValue: number; spacePercent: number }[] => {
-    const options: { amount: number; label: string; totalValue: number; spacePercent: number }[] = [];
+  const getQuickBuyOptions = (price: number, owned: number, isBuy: boolean) => {
+    const currentInventoryUsed = inventory.reduce((acc, item) => acc + item.quantity, 0);
+    const options = [];
     
     if (isBuy) {
-      // Calculate max possible buy amount
-      const currentInventoryUsed = inventory.reduce((acc, item) => acc + item.quantity, 0);
       const maxBySpace = inventorySpace - currentInventoryUsed;
       const maxByCash = Math.floor(cash / price);
       const maxBuy = Math.min(maxBySpace, maxByCash);
 
-      // Fixed quantities - show all options regardless of maxBuy
+      // Add options with proper space checks
       [1, 5, 10, 25, 50].forEach(qty => {
-        options.push({
-          amount: qty,
-          label: `Buy ${qty}`,
-          totalValue: qty * price,
-          spacePercent: (qty / inventorySpace) * 100
-        });
+        if (currentInventoryUsed + qty <= inventorySpace) {
+          options.push({
+            amount: qty,
+            label: `Buy ${qty}`,
+            totalValue: qty * price,
+            spacePercent: (qty / inventorySpace) * 100
+          });
+        }
       });
 
       // Percentage-based options
       [0.25, 0.5, 0.75, 1].forEach(percent => {
         const qty = Math.floor(maxBuy * percent);
-        if (qty > 0 && !options.some(opt => opt.amount === qty)) {
+        if (qty > 0 && currentInventoryUsed + qty <= inventorySpace && 
+            !options.some(opt => opt.amount === qty)) {
           options.push({
             amount: qty,
             label: `${(percent * 100)}%`,
@@ -521,7 +528,7 @@ const MarketScreen = () => {
                                 dispatch(adjustMarket({ location, item: originalDrug, quantity: option.amount, isBuy: true }));
                               }}
                               className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-green-800 hover:bg-green-700 text-white disabled:opacity-30 disabled:bg-green-900"
-                              disabled={option.totalValue > cash || option.amount + owned > inventorySpace}
+                              disabled={option.totalValue > cash || option.amount + currentInventoryUsed > inventorySpace}
                             >
                               {option.label}
                               <span className="text-green-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
@@ -538,10 +545,7 @@ const MarketScreen = () => {
                             return (
                               <button
                                 key={`sell-${option.amount}`}
-                                onClick={() => {
-                                  setQuantity(option.amount);
-                                  handleSell(originalDrug, price);
-                                }}
+                                onClick={() => handleSell(drug, price)}
                                 className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-red-800 hover:bg-red-700 text-white disabled:opacity-30 disabled:bg-red-900"
                                 disabled={!owned || option.amount > owned}
                               >
