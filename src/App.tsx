@@ -22,6 +22,8 @@ import {
   faBolt
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -35,6 +37,8 @@ function App() {
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
   const [audio] = useState(new Audio('./themesong.mp3'));
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [showTips, setShowTips] = useState(true);
 
   useEffect(() => {
     localStorage.setItem(
@@ -78,6 +82,21 @@ function App() {
       audio.currentTime = 0;
     };
   }, [audio]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'i' || e.key === 'I') {
+        setIsInventoryOpen(prev => !prev);
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        setCurrentScreen('market');
+      }
+      // Add more shortcuts as needed
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   const toggleAudio = () => {
     if (isPlaying) {
@@ -200,6 +219,27 @@ function App() {
 
         {/* Main Content */}
         <main className="card mb-20">
+          {showTips && (
+            <div className="card mb-4 bg-primary/10 border-primary/20">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-bold mb-2">Quick Tips</h3>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Press 'I' to toggle inventory</li>
+                    <li>Watch for market trends before buying</li>
+                    <li>Higher reputation means better prices</li>
+                    <li>Keep an eye on your debt interest!</li>
+                  </ul>
+                </div>
+                <button 
+                  onClick={() => setShowTips(false)}
+                  className="text-sm opacity-70 hover:opacity-100"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          )}
           {currentScreen === "map" && <MapScreen />}
           {currentScreen === "market" && <MarketScreen />}
           {currentScreen === "loan" && <LoanScreen />}
@@ -253,6 +293,18 @@ function App() {
         <EventPopup />
         <FloatingInventory />
       </div>
+      <ToastContainer
+        position="bottom-left"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 }

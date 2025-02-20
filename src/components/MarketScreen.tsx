@@ -232,6 +232,7 @@ const MarketScreen = () => {
   const [quantity, setQuantity] = useState(1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [isTransacting, setIsTransacting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Update the market items calculation
   const marketItems = useMemo(() => {
@@ -270,7 +271,7 @@ const MarketScreen = () => {
 
   // Update the handleBuy function
   const handleBuy = async (drug: string, price: number) => {
-    setIsTransacting(true);
+    setIsLoading(true);
     try {
       const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
         .find(([, censored]) => censored === drug)?.[0] || drug;
@@ -289,11 +290,11 @@ const MarketScreen = () => {
         return;
       }
 
-      dispatch(buyDrug({ drug: originalDrug, quantity: finalQuantity, price }));
-      dispatch(adjustMarket({ location, item: originalDrug, quantity: finalQuantity, isBuy: true }));
+      await dispatch(buyDrug({ drug: originalDrug, quantity: finalQuantity, price }));
+      await dispatch(adjustMarket({ location, item: originalDrug, quantity: finalQuantity, isBuy: true }));
       logTransaction('buy', originalDrug, finalQuantity, price, true);
     } finally {
-      setIsTransacting(false);
+      setIsLoading(false);
     }
   };
 
@@ -475,10 +476,10 @@ const MarketScreen = () => {
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => handleBuy(drug, price)}
-                    disabled={!calculateMaxQuantity(price, owned, true, cash, inventorySpace, currentInventoryUsed) || quantity <= 0 || isTransacting}
+                    disabled={!calculateMaxQuantity(price, owned, true, cash, inventorySpace, currentInventoryUsed) || quantity <= 0 || isLoading}
                     className="btn btn-surface flex-1 text-sm hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-text"
                   >
-                    {isTransacting ? (
+                    {isLoading ? (
                       <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
                     ) : (
                       `Buy ${quantity}`
@@ -556,6 +557,14 @@ const MarketScreen = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Add tooltips to the market stats */}
+                  <div className="flex items-center gap-2" title="Current market supply">
+                    <span>Supply: {supply}%</span>
+                  </div>
+                  <div className="flex items-center gap-2" title="Current market demand">
+                    <span>Demand: {demand}%</span>
+                  </div>
                 </div>
               )}
             </div>

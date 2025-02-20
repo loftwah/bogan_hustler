@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBox, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faBox, faTimes, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 
 const FloatingInventory = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +31,7 @@ const FloatingInventory = () => {
   }
 
   return (
-    <div className="fixed bottom-24 right-4 md:right-8 w-80 md:w-96 bg-surface rounded-lg shadow-lg border border-border">
+    <div className="fixed bottom-24 right-4 md:right-8 w-80 md:w-96 bg-surface rounded-lg shadow-lg border border-border animate-slideIn">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h3 className="text-lg font-bold">Inventory</h3>
         <button 
@@ -49,14 +49,21 @@ const FloatingInventory = () => {
           <span>Cash: ${cash}</span>
         </div>
         
-        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-          {inventory.map(item => (
-            <div key={item.name} className="flex justify-between py-1 border-b border-border last:border-0">
-              <span>{item.name}</span>
-              <span>{item.quantity}</span>
-            </div>
-          ))}
-        </div>
+        {inventory.length === 0 ? (
+          <div className="text-center py-8 text-text/50">
+            <FontAwesomeIcon icon={faBoxOpen} className="text-3xl mb-2" />
+            <p>Your inventory is empty</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {inventory.map(item => (
+              <div key={item.name} className="flex justify-between py-1 border-b border-border last:border-0">
+                <span>{item.name}</span>
+                <span>{item.quantity}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
