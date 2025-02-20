@@ -27,12 +27,7 @@ const DRUG_MAPPINGS: Record<string, string> = {
 // Define interfaces for better type safety
 interface MarketDataWithOriginal extends DrugMarket {
   originalName?: string;
-  owned?: number;
-}
-
-interface InventoryItem {
-  name: string;
-  quantity: number;
+  owned: number;
 }
 
 // Create memoized selectors
@@ -49,12 +44,20 @@ const selectPricesForLocation = createSelector(
         const censoredName = DRUG_MAPPINGS[drug] || drug;
         acc[censoredName] = {
           ...data,
-          originalName: drug
+          originalName: drug,
+          owned: 0  // Initialize with 0, will be updated in marketItems
         };
         return acc;
       }, {} as Record<string, MarketDataWithOriginal>);
     }
-    return marketData;
+    // When returning marketData directly, we need to add the owned property
+    return Object.entries(marketData).reduce((acc, [drug, data]) => {
+      acc[drug] = {
+        ...data,
+        owned: 0  // Initialize with 0, will be updated in marketItems
+      };
+      return acc;
+    }, {} as Record<string, MarketDataWithOriginal>);
   }
 );
 
@@ -75,7 +78,7 @@ const MarketScreen = () => {
     Object.entries(prices).forEach(([drug, market]) => {
       const originalDrug = adultMode ? drug : market.originalName || drug;
       const owned = inventory.find(item => item.name === originalDrug)?.quantity || 0;
-      items.set(drug, { ...market, owned });
+      items.set(drug, { ...market, owned: owned });
     });
 
     // Add inventory items that aren't in the market
