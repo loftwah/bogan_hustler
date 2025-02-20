@@ -1,6 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import { upgradeInventory, upgradePoliceEvasion, upgradeMarketIntel } from "../store/playerSlice";
 import type { RootState } from "../types";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faBox, 
+  faRunning, 
+  faBrain,
+  faArrowUp
+} from '@fortawesome/free-solid-svg-icons';
 
 const UpgradesScreen = () => {
   const dispatch = useDispatch();
@@ -22,7 +29,10 @@ const UpgradesScreen = () => {
           {/* Inventory Space Upgrade */}
           <div className="card bg-background/50 space-y-4">
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Inventory Space</h3>
+              <h3 className="text-lg font-semibold">
+                <FontAwesomeIcon icon={faBox} className="mr-2" />
+                Inventory Space
+              </h3>
               <div className="space-y-1">
                 <p className="text-sm text-text/70">Current: {inventorySpace} units</p>
                 <p className="text-sm text-text/70">Effect: +5 space</p>
@@ -34,6 +44,7 @@ const UpgradesScreen = () => {
               disabled={cash < 500}
               className="btn btn-primary w-full"
             >
+              <FontAwesomeIcon icon={faArrowUp} className="mr-2" />
               Upgrade Space
             </button>
           </div>
@@ -41,7 +52,10 @@ const UpgradesScreen = () => {
           {/* Police Evasion Upgrade */}
           <div className="card bg-background/50 space-y-4">
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Police Evasion</h3>
+              <h3 className="text-lg font-semibold">
+                <FontAwesomeIcon icon={faRunning} className="mr-2" />
+                Police Evasion
+              </h3>
               <div className="space-y-1">
                 <p className="text-sm text-text/70">Current: {policeEvasion}%</p>
                 <p className="text-sm text-text/70">Effect: +20% evasion</p>
@@ -60,7 +74,10 @@ const UpgradesScreen = () => {
           {/* Market Intel Upgrade */}
           <div className="card bg-background/50 space-y-4">
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Market Intel</h3>
+              <h3 className="text-lg font-semibold">
+                <FontAwesomeIcon icon={faBrain} className="mr-2" />
+                Market Intel
+              </h3>
               <div className="space-y-1">
                 <p className="text-sm text-text/70">Current: {marketIntel}%</p>
                 <p className="text-sm text-text/70">Effect: +15% market info</p>

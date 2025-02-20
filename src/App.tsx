@@ -10,6 +10,17 @@ import FloatingInventory from './components/FloatingInventory';
 import { toggleAdultMode } from "./store/playerSlice";
 import bannerImage from './assets/banner.jpg'
 import squareImage from './assets/square.jpg'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faVolumeUp, 
+  faVolumeMute, 
+  faShieldAlt, 
+  faChild,
+  faMap,
+  faStore,
+  faLandmark,
+  faBolt
+} from '@fortawesome/free-solid-svg-icons';
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -126,7 +137,8 @@ function App() {
                 className="px-3 py-1 rounded-md text-sm bg-surface hover:bg-surface/80"
                 aria-label={isPlaying ? "Mute music" : "Play music"}
               >
-                {isPlaying ? '🔊 Mute' : '🔈 Play'}
+                <FontAwesomeIcon icon={isPlaying ? faVolumeUp : faVolumeMute} className="mr-2" />
+                {isPlaying ? 'Mute' : 'Play'}
               </button>
               
               {/* Add Adult Mode Toggle */}
@@ -139,6 +151,7 @@ function App() {
                 }`}
                 aria-label="Toggle adult mode"
               >
+                <FontAwesomeIcon icon={adultMode ? faShieldAlt : faChild} className="mr-2" />
                 {adultMode ? '18+ Mode On' : 'Family Friendly'}
               </button>
             </div>
@@ -178,10 +191,10 @@ function App() {
         <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
           <div className="max-w-7xl mx-auto grid grid-cols-4 gap-2">
             {[
-              { id: "map", icon: "🗺️" },
-              { id: "market", icon: "💰" },
-              { id: "loan", icon: "🏦" },
-              { id: "upgrades", icon: "⚡" }
+              { id: "map", icon: faMap, label: "Map" },
+              { id: "market", icon: faStore, label: "Market" },
+              { id: "loan", icon: faLandmark, label: "Loan" },
+              { id: "upgrades", icon: faBolt, label: "Upgrades" }
             ].map((screen) => (
               <button
                 key={screen.id}
@@ -191,10 +204,11 @@ function App() {
                 }`}
               >
                 <span className="hidden sm:inline">
-                  {screen.id.charAt(0).toUpperCase() + screen.id.slice(1)}
+                  <FontAwesomeIcon icon={screen.icon} className="mr-2" />
+                  {screen.label}
                 </span>
                 <span className="sm:hidden text-base">
-                  {screen.icon}
+                  <FontAwesomeIcon icon={screen.icon} />
                 </span>
               </button>
             ))}

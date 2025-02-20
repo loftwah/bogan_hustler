@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBox, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const FloatingInventory = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +16,7 @@ const FloatingInventory = () => {
         onClick={() => setIsOpen(true)}
         aria-label="Show inventory"
       >
-        📦
+        <FontAwesomeIcon icon={faBox} />
       </button>
     );
   }
@@ -27,7 +29,9 @@ const FloatingInventory = () => {
           onClick={() => setIsOpen(false)}
           className="text-2xl hover:text-primary"
           aria-label="Close inventory"
-        >×</button>
+        >
+          <FontAwesomeIcon icon={faTimes} />
+        </button>
       </div>
       
       <div className="p-4 space-y-4">

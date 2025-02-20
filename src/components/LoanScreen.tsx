@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { takeLoan, payLoan } from "../store/playerSlice";
 import type { RootState } from "../types";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faHandHoldingUsd,
+  faMoneyBillWave,
+  faExclamationTriangle
+} from '@fortawesome/free-solid-svg-icons';
 
 const LoanScreen = () => {
   const dispatch = useDispatch();
@@ -34,7 +40,10 @@ const LoanScreen = () => {
       <div className="card">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Loan Shark</h2>
+          <h2 className="text-xl font-bold">
+            <FontAwesomeIcon icon={faHandHoldingUsd} className="mr-2" />
+            Loan Shark
+          </h2>
           <div className="flex gap-3 text-sm">
             <span className="px-3 py-1.5 bg-background/50 rounded-md">💰 ${cash.toLocaleString()}</span>
             <span className="px-3 py-1.5 bg-background/50 rounded-md">💸 ${debt.toLocaleString()}</span>
@@ -124,7 +133,7 @@ const LoanScreen = () => {
         {/* Warning Box */}
         <div className="mt-6 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg">
           <div className="flex items-start gap-2">
-            <span className="text-xl">⚠️</span>
+            <FontAwesomeIcon icon={faExclamationTriangle} className="text-xl text-yellow-400" />
             <div className="space-y-1">
               <p className="text-sm font-medium text-yellow-400">Warning: Unpaid debt accrues 5% interest daily!</p>
               <p className="text-xs text-yellow-400/80">The loan shark might take inventory as payment if you can't keep up.</p>
