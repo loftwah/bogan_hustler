@@ -3,21 +3,21 @@ import { useSelector } from "react-redux";
 import { RootState } from "./store/store";
 import MapScreen from "./components/MapScreen";
 import MarketScreen from "./components/MarketScreen";
+import EventPopup from "./components/EventPopup";
 import "./App.css";
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<"map" | "market">("map");
-  const { cash, location, currentDay, maxDays } = useSelector(
+  const { cash, location, currentDay, maxDays, reputation } = useSelector(
     (state: RootState) => state.player
   );
 
   useEffect(() => {
-    // Save game state to localStorage
     localStorage.setItem(
       "boganHustler",
-      JSON.stringify({ cash, location, currentDay })
+      JSON.stringify({ cash, location, currentDay, reputation })
     );
-  }, [cash, location, currentDay]);
+  }, [cash, location, currentDay, reputation]);
 
   if (currentDay > maxDays) {
     return (
@@ -38,16 +38,20 @@ function App() {
       
       <div className="status-bar">
         <div className="status-item">
-          <img src="/square.jpg" alt="Status Icon" className="status-icon" />
+          <img src="/assets/cash.png" alt="Cash Icon" className="status-icon" />
           <span>Cash: ${cash}</span>
         </div>
         <div className="status-item">
-          <img src="/square.jpg" alt="Location Icon" className="status-icon" />
+          <img src="/assets/location.png" alt="Location Icon" className="status-icon" />
           <span>Location: {location}</span>
         </div>
         <div className="status-item">
-          <img src="/square.jpg" alt="Day Icon" className="status-icon" />
+          <img src="/assets/day.png" alt="Day Icon" className="status-icon" />
           <span>Day: {currentDay}/{maxDays}</span>
+        </div>
+        <div className="status-item">
+          <img src="/assets/rep.png" alt="Rep Icon" className="status-icon" />
+          <span>Rep: {reputation}</span>
         </div>
       </div>
 
@@ -58,6 +62,7 @@ function App() {
 
       {currentScreen === "map" && <MapScreen />}
       {currentScreen === "market" && <MarketScreen />}
+      <EventPopup />
     </div>
   );
 }

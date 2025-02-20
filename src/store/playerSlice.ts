@@ -85,8 +85,12 @@ const playerSlice = createSlice({
         state.inventorySpace += 5;
       }
     },
+    adjustReputation: (state, action: PayloadAction<number>) => {
+      state.reputation += action.payload;
+      state.reputation = Math.max(-50, Math.min(100, state.reputation));
+    },
   },
 });
 
-export const { travel, buyDrug, sellDrug, upgradeInventory } = playerSlice.actions;
+export const { travel, buyDrug, sellDrug, upgradeInventory, adjustReputation } = playerSlice.actions;
 export default playerSlice.reducer; 

@@ -201,3 +201,62 @@ img {
   height: auto;
   display: block;
 }
+
+.event-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #222;
+  padding: 20px;
+  border: 2px solid #ff4500;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 1000;
+}
+
+.event-choices {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #333;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.status-item:hover .status-icon {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .status-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .status-item {
+    width: 100%;
+    justify-content: center;
+  }
+}

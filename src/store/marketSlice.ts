@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface LocationDrugs {
   [drug: string]: { price: number };
@@ -36,17 +36,19 @@ const marketSlice = createSlice({
   name: "market",
   initialState,
   reducers: {
-    updatePrices: (state) => {
+    updatePrices: (state, action: PayloadAction<{ reputation: number }>) => {
+      const { reputation } = action.payload;
       for (const loc in state.prices) {
+        const riskFactor = locations[loc].policeRisk * (1 - reputation / 100);
         for (const drug in state.prices[loc]) {
           const fluctuation = Math.floor(Math.random() * 20) - 10;
           state.prices[loc][drug].price = Math.max(
             20,
-            Math.min(200, state.prices[loc][drug].price + fluctuation)
+            Math.min(200, state.prices[loc][drug].price + fluctuation + riskFactor * 10)
           );
         }
-        if (Math.random() < 0.1) {
-          state.prices[loc]["Green Script"] = { price: 150 };
+        if (Math.random() < 0.1 + reputation / 200) {
+          state.prices[loc]["Green Script"] = { price: 150 - reputation };
         }
       }
     },
