@@ -1,34 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useSelector, useDispatch } from 'react-redux'
+import { RootState } from './store/store'
+import { travel } from './store/playerSlice'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const dispatch = useDispatch()
+  const { cash, location, currentDay } = useSelector((state: RootState) => state.player)
+  const marketData = useSelector((state: RootState) => state.market)
+  const prices = location in marketData.prices ? marketData.prices[location] : null
 
   return (
-    <>
+    <div className="app">
+      <h1>Bogan Hustler</h1>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <p>Cash: ${cash}</p>
+        <p>Location: {location}</p>
+        <p>Day: {currentDay}</p>
+        <button onClick={() => dispatch(travel('Melbourne'))}>
+          Travel to Melbourne
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <div>
+        <h2>Available Drugs in {location}:</h2>
+        <ul>
+          {prices && Object.entries(prices).map(([drug, { price }]) => (
+            <li key={drug}>
+              {drug}: ${price}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   )
 }
 

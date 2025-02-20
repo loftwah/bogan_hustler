@@ -40,3 +40,27 @@
 .read-the-docs {
   color: #888;
 }
+
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  color: #ff4500;
+  margin-bottom: 20px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin: 10px 0;
+  padding: 5px;
+  background: #333;
+  border-radius: 4px;
+}
