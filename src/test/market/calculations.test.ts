@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateMarketDetails, getPriceGuidance } from '../../components/MarketScreen'
+import { calculateMarketDetails, getPriceGuidance } from '../../utils/marketCalculations'
 
 describe('Market Calculations', () => {
   describe('calculateMarketDetails', () => {

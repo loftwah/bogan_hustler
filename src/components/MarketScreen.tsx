@@ -23,7 +23,7 @@ import {
   faBoxes,
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
-import { calculateMarketDetails, analyzeTrend } from '../utils/marketCalculations';
+import { calculateMarketDetails } from '../utils/marketCalculations';
 
 const DRUG_MAPPINGS: Record<string, string> = {
   "Ice": "Energy Drinks",
@@ -88,19 +88,6 @@ const selectPricesForLocation = createSelector(
 );
 
 // Add these interfaces after the existing ones
-interface MarketItemDetails {
-  maxBuy: number;
-  maxSell: number;
-  totalCost: number;
-  potentialProfit: number;
-  potentialProfitPercent: string;
-  supplyTrend: string;
-  demandTrend: string;
-  priceGuidance: string;
-  nearbyComparison: string;
-  buyAdvice: string;
-}
-
 interface InventoryItem {
   name: string;
   quantity: number;
@@ -188,6 +175,7 @@ const MarketScreen = () => {
   const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const [marketAlerts, setMarketAlerts] = useState<string[]>([]);
+  const [selectedDrug, setSelectedDrug] = useState<string | null>(null);
 
   // Update the market items calculation
   const marketItems = useMemo(() => {
@@ -306,11 +294,20 @@ const MarketScreen = () => {
 
   // Update the handleMaxClick function
   const handleMaxClick = () => {
+    // Get the first available drug if none selected
+    const firstDrug = marketItems[0]?.[0];
+    const drugToUse = selectedDrug || firstDrug;
+    
+    if (!drugToUse) return;
+    
+    const drugData = prices[drugToUse];
+    if (!drugData) return;
+    
     const currentInventoryUsed = inventory.reduce((acc, item) => acc + item.quantity, 0);
     const maxBySpace = inventorySpace - currentInventoryUsed;
-    const maxByCash = Math.floor(cash / Math.max(...marketItems.map(([, market]) => market.price)));
-    const maxAmount = Math.max(1, Math.min(maxBySpace, maxByCash));
-    setQuantity(maxAmount);
+    const maxByCash = Math.floor(cash / drugData.price);
+    const maxBuy = Math.min(maxBySpace, maxByCash);
+    setQuantity(maxBuy);
   };
 
   // Add this near the top of the component, before the getQuickBuyOptions function
@@ -505,6 +502,19 @@ const MarketScreen = () => {
             drug, marketIntel, {}, price
           );
 
+          // Update the expand button click handler
+          const toggleExpand = () => {
+            const newExpanded = new Set(expandedItems);
+            if (isExpanded) {
+              newExpanded.delete(drug);
+              setSelectedDrug(null);
+            } else {
+              newExpanded.add(drug);
+              setSelectedDrug(drug);
+            }
+            setExpandedItems(newExpanded);
+          };
+
           return (
             <div key={drug} className={`card p-3 sm:p-4 ${price === 0 ? 'opacity-50' : ''}`}>
               {/* Header */}
@@ -519,15 +529,7 @@ const MarketScreen = () => {
                 <div className="flex items-center gap-1 sm:gap-2">
                   <button
                     className="p-1.5 sm:p-2 hover:text-primary transition-colors"
-                    onClick={() => {
-                      const newExpanded = new Set(expandedItems);
-                      if (isExpanded) {
-                        newExpanded.delete(drug);
-                      } else {
-                        newExpanded.add(drug);
-                      }
-                      setExpandedItems(newExpanded);
-                    }}
+                    onClick={toggleExpand}
                     aria-expanded={isExpanded}
                     aria-controls={`details-${drug}`}
                   >

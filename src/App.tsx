@@ -22,7 +22,7 @@ import {
   faBolt
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 type Screen = "map" | "market" | "loan" | "upgrades";
@@ -37,7 +37,6 @@ function App() {
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
   const [audio] = useState(new Audio('./themesong.mp3'));
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [showTips, setShowTips] = useState(true);
 
   useEffect(() => {
@@ -86,7 +85,7 @@ function App() {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'i' || e.key === 'I') {
-        setIsInventoryOpen(prev => !prev);
+        // No need to toggle inventory here since we're using FloatingInventory component
       }
       if (e.key === 'm' || e.key === 'M') {
         setCurrentScreen('market');

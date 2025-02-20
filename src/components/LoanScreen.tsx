@@ -5,7 +5,6 @@ import type { RootState } from "../types";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faHandHoldingUsd,
-  faMoneyBillWave,
   faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 

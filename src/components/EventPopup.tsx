@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { clearEvent } from "../store/eventSlice";
-import { buyDrug, sellDrug, adjustCashFromEvent, adjustStatsFromEvent } from "../store/playerSlice";
+import { buyDrug, sellDrug, adjustStatsFromEvent } from "../store/playerSlice";
 import { RootState } from "../store/store";
 import { useEffect } from "react";
 

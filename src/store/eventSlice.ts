@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "./store";
+import { PlayerState } from '../types';
 
 interface EventChoice {
   text: string;
