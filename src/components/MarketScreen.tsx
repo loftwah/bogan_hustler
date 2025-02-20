@@ -125,7 +125,13 @@ const calculateMarketDetails = (
     nearbyComparison = `${Number(priceDiff) > 0 ? '📈' : '📉'} ${Math.abs(Number(priceDiff))}% vs nearby`;
   }
 
-  const potentialProfitPercent = price > 0 ? ((potentialProfit - (owned * price)) / (owned * price) * 100).toFixed(1) : '0';
+  const potentialProfitPercent = (() => {
+    if (price <= 0 || owned <= 0) return '0';
+    const buyValue = owned * price;
+    const sellValue = potentialProfit;
+    const profit = sellValue - buyValue;
+    return (profit / buyValue * 100).toFixed(1);
+  })();
   
   const buyAdvice = (() => {
     if (price <= 0) return "Not available for purchase";
