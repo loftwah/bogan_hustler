@@ -165,12 +165,12 @@ const calculateMarketDetails = (
   };
 };
 
-// Update the debounce function with proper typing
-const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 300) => {
+// Fix debounce to handle string input specifically
+const debounce = <T extends (value: string) => void>(fn: T, ms = 300) => {
   let timeoutId: ReturnType<typeof setTimeout>;
-  return function (this: unknown, ...args: Parameters<T>) {
+  return function (this: unknown, value: string) {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+    timeoutId = setTimeout(() => fn.call(this, value), ms);
   };
 };
 
@@ -348,11 +348,11 @@ const MarketScreen = () => {
     <div className="market-screen">
       <h2>Market in {location}</h2>
       
-      {/* Enhanced quantity controls */}
       <div className="quantity-controls">
         <button 
           onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
           className="quantity-button"
+          aria-label="Decrease quantity"
         >-</button>
         <input
           type="number"
@@ -360,18 +360,20 @@ const MarketScreen = () => {
           value={quantity}
           onChange={(e) => handleQuantityChange(e.target.value)}
           className="quantity-input"
+          aria-label="Quantity"
         />
         <button 
           onClick={() => setQuantity(prev => prev + 1)}
           className="quantity-button"
+          aria-label="Increase quantity"
         >+</button>
         <button
           onClick={handleMaxClick}
-          className="quantity-button max-button"
+          className="quantity-button"
+          aria-label="Set maximum quantity"
         >Max</button>
       </div>
 
-      {/* Add inventory summary */}
       <div className="inventory-summary">
         <span>Space: {inventory.reduce((acc: number, item: { quantity: number }) => acc + item.quantity, 0)} / {inventorySpace}</span>
         <span>Cash: ${cash}</span>
@@ -481,6 +483,7 @@ const MarketScreen = () => {
                           onClick={() => handleBuy(drug, price)}
                           disabled={quantity * price > cash || quantity + owned > inventorySpace}
                           className="quick-action-button buy-button"
+                          aria-label={`Buy ${quantity} ${drug}`}
                         >
                           Buy {quantity}
                         </button>
@@ -489,6 +492,7 @@ const MarketScreen = () => {
                             onClick={() => handleSell(drug, price)}
                             disabled={quantity > owned}
                             className="quick-action-button sell-button"
+                            aria-label={`Sell ${quantity} ${drug}`}
                           >
                             Sell {quantity}
                           </button>

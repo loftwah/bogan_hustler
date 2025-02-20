@@ -12,6 +12,7 @@ const FloatingInventory = () => {
       <button 
         className="floating-inventory-toggle"
         onClick={() => setIsOpen(true)}
+        aria-label="Show inventory"
         title="Show Inventory"
       >
         📦
@@ -23,7 +24,11 @@ const FloatingInventory = () => {
     <div className="floating-inventory">
       <div className="floating-inventory-header">
         <h3>Inventory</h3>
-        <button onClick={() => setIsOpen(false)}>×</button>
+        <button 
+          onClick={() => setIsOpen(false)}
+          className="close-button"
+          aria-label="Close inventory"
+        >×</button>
       </div>
       <div className="inventory-summary">
         <span>Space: {currentSpace}/{inventorySpace}</span>

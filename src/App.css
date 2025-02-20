@@ -1,3 +1,10 @@
+/* Add at the top, before :root */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
   --primary-color: #ff4500;
   --bg-color: #121212;
@@ -16,11 +23,16 @@ body {
 
 .app {
   min-height: 100vh;
-  padding: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 76px; /* Combined padding, keeping nav height space */
   background-color: var(--surface-color);
 }
 
 header {
+  text-align: center;
   margin-bottom: 20px;
   padding: 20px;
   background-color: var(--surface-color);
@@ -44,28 +56,60 @@ h1 {
 }
 
 .nav-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  padding: 16px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 1200px; /* Match .app max-width */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 8px;
+  background: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+  z-index: 9999;
+  box-sizing: border-box;
 }
 
-.nav-buttons button {
-  min-height: 48px;
-  padding: 12px 24px;
-  background-color: var(--surface-color);
-  color: var(--text-color);
-  border: 2px solid var(--primary-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+/* Base button styles - ALL buttons inherit these */
+button {
   cursor: pointer;
+  border-radius: 8px;
   transition: all 0.2s ease;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  border: none;
+  background: var(--surface-color);
+  color: var(--text-color);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Navigation buttons */
+.nav-buttons button {
+  min-height: 44px;
+  padding: 8px;
+  font-size: 0.9rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--surface-color);
+  border: 1px solid var(--primary-color);
+  color: var(--text-color);
+  font-weight: 500;
   white-space: nowrap;
-  text-align: center;
+  transition: all 0.2s ease;
 }
 
 .nav-buttons button:hover:not(:disabled) {
@@ -74,27 +118,131 @@ h1 {
   transform: translateY(-2px);
 }
 
-.nav-buttons button:active:not(:disabled) {
-  transform: translateY(0);
+/* Quick action buttons (buy/sell/upgrade) */
+.quick-action-button {
+  min-width: 120px;
+  font-weight: 500;
 }
 
-button {
-  background-color: var(--surface-color);
-  color: var(--text-color);
+.quick-action-button.buy-button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.quick-action-button.sell-button {
+  background-color: transparent;
   border: 1px solid var(--primary-color);
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: var(--primary-color);
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* Quantity controls */
+.quantity-button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  min-height: unset;
+}
+
+.quantity-button:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Utility buttons (close, toggle) */
+.close-button {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.floating-inventory-toggle {
+  position: fixed;
+  bottom: 90px;
+  right: max(20px, calc((100vw - 1200px) / 2 + 20px)); /* Adjust based on .app max-width */
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Audio controls */
+.audio-button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+}
+
+/* Global hover/active states */
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+  .app {
+    padding: 5px 5px 60px;
+  }
+
+  main {
+    padding: 10px;
+    margin: 10px 0;
+  }
+
+  .nav-buttons {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .floating-inventory-toggle {
+    bottom: 80px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .nav-buttons button {
+    min-height: 40px;
+    padding: 4px;
+    font-size: 0.85rem;
+  }
+
+  .app {
+    padding-bottom: 60px; /* Consistent padding for nav */
+  }
+
+  main {
+    margin-bottom: 0; /* Remove extra margin */
+  }
+
+  .floating-inventory,
+  .floating-inventory-toggle {
+    bottom: 80px;
+  }
 }
 
 main {
-  padding: 10px;
+  flex: 1;
+  width: 100%;
+  padding: 20px;
+  margin: 20px 0;
   background-color: var(--surface-color);
   border-radius: 4px;
   border: 1px solid var(--border-color);
@@ -134,55 +282,35 @@ main {
     gap: 15px;
   }
   
-  .nav-buttons {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    background-color: var(--bg-color);
-    padding: 8px;
-    gap: 8px;
-    grid-template-columns: repeat(4, 1fr);
-    z-index: 9999;
-    border-top: 1px solid var(--border-color);
-    margin: 0;
-    box-sizing: border-box;
-  }
-
   .nav-buttons button {
     min-height: 40px;
-    padding: 8px 4px;
+    padding: 4px;
     font-size: 0.85rem;
-    border-width: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .app {
-    padding-bottom: 70px;
+    padding-bottom: 60px; /* Consistent padding for nav */
   }
 
   main {
-    margin-bottom: 60px;
+    margin-bottom: 0; /* Remove extra margin */
   }
 
   .floating-inventory,
   .floating-inventory-toggle {
-    bottom: 70px;
+    bottom: 80px;
   }
 }
 
 @media (max-width: 360px) {
   .nav-buttons {
-    padding: 4px;
-    gap: 4px;
+    padding: 2px;
+    gap: 2px;
   }
 
   .nav-buttons button {
     min-height: 36px;
-    padding: 4px;
+    padding: 2px;
     font-size: 0.75rem;
   }
 }
@@ -237,33 +365,16 @@ main {
   margin: 20px 0;
 }
 
-.location-button {
-  padding: 15px;
-  background: #333;
-  border: 1px solid #ff4500;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.location-button:hover:not(:disabled) {
-  background: #ff4500;
-}
-
-.location-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .market-screen {
-  padding: 1.5rem;
   max-width: 800px;
   margin: 0 auto;
+  padding: 1rem;
 }
 
 /* Market item styling */
 .market-item {
+  max-width: 600px;
+  margin: 1rem auto;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -273,13 +384,19 @@ main {
 
 /* Header section with drug info */
 .market-item-header {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
+  gap: 1rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--border-color);
+}
+
+.drug-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
 }
 
 .drug-name {
@@ -313,27 +430,6 @@ main {
   margin-bottom: 1.5rem;
 }
 
-.quantity-button {
-  width: 48px;
-  height: 48px;
-  border: 2px solid var(--primary-color);
-  background: transparent;
-  color: var(--primary-color);
-  border-radius: 8px;
-  font-size: 1.25rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.quantity-button:hover:not(:disabled) {
-  background: var(--primary-color);
-  color: white;
-}
-
 .quantity-input {
   height: 48px;
   background: rgba(255, 255, 255, 0.05);
@@ -353,31 +449,6 @@ main {
   gap: 0.75rem;
 }
 
-.quick-action-button {
-  height: 48px;
-  padding: 0 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.quick-action-button.buy-button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-}
-
-.quick-action-button.sell-button {
-  background: transparent;
-  color: var(--text-color);
-  border: 2px solid var(--primary-color);
-}
-
 .buy-options,
 .sell-options {
   display: grid;
@@ -389,22 +460,29 @@ main {
 /* Mobile optimizations */
 @media (max-width: 600px) {
   .market-screen {
-    padding: 1rem;
+    padding: 0.5rem;
   }
 
   .market-item {
-    padding: 1rem;
+    margin: 0.5rem auto;
   }
 
   .market-item-header {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
   }
 
-  .drug-price {
-    text-align: left;
+  .drug-info {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .inventory-summary {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .quantity-controls {
@@ -663,17 +741,18 @@ img {
 }
 
 .region-section {
-  background: #2a2a2a;
+  background: var(--surface-color);
   padding: 15px;
   border-radius: 8px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-color);
 }
 
 .region-section h3 {
-  color: #ff4500;
+  color: var(--primary-color);
   margin-bottom: 10px;
   font-size: 1.2em;
   text-align: left;
+  padding-left: 16px;
 }
 
 .location-list {
@@ -681,31 +760,6 @@ img {
   flex-direction: column;
   gap: 8px;
   width: 100%;
-}
-
-.location-button {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px;
-  text-align: left;
-  background: #333;
-  border: 1px solid #444;
-}
-
-.location-button:hover:not(:disabled) {
-  background: #444;
-  border-color: #ff4500;
-}
-
-.location-button.current {
-  background: #ff4500;
-  border-color: #ff6a33;
-  cursor: default;
-}
-
-.location-button:disabled:not(.current) {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 @media (max-width: 360px) {
@@ -783,13 +837,14 @@ img {
 
 /* Add inventory summary styling */
 .inventory-summary {
-  display: flex;
-  justify-content: space-between;
+  max-width: 600px;
+  margin: 1rem auto;
   padding: 1rem;
-  background: var(--surface-color);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  margin: 1rem 0;
-  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
 }
 
 .inventory-summary span {
@@ -809,13 +864,14 @@ img {
 /* Add floating inventory panel */
 .floating-inventory {
   position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom, 20px));
-  right: max(20px, env(safe-area-inset-right, 20px));
+  bottom: 90px; /* Above nav buttons */
+  right: 20px;
   width: min(280px, calc(100% - 40px));
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: clamp(0.5rem, 2vw, 1rem);
+  z-index: 999;
 }
 
 .floating-inventory-header {
@@ -883,25 +939,9 @@ img {
 
 .floating-inventory-toggle {
   position: fixed;
-  bottom: 20px;
+  bottom: 90px; /* Above nav buttons */
   right: 20px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  transition: transform 0.2s ease;
-}
-
-.floating-inventory-toggle:hover {
-  transform: scale(1.1);
+  z-index: 999;
 }
 
 /* Clean up market item styles */
@@ -935,56 +975,31 @@ img {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  width: 100%;
-}
-
-/* Simplify quick actions */
-.quick-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-  background: rgba(0, 0, 0, 0.2);
   padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  text-align: center;
 }
 
 .primary-actions {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-
-.primary-actions button {
-  flex: 1;
-  min-width: 120px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
 .percentage-actions {
-  margin-top: 10px;
-}
-
-.buy-options,
-.sell-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 8px;
-  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.5rem;
 }
 
+/* Update button styles */
 .quick-action-button {
-  min-width: 120px;
-  min-height: 44px;
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  min-width: unset;
+  width: 100%;
+  height: 44px;
+  padding: 0.5rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .quick-action-button.buy-button {
@@ -995,24 +1010,31 @@ img {
 
 .quick-action-button.sell-button {
   background-color: transparent;
-  color: var(--text-color);
   border: 1px solid var(--primary-color);
+  color: var(--primary-color);
 }
 
-/* Mobile optimizations */
+/* Price and quantity display */
+.total-cost,
+.total-profit {
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Mobile adjustments */
 @media (max-width: 600px) {
+  .action-section {
+    padding: 0.75rem;
+  }
+
   .primary-actions {
-    flex-direction: column;
-    gap: 8px;
+    grid-template-columns: 1fr;
   }
 
-  .quick-action-button {
-    width: 100%;
-    min-width: unset;
-  }
-
-  .buy-options,
-  .sell-options {
+  .percentage-actions {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -1057,13 +1079,13 @@ img {
 /* Update audio controls styling */
 .audio-controls {
   position: fixed;
-  bottom: 48px; /* Height of nav buttons */
+  bottom: 76px; /* Above nav buttons */
   left: 0;
   right: 0;
-  padding: 8px;
-  background-color: var(--bg-color);
+  padding: 8px 16px;
+  background: var(--bg-color);
   border-top: 1px solid var(--border-color);
-  z-index: 9999;
+  z-index: 998;
 }
 
 .audio-controls button {
@@ -1081,35 +1103,9 @@ img {
 }
 
 @media (max-width: 600px) {
-  .nav-buttons {
-    bottom: 0;
-    padding: 8px;
-  }
-
   .audio-controls {
-    bottom: 56px; /* Nav height + padding */
-  }
-
-  /* Adjust floating inventory to be above audio controls */
-  .floating-inventory,
-  .floating-inventory-toggle {
-    bottom: 120px; /* Combined height of nav + audio controls */
-  }
-
-  /* Adjust main content padding */
-  .app {
-    padding-bottom: 120px; /* Combined height of nav + audio controls */
-  }
-
-  main {
-    margin-bottom: 120px;
-  }
-}
-
-@media (max-width: 360px) {
-  .audio-controls button {
-    min-height: 36px;
-    font-size: 0.85rem;
+    bottom: 64px; /* Adjust for smaller nav on mobile */
+    padding: 8px;
   }
 }
 
@@ -1239,10 +1235,12 @@ img {
 
 /* Safe area insets for modern mobile browsers */
 @supports (padding: max(0px)) {
+  .nav-buttons {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  
   .app {
-    padding-left: max(0.5rem, env(safe-area-inset-left));
-    padding-right: max(0.5rem, env(safe-area-inset-right));
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    padding-bottom: max(60px, env(safe-area-inset-bottom) + 60px);
   }
 }
 
@@ -1306,9 +1304,11 @@ img {
 /* Quantity controls improvements */
 .quantity-controls {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: 1rem;
   width: 100%;
+  max-width: 600px;
+  margin: 1rem auto;
   padding: 1rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
@@ -1329,6 +1329,8 @@ img {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  padding: 0;
+  min-height: unset;
 }
 
 .quantity-button:hover:not(:disabled) {
@@ -1346,6 +1348,7 @@ img {
   font-weight: 600;
   text-align: center;
   padding: 0 1rem;
+  width: 100%;
 }
 
 /* Market stats styling */
@@ -1447,5 +1450,106 @@ img {
   border-color: var(--primary-color);
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
+}
+
+/* Location buttons */
+.location-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  text-align: left;
+  justify-content: flex-start;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.location-button:hover:not(:disabled) {
+  background: var(--surface-color);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.location-button.current {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  cursor: default;
+  transform: none;
+}
+
+.location-button.current:hover {
+  transform: none;
+}
+
+/* Update the market-screen quantity controls to match the styling */
+.market-screen .quantity-controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto; /* Changed to match the market item layout */
+  gap: 1rem;
+  width: 100%;
+  max-width: 600px; /* Add max-width for better layout */
+  margin: 1rem auto; /* Center the controls */
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  align-items: center;
+}
+
+.market-screen .quantity-button {
+  width: 48px;
+  height: 48px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0; /* Reset padding */
+  min-height: unset; /* Reset min-height */
+}
+
+.market-screen .quantity-input {
+  height: 48px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 1rem;
+  width: 100%; /* Fill available space */
+}
+
+/* Update mobile styles for market screen controls */
+@media (max-width: 600px) {
+  .market-screen .quantity-controls {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .market-screen .quantity-button {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .market-screen .quantity-input {
+    height: 44px;
+    font-size: 1.1rem;
+  }
+}
+
+/* Center h2 in market screen */
+.market-screen h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 

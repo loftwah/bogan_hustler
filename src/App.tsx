@@ -134,16 +134,30 @@ function App() {
       </header>
 
       <nav className="nav-buttons">
-        <button onClick={() => setCurrentScreen("map")}>Map</button>
-        <button onClick={() => setCurrentScreen("market")}>Market</button>
-        <button onClick={() => setCurrentScreen("loan")}>Loan Shark</button>
-        <button onClick={() => setCurrentScreen("upgrades")}>Upgrades</button>
+        <button 
+          onClick={() => setCurrentScreen("map")}
+          aria-label="Go to map screen"
+        >Map</button>
+        <button 
+          onClick={() => setCurrentScreen("market")}
+          aria-label="Go to market screen"
+        >Market</button>
+        <button 
+          onClick={() => setCurrentScreen("loan")}
+          aria-label="Go to loan shark screen"
+        >Loan Shark</button>
+        <button 
+          onClick={() => setCurrentScreen("upgrades")}
+          aria-label="Go to upgrades screen"
+        >Upgrades</button>
       </nav>
 
       <div className="audio-controls">
         <button 
           onClick={toggleAudio}
           title={isPlaying ? "Mute Music" : "Play Music"}
+          className="audio-button"
+          aria-label={isPlaying ? "Mute music" : "Play music"}
         >
           {isPlaying ? "🔊" : "🔈"}
           <span>{isPlaying ? " Mute" : " Play"}</span>

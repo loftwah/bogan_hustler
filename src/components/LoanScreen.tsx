@@ -16,8 +16,9 @@ const LoanScreen = () => {
       <p>Cash: ${cash}</p>
       <div className="loan-controls">
         <div className="loan-action">
-          <label>Borrow: </label>
+          <label htmlFor="loan-amount">Borrow: </label>
           <input
+            id="loan-amount"
             type="number"
             min="100"
             step="100"
@@ -26,15 +27,17 @@ const LoanScreen = () => {
           />
           <button 
             onClick={() => dispatch(takeLoan(loanAmount))}
-            className="loan-button"
+            className="quick-action-button"
+            aria-label={`Take loan of $${loanAmount}`}
           >
             Take Loan
           </button>
         </div>
         {debt > 0 && (
           <div className="loan-action">
-            <label>Repay: </label>
+            <label htmlFor="repay-amount">Repay: </label>
             <input
+              id="repay-amount"
               type="number"
               min="0"
               max={Math.min(cash, debt)}
@@ -46,8 +49,9 @@ const LoanScreen = () => {
                 dispatch(payLoan(repayAmount));
                 setRepayAmount(0);
               }}
-              className="loan-button"
+              className="quick-action-button"
               disabled={repayAmount <= 0 || repayAmount > cash}
+              aria-label={`Repay $${repayAmount} of loan`}
             >
               Repay
             </button>

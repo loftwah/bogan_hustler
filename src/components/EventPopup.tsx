@@ -56,9 +56,10 @@ const EventPopup = () => {
       <div className="event-choices">
         {event.choices.map((choice: EventChoice, index: number) => (
           <button 
-            key={index} 
+            key={index}
             onClick={() => handleChoice(choice.outcome)}
-            className="choice-button"
+            className="quick-action-button"
+            aria-label={choice.text}
           >
             {choice.text}
           </button>

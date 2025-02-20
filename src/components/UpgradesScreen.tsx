@@ -16,14 +16,15 @@ const UpgradesScreen = () => {
         <div className="upgrade-item">
           <div className="upgrade-info">
             <h3>Inventory Space</h3>
-            <p>Current: {inventorySpace} units</p>
+            <p>Current: {inventorySpace}</p>
             <p>Cost: $500</p>
-            <p>Effect: +5 inventory space</p>
+            <p>Effect: +5 space</p>
           </div>
           <button 
-            onClick={() => dispatch(upgradeInventory())} 
+            onClick={() => dispatch(upgradeInventory())}
             disabled={cash < 500}
-            className="upgrade-button"
+            className="quick-action-button"
+            aria-label="Upgrade inventory space"
           >
             Upgrade Space
           </button>
@@ -34,12 +35,13 @@ const UpgradesScreen = () => {
             <h3>Police Evasion</h3>
             <p>Current: {policeEvasion}%</p>
             <p>Cost: $1000</p>
-            <p>Effect: +20% evasion chance</p>
+            <p>Effect: +20% evasion</p>
           </div>
           <button 
-            onClick={() => dispatch(upgradePoliceEvasion())} 
+            onClick={() => dispatch(upgradePoliceEvasion())}
             disabled={cash < 1000 || policeEvasion >= 100}
-            className="upgrade-button"
+            className="quick-action-button"
+            aria-label="Upgrade police evasion"
           >
             Upgrade Evasion
           </button>
