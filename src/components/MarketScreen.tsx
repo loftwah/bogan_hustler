@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
 import { buyDrug, sellDrug } from "../store/playerSlice";
@@ -114,6 +114,15 @@ const calculateMarketDetails = (
   };
 };
 
+// Add this helper function
+const debounce = (fn: Function, ms = 300) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
+};
+
 const MarketScreen = () => {
   const dispatch = useDispatch();
   const { inventory, cash, inventorySpace } = useSelector((state: RootState) => state.player);
@@ -122,6 +131,7 @@ const MarketScreen = () => {
   const prices = useSelector(selectPricesForLocation);
   
   const [quantity, setQuantity] = useState(1);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   // Memoize market items calculation with proper typing
   const marketItems = useMemo(() => {
@@ -150,6 +160,15 @@ const MarketScreen = () => {
 
     return Array.from(items.entries());
   }, [prices, inventory, adultMode]);
+
+  // Update the quantity input handler
+  const handleQuantityChange = useCallback(
+    debounce((value: string) => {
+      const newValue = Math.max(1, parseInt(value) || 1);
+      setQuantity(newValue);
+    }, 150),
+    []
+  );
 
   const handleBuy = (drug: string, price: number) => {
     const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
@@ -202,10 +221,7 @@ const MarketScreen = () => {
           type="number"
           min="1"
           value={quantity}
-          onChange={(e) => {
-            const newValue = Math.max(1, parseInt(e.target.value) || 1);
-            setQuantity(newValue);
-          }}
+          onChange={(e) => handleQuantityChange(e.target.value)}
           className="quantity-input"
         />
         <button 
@@ -232,7 +248,7 @@ const MarketScreen = () => {
       <div className="market-list">
         {marketItems.map(([drug, market]) => {
           const { price, owned, supply, demand } = market;
-          const [isExpanded, setIsExpanded] = useState(false);
+          const isExpanded = expandedItems.has(drug);
           const details = calculateMarketDetails(
             price,
             owned,
@@ -244,7 +260,7 @@ const MarketScreen = () => {
           );
 
           return (
-            <div key={drug} className="market-item">
+            <div key={drug} className={`market-item ${price === 0 ? 'unavailable' : ''}`}>
               <div className="market-item-header">
                 <div className="drug-info">
                   <h3 className="drug-name">{drug}</h3>
@@ -257,14 +273,19 @@ const MarketScreen = () => {
                 </div>
                 <button
                   className="expand-button"
-                  onClick={() => setIsExpanded(!isExpanded)}
+                  onClick={() => {
+                    const newExpanded = new Set(expandedItems);
+                    if (isExpanded) {
+                      newExpanded.delete(drug);
+                    } else {
+                      newExpanded.add(drug);
+                    }
+                    setExpandedItems(newExpanded);
+                  }}
                   aria-expanded={isExpanded}
                   aria-controls={`details-${drug}`}
                 >
                   {isExpanded ? 'Less Info' : 'More Info'}
-                  <span className="expand-icon" aria-hidden="true">
-                    {isExpanded ? '▼' : '▶'}
-                  </span>
                 </button>
               </div>
 

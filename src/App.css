@@ -234,31 +234,38 @@ main {
 
 .market-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1.5rem;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 1rem;
   padding: 1.25rem;
   position: relative;
   background: linear-gradient(to right, var(--surface-color), var(--bg-color));
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform, box-shadow;
 }
 
 .market-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translate3d(0, -4px, 0);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .drug-info {
-  display: grid;
-  gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.drug-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .drug-stats {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  font-size: 0.9rem;
+  flex-wrap: wrap;
 }
 
 .stat-indicator {
@@ -279,15 +286,6 @@ main {
   height: 100%;
   background: var(--primary-color);
   transition: width 0.3s ease;
-}
-
-.drug-name {
-  font-size: 1.2rem;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .drug-details {
@@ -316,10 +314,10 @@ main {
 }
 
 .drug-actions {
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-width: 150px;
 }
 
 .action-button {
@@ -350,19 +348,18 @@ main {
 /* Media Queries for Responsive Design */
 @media (min-width: 768px) {
   .market-item {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .drug-info {
-    flex-direction: row;
-    align-items: center;
-    gap: 2rem;
+    grid-template-columns: 1fr auto;
   }
 
   .drug-actions {
-    min-width: 200px;
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 150px;
+  }
+
+  .market-item-details {
+    grid-column: 1;
+    grid-row: 2;
   }
 }
 
@@ -838,7 +835,7 @@ img {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  justify-content: flex-start;
 }
 
 .quick-action-button {
@@ -847,15 +844,18 @@ img {
   background: var(--surface-color);
   border: 1px solid var(--primary-color);
   color: var(--text-color);
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transform: translate3d(0, 0, 0);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  will-change: background-color, color;
 }
 
-.quick-action-button:hover::after {
-  transform: translate(-50%, -50%) scale(2);
+.quick-action-button:hover {
+  background-color: var(--primary-color);
+  color: white;
 }
 
 .max-button {
@@ -881,6 +881,7 @@ img {
 
 /* Add these styles near the market-item related CSS */
 .market-item-details {
+  grid-column: 1 / -1;
   display: grid;
   gap: 1rem;
   padding: 1rem;
@@ -919,26 +920,28 @@ img {
 }
 
 .market-item-header {
+  grid-column: 1 / -1;
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 1rem;
-  cursor: pointer;
+  width: 100%;
 }
 
 .expand-button {
-  background: none;
-  border: none;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--primary-color);
   color: var(--text-color);
-  padding: 0.5rem;
+  border-radius: 4px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+  transform: translateZ(0);
 }
 
 .expand-button:hover {
-  color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: white;
 }
 
 /* Accessibility improvements */
