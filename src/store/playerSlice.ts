@@ -35,6 +35,9 @@ const initialState: PlayerState = {
   adultMode: false,
 };
 
+const MAX_DEBT = 1000000; // $1M max debt
+const MIN_DEBT = 0;
+
 const playerSlice = createSlice({
   name: "player",
   initialState,
@@ -42,29 +45,38 @@ const playerSlice = createSlice({
     travel: (state, action: PayloadAction<string>) => {
       state.location = action.payload;
       state.currentDay += 1;
-      if (state.debt > 0) {
-        state.debt += state.debt * state.debtInterest;
+      
+      if (state.debt > MIN_DEBT) {
+        // Use fixed-point arithmetic to avoid floating-point errors
+        const interestAmount = Math.floor(state.debt * state.debtInterest * 100) / 100;
+        state.debt = Math.min(MAX_DEBT, state.debt + interestAmount);
       }
     },
     buyDrug: (state, action: PayloadAction<{ drug: string; quantity: number; price: number }>) => {
       const { drug, quantity, price } = action.payload;
       const totalCost = price * quantity;
-      const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
+      
+      // Calculate current space excluding the drug being purchased
+      const currentSpace = state.inventory.reduce((acc, item) => 
+        item.name === drug ? acc : acc + item.quantity, 0);
+      
+      // Add the total quantity including existing amount of this drug
+      const existing = state.inventory.find(item => item.name === drug);
+      const totalQuantity = (existing?.quantity || 0) + quantity;
       
       if (totalCost > state.cash) {
         console.warn(`Insufficient funds: Required ${totalCost}, have ${state.cash}`);
         return;
       }
       
-      if (currentSpace + quantity > state.inventorySpace) {
-        console.warn(`Insufficient space: Required ${quantity}, have ${state.inventorySpace - currentSpace}`);
+      if (currentSpace + totalQuantity > state.inventorySpace) {
+        console.warn(`Insufficient space: Required ${totalQuantity}, have ${state.inventorySpace - currentSpace}`);
         return;
       }
 
       state.cash -= totalCost;
-      const existing = state.inventory.find((item) => item.name === drug);
       if (existing) {
-        existing.quantity += quantity;
+        existing.quantity = totalQuantity;
       } else {
         state.inventory.push({ name: drug, quantity });
       }

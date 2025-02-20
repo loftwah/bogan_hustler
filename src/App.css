@@ -999,3 +999,13 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.audio-controls input[type="range"] {
+  width: 100px;
+}

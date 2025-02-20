@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { travel } from "../store/playerSlice";
-import { updatePrices } from "../store/marketSlice";
+import { updatePricesWithLocation } from "../store/marketSlice";
 import { triggerRandomEvent } from "../store/eventSlice";
 import { RootState, AppDispatch } from "../store/store";
 
@@ -97,7 +97,12 @@ const MapScreen = () => {
   const handleTravel = (location: string) => {
     if (location !== currentLocation) {
       dispatch(travel(location));
-      dispatch(updatePrices({ reputation, location, adultMode }));
+      dispatch(updatePricesWithLocation({ 
+        reputation, 
+        location, 
+        adultMode,
+        prevLocation: currentLocation 
+      }));
       // Police risk is reduced by player's evasion skill
       const baseRisk = 0.2;
       const modifiedRisk = baseRisk * (1 - policeEvasion / 100);

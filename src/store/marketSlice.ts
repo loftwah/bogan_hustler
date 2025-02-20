@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { locationsByRegion } from "../components/MapScreen";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export interface DrugMarket {
   price: number;
@@ -235,7 +236,93 @@ const marketSlice = createSlice({
       }
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(updatePricesWithLocation.fulfilled, (state, action) => {
+      if (action.payload) {
+        const { location } = action.meta.arg;
+        state.prices[location] = action.payload;
+      }
+    });
+  },
 });
 
-export const { updatePrices, adjustMarket, triggerMarketEvent } = marketSlice.actions;
+// First, let's add the missing interfaces and types at the top
+interface UpdatePricesParams {
+  reputation: number;
+  location: string;
+  adultMode: boolean;
+  prevLocation: string;
+}
+
+// Remove the duplicate updatePrices export from the slice actions
+export const { adjustMarket, triggerMarketEvent } = marketSlice.actions;
+
+// Rename the async thunk version to be more specific
+export const updatePricesWithLocation = createAsyncThunk(
+  'market/updatePricesWithLocation',
+  async ({ reputation, location, adultMode, prevLocation }: UpdatePricesParams) => {
+    const distance = calculateDistance(prevLocation, location);
+    const timeOfDay = new Date().getHours();
+    const isNighttime = timeOfDay >= 20 || timeOfDay <= 4;
+    
+    // Use the existing itemData instead of undefined BASE_PRICES
+    return Object.entries(getItemData(adultMode)).reduce((acc, [drug, data]) => {
+      // Base variation
+      let variation = (Math.random() - 0.5) * 0.4; // ±20% base variation
+      
+      // Distance affects prices
+      variation += distance * 0.001; // 0.1% per km
+      
+      // Time-based effects
+      if (isNighttime) variation += 0.1; // 10% premium at night
+      
+      // Prevent negative prices
+      const finalPrice = Math.max(1, Math.round(data.basePrice * (1 + variation)));
+      
+      acc[drug] = {
+        price: finalPrice,
+        supply: Math.random() * 100,
+        demand: Math.random() * 100
+      };
+      
+      return acc;
+    }, {} as Record<string, DrugMarket>);
+  }
+);
+
+// Add proper implementation of calculateDistance
+const calculateDistance = (loc1: string, loc2: string): number => {
+  const coords1 = LOCATION_COORDS[loc1];
+  const coords2 = LOCATION_COORDS[loc2];
+  if (!coords1 || !coords2) return 0;
+  
+  // Haversine formula implementation
+  const R = 6371; // Earth's radius in km
+  const dLat = toRad(coords2.lat - coords1.lat);
+  const dLon = toRad(coords2.lng - coords1.lng);
+  const lat1 = toRad(coords1.lat);
+  const lat2 = toRad(coords2.lat);
+
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
+// Helper function for distance calculation
+const toRad = (value: number): number => {
+  return value * Math.PI / 180;
+};
+
+// Add new types and helpers
+interface LocationCoordinates {
+  lat: number;
+  lng: number;
+}
+
+const LOCATION_COORDS: Record<string, LocationCoordinates> = {
+  "Kings Cross": { lat: -33.8775, lng: 151.2252 },
+  // Add coordinates for other locations...
+};
+
 export default marketSlice.reducer; 
