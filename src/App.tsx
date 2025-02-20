@@ -21,6 +21,7 @@ import {
   faLandmark,
   faBolt
 } from '@fortawesome/free-solid-svg-icons';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -159,11 +160,17 @@ function App() {
           
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-background/50 p-3 rounded-lg">
+            <div className="bg-background/50 p-3 rounded-lg group relative">
               <span className="font-medium">Cash:</span> ${cash}
+              <div className="absolute hidden group-hover:block bg-surface border border-border p-2 rounded-md text-xs -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                Your available money
+              </div>
             </div>
-            <div className="bg-background/50 p-3 rounded-lg">
+            <div className="bg-background/50 p-3 rounded-lg group relative">
               <span className="font-medium">Location:</span> {location}
+              <div className="absolute hidden group-hover:block bg-surface border border-border p-2 rounded-md text-xs -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                Your current city
+              </div>
             </div>
             <div className="bg-background/50 p-3 rounded-lg">
               <span className="font-medium">Day:</span> {currentDay}/{maxDays}
@@ -187,6 +194,22 @@ function App() {
           {currentScreen === "upgrades" && <UpgradesScreen />}
         </main>
 
+        {/* Add Footer */}
+        <footer className="text-center mb-24 text-sm text-text/70 space-y-4">
+          <p>Made with ❤️ in Australia</p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface/50 rounded-full hover:bg-surface/80 transition-colors">
+            <FontAwesomeIcon icon={faGithub} />
+            <a 
+              href="https://github.com/loftwah/bogan_hustler"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-primary/80"
+            >
+              Open Source on GitHub
+            </a>
+          </div>
+        </footer>
+
         {/* Fixed Bottom Nav */}
         <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
           <div className="max-w-7xl mx-auto grid grid-cols-4 gap-2">
@@ -199,7 +222,7 @@ function App() {
               <button
                 key={screen.id}
                 onClick={() => setCurrentScreen(screen.id as Screen)}
-                className={`btn px-2 sm:px-4 py-2 text-xs sm:text-base ${
+                className={`btn px-2 sm:px-4 py-2 text-xs sm:text-base transform transition-all duration-200 hover:scale-105 ${
                   currentScreen === screen.id ? 'btn-primary' : 'btn-surface'
                 }`}
               >

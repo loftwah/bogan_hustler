@@ -6,6 +6,8 @@ import { RootState } from "../store/store";
 import type { DrugMarket } from "../store/marketSlice";
 import { adjustMarket } from "../store/marketSlice";
 import { DEBUG } from '../config';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const DRUG_MAPPINGS: Record<string, string> = {
   "Ice": "Energy Drinks",
@@ -229,6 +231,7 @@ const MarketScreen = () => {
   
   const [quantity, setQuantity] = useState(1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [isTransacting, setIsTransacting] = useState(false);
 
   // Update the market items calculation
   const marketItems = useMemo(() => {
@@ -266,7 +269,8 @@ const MarketScreen = () => {
   );
 
   // Update the handleBuy function
-  const handleBuy = (drug: string, price: number) => {
+  const handleBuy = async (drug: string, price: number) => {
+    setIsTransacting(true);
     try {
       const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
         .find(([, censored]) => censored === drug)?.[0] || drug;
@@ -288,8 +292,8 @@ const MarketScreen = () => {
       dispatch(buyDrug({ drug: originalDrug, quantity: finalQuantity, price }));
       dispatch(adjustMarket({ location, item: originalDrug, quantity: finalQuantity, isBuy: true }));
       logTransaction('buy', originalDrug, finalQuantity, price, true);
-    } catch (error) {
-      console.error('Buy transaction failed:', error);
+    } finally {
+      setIsTransacting(false);
     }
   };
 
@@ -471,10 +475,14 @@ const MarketScreen = () => {
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => handleBuy(drug, price)}
-                    disabled={!calculateMaxQuantity(price, owned, true, cash, inventorySpace, currentInventoryUsed) || quantity <= 0}
+                    disabled={!calculateMaxQuantity(price, owned, true, cash, inventorySpace, currentInventoryUsed) || quantity <= 0 || isTransacting}
                     className="btn btn-surface flex-1 text-sm hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-text"
                   >
-                    Buy {quantity}
+                    {isTransacting ? (
+                      <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                    ) : (
+                      `Buy ${quantity}`
+                    )}
                   </button>
                   <button
                     onClick={() => handleSell(drug, price)}
