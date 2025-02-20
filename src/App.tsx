@@ -14,12 +14,6 @@ import { toggleAdultMode } from "./store/playerSlice";
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
-// Add proper type definition for AudioContext
-interface AudioContextType {
-  AudioContext: typeof AudioContext;
-  webkitAudioContext: typeof AudioContext;
-}
-
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("map");
   const { cash, location, currentDay, maxDays, reputation, debt, debtInterest, policeEvasion, marketIntel } = useSelector(
@@ -30,11 +24,6 @@ function App() {
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
   const [audio] = useState(new Audio('/bogan_hustler/themesong.mp3'));
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [gainNode, setGainNode] = useState<GainNode | null>(null);
-  const [volume, setVolume] = useState(() => 
-    parseFloat(localStorage.getItem('boganHustlerVolume') || '0.2')
-  );
 
   useEffect(() => {
     localStorage.setItem(
@@ -65,56 +54,18 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    // Initialize audio context
-    const ctx = new (window.AudioContext || ((window as unknown as AudioContextType).webkitAudioContext))();
-    const gain = ctx.createGain();
-    gain.connect(ctx.destination);
-    gain.gain.value = volume;
-    
-    setAudioContext(ctx);
-    setGainNode(gain);
-
-    // Cleanup on unmount
-    return () => {
-      ctx.close();
-      audio.pause();
-      audio.src = '';
-    };
-  }, []);
-
   const toggleAudio = () => {
-    try {
-      if (!audioContext || !gainNode) return;
-
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.volume = volume;
-        audio.loop = true;
-        
-        // Connect audio to gain node
-        const source = audioContext.createMediaElementSource(audio);
-        source.connect(gainNode);
-        
-        audio.play().catch(err => {
-          console.error('Audio playback failed:', err);
-          // Show user-friendly error message
-          alert('Audio playback failed. Please check your browser settings.');
-        });
-      }
-      setIsPlaying(!isPlaying);
-      localStorage.setItem('boganHustlerAudioPlaying', String(!isPlaying));
-    } catch (err) {
-      console.error('Audio system error:', err);
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.loop = true;
+      audio.play().catch(err => {
+        console.error('Audio playback failed:', err);
+        alert('Audio playback failed. Please check your browser settings.');
+      });
     }
-  };
-
-  const handleVolumeChange = (newVolume: number) => {
-    if (!gainNode) return;
-    setVolume(newVolume);
-    gainNode.gain.value = newVolume;
-    localStorage.setItem('boganHustlerVolume', String(newVolume));
+    setIsPlaying(!isPlaying);
+    localStorage.setItem('boganHustlerAudioPlaying', String(!isPlaying));
   };
 
   if (currentDay > maxDays) {
@@ -194,17 +145,6 @@ function App() {
           >
             {isPlaying ? "🔊 Mute" : "🔈 Play"}
           </button>
-          {isPlaying && (
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={volume}
-              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-              title="Volume"
-            />
-          )}
         </div>
       </nav>
 

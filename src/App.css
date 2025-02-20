@@ -1142,15 +1142,16 @@ img {
   }
 }
 
+/* Simplify audio controls styles */
 .audio-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
+/* Remove volume slider styles
 .audio-controls input[type="range"] {
   width: 100px;
-}
+} */
 
 /* Add these styles for the new market actions */
 .action-section {
