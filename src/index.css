@@ -1,30 +1,72 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@layer base {
+  :root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  body {
+    @apply m-0 p-0 min-w-[320px] min-h-screen bg-background text-text;
+  }
+
+  #root {
+    @apply w-full min-h-screen flex flex-col;
+  }
+
+  h1 {
+    @apply text-4xl font-bold mb-4;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold mb-3;
+  }
+
+  h3 {
+    @apply text-xl font-medium mb-2;
+  }
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
+@layer components {
+  .btn {
+    @apply cursor-pointer rounded-lg transition-all duration-200 
+           inline-flex items-center justify-center gap-2 
+           min-h-[44px] px-4 py-2 text-base font-medium
+           border-2 border-transparent
+           hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 
-#root {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary/90;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary bg-transparent
+           hover:bg-primary/10;
+  }
+
+  .btn-surface {
+    @apply bg-surface text-text border-border
+           hover:bg-surface/80;
+  }
+
+  .card {
+    @apply bg-surface rounded-lg border border-border p-4 shadow-lg;
+  }
+
+  .input {
+    @apply bg-background border border-border rounded-lg px-3 py-2
+           focus:outline-none focus:ring-2 focus:ring-primary
+           text-text placeholder-text/50;
+  }
 }
 
 a {
@@ -54,8 +96,8 @@ h1 {
 /* Safe area insets for modern mobile browsers */
 @supports (padding: max(0px)) {
   .app {
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-    padding-bottom: max(76px, env(safe-area-inset-bottom) + 76px);
+    @apply px-[max(16px,env(safe-area-inset-left))]
+           pr-[max(16px,env(safe-area-inset-right))]
+           pb-[max(76px,calc(env(safe-area-inset-bottom)+76px))];
   }
 }

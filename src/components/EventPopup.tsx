@@ -22,8 +22,8 @@ const EventPopup = () => {
   useEffect(() => {
     // Play siren for police-related events
     if (event?.id.includes('police')) {
-      const siren = new Audio('/siren.mp3');
-      siren.volume = 0.3; // Reduce volume to 30%
+      const siren = new Audio('./siren.mp3');
+      siren.volume = 0.3;
       siren.play().catch(err => console.log('Audio playback failed:', err));
     }
   }, [event]);

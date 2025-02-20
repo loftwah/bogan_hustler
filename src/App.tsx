@@ -7,9 +7,6 @@ import LoanScreen from "./components/LoanScreen";
 import UpgradesScreen from "./components/UpgradesScreen";
 import EventPopup from "./components/EventPopup";
 import FloatingInventory from './components/FloatingInventory';
-import "./App.css";
-import bannerImage from './assets/banner.jpg';
-import squareImage from './assets/square.jpg';
 import { toggleAdultMode } from "./store/playerSlice";
 
 type Screen = "map" | "market" | "loan" | "upgrades";
@@ -22,7 +19,7 @@ function App() {
   const { inventory, inventorySpace } = useSelector((state: RootState) => state.player);
   const dispatch = useDispatch();
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
-  const [audio] = useState(new Audio('/bogan_hustler/themesong.mp3'));
+  const [audio] = useState(new Audio('./themesong.mp3'));
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -70,109 +67,74 @@ function App() {
 
   if (currentDay > maxDays) {
     return (
-      <div className="app">
-        <h1>Game Over, Mate!</h1>
-        <p>Final Cash: ${cash}</p>
-        <button onClick={() => window.location.reload()}>Play Again</button>
+      <div className="min-h-screen bg-background p-4 flex flex-col items-center justify-center">
+        <h1 className="text-4xl font-bold text-primary mb-4">Game Over, Mate!</h1>
+        <p className="text-xl mb-4">Final Cash: ${cash}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="btn btn-primary"
+        >
+          Play Again
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="app">
-      <div className="banner">
-        <img 
-          src={bannerImage} 
-          alt="Bogan Hustler Banner" 
-          className="banner-image"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            target.parentElement?.classList.add('banner-fallback');
-            if (target.parentElement) {
-              target.parentElement.innerHTML = 'Welcome to Bogan Hustler!';
-            }
-          }}
-        />
-      </div>
-      <header>
-        <h1>Bogan Hustler</h1>
-        <div className="status-bar">
-          <div className="status-item">
-            <img src={squareImage} alt="Cash Icon" className="status-icon" />
-            <span>Cash: ${cash}</span>
-          </div>
-          <div className="status-item">
-            <img src={squareImage} alt="Location Icon" className="status-icon" />
-            <span>Location: {location}</span>
-          </div>
-          <div className="status-item">
-            <img src={squareImage} alt="Day Icon" className="status-icon" />
-            <span>Day: {currentDay}/{maxDays}</span>
-          </div>
-          <div className="status-item">
-            <img src={squareImage} alt="Reputation Icon" className="status-icon" />
-            <span>Rep: {reputation}</span>
-          </div>
-          {debt > 0 && (
-            <div className="status-item">
-              <img src={squareImage} alt="Debt Icon" className="status-icon" />
-              <span>Debt: ${debt.toFixed(2)}</span>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto p-4">
+        {/* Game Header */}
+        <div className="card mb-6">
+          <h1 className="text-4xl font-bold text-primary text-center mb-4">Bogan Hustler</h1>
+          
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-background/50 p-3 rounded-lg">
+              <span className="font-medium">Cash:</span> ${cash}
             </div>
-          )}
+            <div className="bg-background/50 p-3 rounded-lg">
+              <span className="font-medium">Location:</span> {location}
+            </div>
+            <div className="bg-background/50 p-3 rounded-lg">
+              <span className="font-medium">Day:</span> {currentDay}/{maxDays}
+            </div>
+            <div className="bg-background/50 p-3 rounded-lg">
+              <span className="font-medium">Rep:</span> {reputation}
+            </div>
+            {debt > 0 && (
+              <div className="bg-background/50 p-3 rounded-lg text-red-400">
+                <span className="font-medium">Debt:</span> ${debt.toFixed(2)}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="adult-mode-toggle">
-          <label className="toggle-label">
-            <input
-              type="checkbox"
-              checked={adultMode}
-              onChange={() => dispatch(toggleAdultMode())}
-            />
-            18+ Mode
-          </label>
-        </div>
-      </header>
 
-      <nav className="nav-buttons">
-        <button 
-          onClick={() => setCurrentScreen("map")}
-          aria-label="Go to map screen"
-        >Map</button>
-        <button 
-          onClick={() => setCurrentScreen("market")}
-          aria-label="Go to market screen"
-        >Market</button>
-        <button 
-          onClick={() => setCurrentScreen("loan")}
-          aria-label="Go to loan shark screen"
-        >Loan Shark</button>
-        <button 
-          onClick={() => setCurrentScreen("upgrades")}
-          aria-label="Go to upgrades screen"
-        >Upgrades</button>
-      </nav>
+        {/* Main Content */}
+        <main className="card mb-20">
+          {currentScreen === "map" && <MapScreen />}
+          {currentScreen === "market" && <MarketScreen />}
+          {currentScreen === "loan" && <LoanScreen />}
+          {currentScreen === "upgrades" && <UpgradesScreen />}
+        </main>
 
-      <div className="audio-controls">
-        <button 
-          onClick={toggleAudio}
-          title={isPlaying ? "Mute Music" : "Play Music"}
-          className="audio-button"
-          aria-label={isPlaying ? "Mute music" : "Play music"}
-        >
-          {isPlaying ? "🔊" : "🔈"}
-          <span>{isPlaying ? " Mute" : " Play"}</span>
-        </button>
+        {/* Fixed Bottom Nav */}
+        <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
+          <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4">
+            {["map", "market", "loan", "upgrades"].map((screen) => (
+              <button
+                key={screen}
+                onClick={() => setCurrentScreen(screen as Screen)}
+                className={`btn ${currentScreen === screen ? 'btn-primary' : 'btn-surface'}`}
+              >
+                {screen.charAt(0).toUpperCase() + screen.slice(1)}
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        <EventPopup />
+        <FloatingInventory />
       </div>
-
-      <main>
-        {currentScreen === "map" && <MapScreen />}
-        {currentScreen === "market" && <MarketScreen />}
-        {currentScreen === "loan" && <LoanScreen />}
-        {currentScreen === "upgrades" && <UpgradesScreen />}
-      </main>
-
-      <EventPopup />
-      <FloatingInventory />
     </div>
   );
 }
