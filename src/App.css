@@ -779,54 +779,98 @@ img {
 
 /* Add floating inventory panel */
 .floating-inventory {
-  backdrop-filter: blur(8px);
-  background: rgba(26, 26, 26, 0.9);
-  border: 1px solid rgba(255, 69, 0, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   position: fixed;
-  bottom: 1rem;
-  right: 1rem;
+  bottom: 20px;
+  right: 20px;
+  width: 280px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
   padding: 1rem;
-  max-width: 300px;
-  z-index: 100;
 }
 
 .floating-inventory-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.floating-inventory-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.floating-inventory-header button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  color: var(--text-color);
+}
+
+.inventory-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 .floating-inventory-list {
   max-height: 200px;
   overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.floating-inventory-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.floating-inventory-list::-webkit-scrollbar-track {
+  background: var(--bg-color);
+  border-radius: 3px;
+}
+
+.floating-inventory-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
 }
 
 .floating-inventory-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.25rem 0;
+  align-items: center;
+  padding: 0.5rem 0;
   border-bottom: 1px solid var(--border-color);
 }
 
+.floating-inventory-item:last-child {
+  border-bottom: none;
+}
+
 .floating-inventory-toggle {
-  box-shadow: 0 4px 12px rgba(255, 69, 0, 0.3);
-  transition: all 0.3s ease;
   position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  background: var(--primary-color);
-  border: none;
-  border-radius: 50%;
+  bottom: 20px;
+  right: 20px;
   width: 48px;
   height: 48px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 101;
+  z-index: 1000;
+  transition: transform 0.2s ease;
 }
 
 .floating-inventory-toggle:hover {

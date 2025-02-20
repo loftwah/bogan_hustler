@@ -130,6 +130,9 @@ const playerSlice = createSlice({
       state.adultMode = !state.adultMode;
       localStorage.setItem("boganHustlerAdultMode", JSON.stringify(state.adultMode));
     },
+    adjustCashFromEvent: (state, action: PayloadAction<number>) => {
+      state.cash += action.payload;
+    },
   },
 });
 
@@ -143,6 +146,7 @@ export const {
   upgradePoliceEvasion,
   upgradeMarketIntel,
   toggleAdultMode,
+  adjustCashFromEvent,
 } = playerSlice.actions;
 
 export default playerSlice.reducer; 

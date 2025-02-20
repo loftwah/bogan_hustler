@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { clearEvent } from "../store/eventSlice";
-import { buyDrug, sellDrug } from "../store/playerSlice";
+import { buyDrug, sellDrug, adjustCashFromEvent } from "../store/playerSlice";
 import { RootState } from "../store/store";
 import { useEffect } from "react";
 
@@ -37,7 +37,7 @@ const EventPopup = () => {
     policeEvasion?: number;
   }) => {
     if (outcome.cash) {
-      dispatch(buyDrug({ drug: "Event", quantity: 0, price: -outcome.cash }));
+      dispatch(adjustCashFromEvent(outcome.cash));
     }
     if (outcome.inventory) {
       Object.entries(outcome.inventory).forEach(([drug, qty]) => {
