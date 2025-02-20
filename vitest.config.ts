@@ -18,7 +18,11 @@ export default defineConfig({
       ],
     },
     deps: {
-      inline: [/@testing-library\/react/],
-    },
+      optimizer: {
+        web: {
+          include: ['@testing-library/react']
+        }
+      }
+    }
   },
 }) 

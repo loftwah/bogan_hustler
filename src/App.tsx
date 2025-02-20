@@ -176,14 +176,26 @@ function App() {
 
         {/* Fixed Bottom Nav */}
         <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
-          <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4">
-            {["map", "market", "loan", "upgrades"].map((screen) => (
+          <div className="max-w-7xl mx-auto grid grid-cols-4 gap-2">
+            {[
+              { id: "map", icon: "🗺️" },
+              { id: "market", icon: "💰" },
+              { id: "loan", icon: "🏦" },
+              { id: "upgrades", icon: "⚡" }
+            ].map((screen) => (
               <button
-                key={screen}
-                onClick={() => setCurrentScreen(screen as Screen)}
-                className={`btn ${currentScreen === screen ? 'btn-primary' : 'btn-surface'}`}
+                key={screen.id}
+                onClick={() => setCurrentScreen(screen.id as Screen)}
+                className={`btn px-2 sm:px-4 py-2 text-xs sm:text-base ${
+                  currentScreen === screen.id ? 'btn-primary' : 'btn-surface'
+                }`}
               >
-                {screen.charAt(0).toUpperCase() + screen.slice(1)}
+                <span className="hidden sm:inline">
+                  {screen.id.charAt(0).toUpperCase() + screen.id.slice(1)}
+                </span>
+                <span className="sm:hidden text-base">
+                  {screen.icon}
+                </span>
               </button>
             ))}
           </div>
