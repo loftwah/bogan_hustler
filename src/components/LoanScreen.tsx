@@ -78,49 +78,48 @@ const LoanScreen = () => {
           </div>
         </div>
 
-        {/* Repay Section - Only show if there's debt */}
-        {debt > 0 && (
-          <div className="mt-6 pt-6 border-t border-border space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="number"
-                min="0"
-                max={Math.min(cash, debt)}
-                value={repayAmount}
-                onChange={(e) => setRepayAmount(Math.min(cash, Math.max(0, parseInt(e.target.value) || 0)))}
-                className="w-full bg-background border-border rounded-md px-3 py-2"
-                placeholder="Enter repayment amount..."
-              />
-              <button 
-                onClick={() => {
-                  dispatch(payLoan(repayAmount));
-                  setRepayAmount(0);
-                }}
-                className="btn btn-primary whitespace-nowrap"
-                disabled={repayAmount <= 0 || repayAmount > cash}
-              >
-                Repay
-              </button>
-            </div>
-
-            {/* Quick Repay Options */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {getQuickRepayOptions().map((option) => (
-                <button
-                  key={option.label}
-                  onClick={() => {
-                    setRepayAmount(option.amount);
-                    dispatch(payLoan(option.amount));
-                  }}
-                  disabled={option.amount > cash}
-                  className="btn btn-surface text-sm hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-text"
-                >
-                  Repay {option.label}
-                </button>
-              ))}
-            </div>
+        {/* Repay Section - Now always visible but disabled when debt is 0 */}
+        <div className="mt-6 pt-6 border-t border-border space-y-4">
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min="0"
+              max={Math.min(cash, debt)}
+              value={repayAmount}
+              onChange={(e) => setRepayAmount(Math.min(cash, Math.max(0, parseInt(e.target.value) || 0)))}
+              className="w-full bg-background border-border rounded-md px-3 py-2"
+              placeholder="Enter repayment amount..."
+              disabled={debt <= 0}
+            />
+            <button 
+              onClick={() => {
+                dispatch(payLoan(repayAmount));
+                setRepayAmount(0);
+              }}
+              className="btn btn-primary whitespace-nowrap"
+              disabled={debt <= 0 || repayAmount <= 0 || repayAmount > cash}
+            >
+              Repay
+            </button>
           </div>
-        )}
+
+          {/* Quick Repay Options */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {getQuickRepayOptions().map((option) => (
+              <button
+                key={option.label}
+                onClick={() => {
+                  setRepayAmount(option.amount);
+                  dispatch(payLoan(option.amount));
+                }}
+                disabled={debt <= 0 || option.amount > cash}
+                className="btn btn-surface text-sm hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-text"
+              >
+                Repay {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Warning Box */}
         <div className="mt-6 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg">
