@@ -5,7 +5,7 @@ interface InventoryItem {
   quantity: number;
 }
 
-interface PlayerState {
+export interface PlayerState {
   cash: number;
   inventory: InventoryItem[];
   inventorySpace: number;

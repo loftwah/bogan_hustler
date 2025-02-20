@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
-import playerReducer from "./playerSlice";
-import marketReducer from "./marketSlice";
-import eventReducer from "./eventSlice";
+import playerReducer, { PlayerState } from "./playerSlice";
+import marketReducer, { MarketState } from "./marketSlice";
+import eventReducer, { EventState } from "./eventSlice";
 
 // Debug logging middleware
 const loggerMiddleware = () => (next: any) => (action: any) => {
@@ -21,7 +21,12 @@ export const store = configureStore({
     getDefaultMiddleware().concat(loggerMiddleware),
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+export interface RootState {
+  player: PlayerState;
+  market: MarketState;
+  events: EventState;
+}
+
 export type AppDispatch = typeof store.dispatch;
 
 // Log initial state

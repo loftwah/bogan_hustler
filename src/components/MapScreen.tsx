@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
-import { travel } from "../store/playerSlice";
+import { travel, PlayerState } from "../store/playerSlice";
 import { updatePrices } from "../store/marketSlice";
 import { triggerRandomEvent } from "../store/eventSlice";
-import { RootState } from "../store/store";
+import { RootState, AppDispatch } from "../store/store";
 
 // Group locations by region for better organization
 const locationsByRegion = {
@@ -81,19 +81,20 @@ const locationsByRegion = {
 };
 
 const MapScreen = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const currentLocation = useSelector((state: RootState) => state.player.location);
   const policeEvasion = useSelector((state: RootState) => state.player.policeEvasion);
+  const reputation = useSelector((state: RootState) => state.player.reputation);
 
   const handleTravel = (location: string) => {
     if (location !== currentLocation) {
       dispatch(travel(location));
-      dispatch(updatePrices());
+      dispatch(updatePrices({ reputation, location }));
       // Police risk is reduced by player's evasion skill
       const baseRisk = 0.2;
       const modifiedRisk = baseRisk * (1 - policeEvasion / 100);
       if (Math.random() < modifiedRisk) {
-        dispatch(triggerRandomEvent());
+        dispatch(triggerRandomEvent(location));
       }
     }
   };
