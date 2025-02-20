@@ -21,8 +21,16 @@ const eventSlice = createSlice({
   name: "events",
   initialState,
   reducers: {
-    triggerEvent: (state, action: PayloadAction<Event>) => {
-      state.activeEvent = action.payload;
+    triggerRandomEvent: (state) => {
+      // For now, just a simple event
+      state.activeEvent = {
+        id: "police",
+        description: "Cops spotted! What do you do?",
+        choices: [
+          { text: "Run", outcome: { cash: -100 } },
+          { text: "Hide", outcome: { inventory: -1 } },
+        ],
+      };
     },
     clearEvent: (state) => {
       state.activeEvent = null;
@@ -30,5 +38,5 @@ const eventSlice = createSlice({
   },
 });
 
-export const { triggerEvent, clearEvent } = eventSlice.actions;
+export const { triggerRandomEvent, clearEvent } = eventSlice.actions;
 export default eventSlice.reducer; 

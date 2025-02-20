@@ -45,7 +45,9 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  text-align: center;
+  color: #fff;
+  background: #1a1a1a;
+  border-radius: 8px;
 }
 
 h1 {
@@ -63,4 +65,139 @@ li {
   padding: 5px;
   background: #333;
   border-radius: 4px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.location-button {
+  padding: 15px;
+  background: #333;
+  border: 1px solid #ff4500;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-button:hover:not(:disabled) {
+  background: #ff4500;
+}
+
+.location-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.market-screen {
+  padding: 20px;
+}
+
+.quantity-control {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quantity-control input {
+  width: 60px;
+  padding: 5px;
+  background: #333;
+  border: 1px solid #ff4500;
+  color: #fff;
+  border-radius: 4px;
+}
+
+.market-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.market-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #333;
+  border-radius: 4px;
+}
+
+.drug-info {
+  display: flex;
+  gap: 20px;
+}
+
+.drug-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #333;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.status-item:hover .status-icon {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .status-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .status-item {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.banner {
+  width: 100%;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
 }
