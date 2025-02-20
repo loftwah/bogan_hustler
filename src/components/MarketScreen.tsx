@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { buyDrug, sellDrug } from "../store/playerSlice";
 import { RootState } from "../store/store";
@@ -46,6 +46,34 @@ const MarketScreen = () => {
   });
   const [quantity, setQuantity] = useState(1);
 
+  // Create a combined list of market items and inventory items
+  const marketItems = useMemo(() => {
+    const items = new Map<string, MarketDataWithOriginal & { owned: number }>();
+    
+    // Add market prices
+    Object.entries(prices || {}).forEach(([drug, market]) => {
+      const originalDrug = adultMode ? drug : market.originalName || drug;
+      const owned = inventory.find(item => item.name === originalDrug)?.quantity || 0;
+      items.set(drug, { ...market, owned });
+    });
+
+    // Add inventory items that aren't in the market
+    inventory.forEach(item => {
+      const displayName = adultMode ? item.name : DRUG_MAPPINGS[item.name] || item.name;
+      if (!items.has(displayName)) {
+        items.set(displayName, {
+          price: 0, // Price not available in this market
+          supply: 0,
+          demand: 0,
+          originalName: item.name,
+          owned: item.quantity
+        });
+      }
+    });
+
+    return Array.from(items.entries());
+  }, [prices, inventory, adultMode]);
+
   const handleBuy = (drug: string, price: number) => {
     const originalDrug = adultMode ? drug : Object.entries(DRUG_MAPPINGS)
       .find(([_, censored]) => censored === drug)?.[0] || drug;
@@ -82,13 +110,9 @@ const MarketScreen = () => {
       </div>
 
       <div className="market-list">
-        {Object.entries(prices || {}).map(([drug, market]: [string, MarketDataWithOriginal]) => {
-          const { price } = market;
-          const originalDrug = adultMode ? drug : market.originalName || drug;
-          const owned = inventory.find((item: { name: string; quantity: number }) => 
-            item.name === originalDrug
-          )?.quantity || 0;
-          const canBuy = cash >= price * quantity;
+        {marketItems.map(([drug, market]) => {
+          const { price, owned } = market;
+          const canBuy = price > 0 && cash >= price * quantity;
           const canSell = owned >= quantity;
 
           return (
@@ -96,7 +120,9 @@ const MarketScreen = () => {
               <div className="drug-info">
                 <h3 className="drug-name">{drug}</h3>
                 <div className="drug-details">
-                  <span className="drug-price">${price}</span>
+                  <span className="drug-price">
+                    {price > 0 ? `$${price}` : 'Not available'}
+                  </span>
                   <span className="drug-owned">Owned: {owned}</span>
                 </div>
               </div>

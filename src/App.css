@@ -679,3 +679,16 @@ img {
 .toggle-label input {
   cursor: pointer;
 }
+
+.market-item .drug-price:not([data-price="0"]) {
+  color: var(--primary-color);
+}
+
+.market-item .drug-price[data-price="0"] {
+  color: #666;
+  font-style: italic;
+}
+
+.market-item.unavailable {
+  opacity: 0.8;
+}
