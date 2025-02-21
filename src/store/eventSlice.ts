@@ -116,47 +116,100 @@ export const enhancedEvents: EnhancedEvent[] = [
       { 
         text: "Bribe ($500)", 
         outcome: { 
-          // 70% chance of success
-          successChance: 0.7,
+          successChance: 0.8,
           success: {
             cash: -500, 
-            reputation: 5,
-            policeEvasion: -10
+            reputation: 10,
+            policeEvasion: -5
           },
           failure: {
             cash: -500,
-            reputation: -30,
-            policeEvasion: -20,
-            inventory: { Ice: -3, Heroin: -2 }
+            reputation: -20,
+            policeEvasion: -15,
+            inventory: { Ice: -2, Heroin: -1 }
           }
         }
       },
       { 
         text: "Run", 
         outcome: {
-          // 80% chance of escape, modified by policeEvasion
-          successChance: 0.8,
+          successChance: 0.7,
           success: {
-            inventory: { Ice: -2 }, // Drop some stuff while running
             reputation: -10,
-            policeEvasion: 10
+            policeEvasion: 15
           },
           failure: {
-            inventory: { Ice: -5, Heroin: -3 },
+            cash: -750,
+            inventory: { Ice: -3, Heroin: -2 },
             reputation: -25,
-            policeEvasion: -15,
-            cash: -300
+            policeEvasion: -10
           }
         }
       },
       {
         text: "Fight",
         outcome: {
+          triggerMinigame: true,
           requireLocation: {
             blacklist: ["Melbourne CBD", "Kings Cross", "St Kilda"],
             failureMessage: "Security is too tight here for a fight!"
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: "bikie_shakedown",
+    description: "Rebels MC caught you dealing on their turf in %location%. Time to pay up.",
+    conditions: {
+      minReputation: -30,
+      maxReputation: 70,
+      chance: 0.25
+    },
+    repeatable: true,
+    cooldown: 7,
+    choices: [
+      { 
+        text: "Bribe ($600)", 
+        outcome: { 
+          successChance: 0.75,
+          success: {
+            cash: -600,
+            reputation: 15,
+            policeEvasion: 5
           },
-          triggerMinigame: true
+          failure: {
+            cash: -600,
+            reputation: -15,
+            policeEvasion: -10,
+            inventory: { Ice: -2 }
+          }
+        }
+      },
+      { 
+        text: "Run", 
+        outcome: {
+          successChance: 0.65,
+          success: {
+            reputation: -15,
+            policeEvasion: 10
+          },
+          failure: {
+            cash: -900,
+            inventory: { Ice: -4 },
+            reputation: -30,
+            policeEvasion: -15
+          }
+        }
+      },
+      {
+        text: "Fight",
+        outcome: {
+          triggerMinigame: true,
+          requireLocation: {
+            blacklist: ["Melbourne CBD", "Kings Cross"],
+            failureMessage: "Too many witnesses here for a fight!"
+          }
         }
       }
     ]
@@ -306,44 +359,43 @@ export const triggerRandomEventAsync = createAsyncThunk(
     const { reputation, currentDay, policeEvasion } = state.player;
     const hour = new Date().getHours();
 
-    console.log('Triggering event for location:', location);
-    console.log('Player state:', { reputation, currentDay, policeEvasion, hour });
+    // Increase base chance of events
+    const baseEventChance = 0.4; // Increased from 0.2
+    const modifiedChance = baseEventChance * (1 - policeEvasion / 200);
 
-    const eligibleEvents = enhancedEvents.filter(event => {
-      // Skip events on cooldown
-      if (event.lastTriggered && 
-          currentDay - event.lastTriggered < (event.cooldown || 0)) {
-        console.log('Event on cooldown:', event.id);
-        return false;
+    if (Math.random() > modifiedChance) return null;
+
+    // First, filter events by cooldown
+    const availableEvents = enhancedEvents.filter(event => {
+      if (!event.repeatable) return false;
+      if (event.lastTriggered && event.cooldown) {
+        const daysSinceLastTrigger = currentDay - event.lastTriggered;
+        if (daysSinceLastTrigger < event.cooldown) {
+          return false;
+        }
       }
+      return true;
+    });
 
+    // Then, filter by other conditions and prioritize location-specific events
+    const eligibleEvents = availableEvents.filter(event => {
       const conditions = event.conditions;
       
-      // Consider police evasion skill in chance calculation
-      const modifiedChance = (conditions.chance || 0) * (1 - policeEvasion / 200);
-      console.log('Event chance check:', {
-        eventId: event.id,
-        baseChance: conditions.chance,
-        modifiedChance,
-        roll: Math.random()
-      });
-
-      const isEligible = (
+      // Basic condition checks
+      const meetsBasicConditions = (
         (!conditions.minReputation || reputation >= conditions.minReputation) &&
         (!conditions.maxReputation || reputation <= conditions.maxReputation) &&
-        (!conditions.location || conditions.location.includes(location)) &&
-        (!conditions.timeOfDay || conditions.timeOfDay.includes(hour)) &&
-        (Math.random() < modifiedChance)
+        (!conditions.timeOfDay || conditions.timeOfDay.includes(hour))
       );
 
-      console.log('Event eligibility:', {
-        eventId: event.id,
-        isEligible,
-        conditions,
-        location
-      });
+      if (!meetsBasicConditions) return false;
 
-      return isEligible;
+      // Location check
+      if (conditions.location) {
+        return conditions.location.includes(location);
+      }
+
+      return false; // Only allow location-specific events
     });
 
     console.log('Eligible events:', eligibleEvents.map(e => e.id));
@@ -352,12 +404,12 @@ export const triggerRandomEventAsync = createAsyncThunk(
 
     // Weight events based on conditions
     const weightedEvents = eligibleEvents.map(event => ({
-      event,
+      id: event.id,
       weight: calculateEventWeight(event, state.player)
     }));
 
     console.log('Weighted events:', weightedEvents.map(e => ({
-      id: e.event.id,
+      id: e.id,
       weight: e.weight
     })));
 
@@ -367,16 +419,23 @@ export const triggerRandomEventAsync = createAsyncThunk(
     
     console.log('Event selection:', { totalWeight, random });
 
-    const selectedEvent = weightedEvents.find(e => {
-      random -= e.weight;
-      return random <= 0;
-    })?.event || eligibleEvents[0];
+    let selectedEvent = null;
+    for (const { id, weight } of weightedEvents) {
+      random -= weight;
+      if (random <= 0) {
+        selectedEvent = enhancedEvents.find(e => e.id === id);
+        break;
+      }
+    }
 
-    console.log('Selected event:', selectedEvent.id);
+    if (selectedEvent) {
+      // Update the lastTriggered time when an event is selected
+      selectedEvent.lastTriggered = currentDay;
+      console.log('Selected event:', selectedEvent.id);
+      return selectedEvent;
+    }
 
-    selectedEvent.lastTriggered = currentDay;
-    
-    return selectedEvent;
+    return null;
   }
 );
 
