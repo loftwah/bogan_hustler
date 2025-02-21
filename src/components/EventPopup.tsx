@@ -127,6 +127,9 @@ const EventPopup = () => {
     } else {
       toast("You lost the fight...", { icon: '💀' });
     }
+    
+    // Set last event time after minigame completion
+    localStorage.setItem('lastEventTime', Date.now().toString());
   };
 
   const renderOutcomeDetails = (choice: EventChoice) => {
