@@ -155,19 +155,97 @@ const EventPopup = () => {
   const formatOutcome = (outcome: EventOutcome, prefix?: string): string => {
     const parts: string[] = [];
     
-    if (outcome.cash) {
-      parts.push(`$${Math.abs(outcome.cash)} ${outcome.cash > 0 ? 'gained' : 'lost'}`);
-    }
-    if (outcome.reputation) {
-      parts.push(`${Math.abs(outcome.reputation)} rep ${outcome.reputation > 0 ? 'gained' : 'lost'}`);
-    }
+    // Add narrative elements based on outcome type
     if (outcome.inventory?.length) {
-      parts.push(`Inventory changes: ${outcome.inventory.map(i => `${i.quantity} ${i.name}`).join(', ')}`);
+      outcome.inventory.forEach(item => {
+        if (item.quantity > 0) {
+          switch(item.name) {
+            case "Ice":
+              parts.push(`Scored ${item.quantity} ${item.name} after a wild night at the pub 🍺`);
+              break;
+            case "Pingas":
+              parts.push(`Got ${item.quantity} ${item.name} from a mate's bush doof connection 🎪`);
+              break;
+            case "Weed":
+              parts.push(`Picked up ${item.quantity} ${item.name} from some hippies in Nimbin 🌿`);
+              break;
+            case "Cocaine":
+              parts.push(`Grabbed ${item.quantity} ${item.name} off some suit in Kings Cross 🏢`);
+              break;
+            default:
+              parts.push(`Scored ${item.quantity} ${item.name} from a dodgy meetup 🤝`);
+          }
+        } else {
+          // Lost inventory narratives
+          const lostAmount = Math.abs(item.quantity);
+          switch(item.name) {
+            case "Ice":
+              parts.push(`Lost ${lostAmount} ${item.name} in a raid at your mate's place 🚔`);
+              break;
+            case "Pingas":
+              parts.push(`${lostAmount} ${item.name} got soaked in a beach chase 🏊‍♂️`);
+              break;
+            case "Weed":
+              parts.push(`The cops found ${lostAmount} ${item.name} in your Commodore 🚗`);
+              break;
+            default:
+              parts.push(`${lostAmount} ${item.name} got pinched in a bust 🚨`);
+          }
+        }
+      });
+    }
+
+    if (outcome.cash) {
+      if (outcome.cash > 0) {
+        const narratives = [
+          `Pocketed $${outcome.cash} from a lucky night 💰`,
+          `Made $${outcome.cash} from a solid deal 🤝`,
+          `Scored $${outcome.cash} from some rich tourists 🎲`,
+          `Found $${outcome.cash} in an old Winnie Blue pack 🎰`
+        ];
+        parts.push(narratives[Math.floor(Math.random() * narratives.length)]);
+      } else {
+        const narratives = [
+          `Lost $${Math.abs(outcome.cash)} to some bikies 🏍️`,
+          `Dropped $${Math.abs(outcome.cash)} running from the cops 🏃‍♂️`,
+          `Got rolled for $${Math.abs(outcome.cash)} outside the pub 🍺`,
+          `Blew $${Math.abs(outcome.cash)} on a bad bet 🎲`
+        ];
+        parts.push(narratives[Math.floor(Math.random() * narratives.length)]);
+      }
+    }
+
+    if (outcome.reputation) {
+      if (outcome.reputation > 0) {
+        const narratives = [
+          `Word's getting around you're a fair dinkum dealer (+${outcome.reputation} rep) 🌟`,
+          `The streets are talking about your loyalty (+${outcome.reputation} rep) 🤝`,
+          `Your name carries more weight now (+${outcome.reputation} rep) 💪`,
+          `The local crews respect your hustle (+${outcome.reputation} rep) 🎯`
+        ];
+        parts.push(narratives[Math.floor(Math.random() * narratives.length)]);
+      } else {
+        const narratives = [
+          `People reckon you're a bit of a dog (${outcome.reputation} rep) 🐕`,
+          `Your reputation took a hit in the scene (${outcome.reputation} rep) 👎`,
+          `Word got out about your loose lips (${outcome.reputation} rep) 🤐`,
+          `The streets are saying you can't be trusted (${outcome.reputation} rep) 🚫`
+        ];
+        parts.push(narratives[Math.floor(Math.random() * narratives.length)]);
+      }
+    }
+
+    if (outcome.policeEvasion) {
+      if (outcome.policeEvasion > 0) {
+        parts.push(`You've learned some new tricks to dodge the cops (+${outcome.policeEvasion} evasion) 🏃‍♂️`);
+      } else {
+        parts.push(`The cops are onto your usual moves (${outcome.policeEvasion} evasion) 👮‍♂️`);
+      }
     }
     
-    let result = parts.join(', ');
+    let result = parts.join('\n');
     if (prefix) {
-      result = `${prefix}: ${result}`;
+      result = `${prefix}:\n${result}`;
     }
     return result;
   };
