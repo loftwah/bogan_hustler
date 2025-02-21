@@ -128,6 +128,9 @@ const EventPopup = () => {
       toast("You lost the fight...", { icon: '💀' });
     }
     
+    // Clear the event after minigame completion
+    dispatch(clearEvent());
+    
     // Set last event time after minigame completion
     localStorage.setItem('lastEventTime', Date.now().toString());
   };
