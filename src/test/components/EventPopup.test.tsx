@@ -6,6 +6,7 @@ import EventPopup from '../../components/EventPopup';
 import eventReducer from '../../store/eventSlice';
 import playerReducer from '../../store/playerSlice';
 import { toast } from 'react-hot-toast';
+import { act } from 'react-dom/test-utils';
 
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
@@ -160,7 +161,7 @@ describe('EventPopup', () => {
     expect(toast).toHaveBeenCalledWith("Things didn't go as planned...", expect.any(Object));
   });
 
-  it('should trigger minigame for fight choice', () => {
+  it('should trigger minigame for fight choice', async () => {
     const store = createTestStore({
       id: 'police_raid',
       description: 'Police raid',
@@ -173,32 +174,24 @@ describe('EventPopup', () => {
       }]
     });
 
-    // Mock the stun timer
-    vi.useFakeTimers();
-
     render(
       <Provider store={store}>
         <EventPopup />
       </Provider>
     );
 
-    // First check if the fight button is rendered
-    const fightButton = screen.getByText('Fight');
-    expect(fightButton).toBeInTheDocument();
-
     // Click the fight button
-    fireEvent.click(fightButton);
+    await act(async () => {
+      fireEvent.click(screen.getByText('Fight'));
+    });
 
     // Check if the minigame title appears
     expect(screen.getByText('Police Fight!')).toBeInTheDocument();
 
-    // Check for health displays
-    expect(screen.getByText('You: 100%')).toBeInTheDocument();
-    expect(screen.getByText('Energy: 100%')).toBeInTheDocument();
-    expect(screen.getByText('Opponent: 100%')).toBeInTheDocument();
-
-    // Clean up timers
-    vi.useRealTimers();
+    // Check for health displays using data-testid
+    expect(screen.getByTestId('player-health')).toHaveTextContent('100%');
+    expect(screen.getByTestId('player-energy')).toHaveTextContent('100%');
+    expect(screen.getByTestId('opponent-health')).toHaveTextContent('100%');
   });
 
   it('should display success chance for probabilistic outcomes', () => {

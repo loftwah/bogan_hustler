@@ -29,6 +29,7 @@ Bogan Hustler is an Australian-themed trading game where you build your undergro
 - **Random Events**: React to unexpected situations that can make or break your empire
 - **Family-Friendly Mode**: Toggle between adult and family-friendly content
 - **Responsive Design**: Play seamlessly on desktop or mobile devices
+- **Dynamic Combat System**: Engage in fights with different types of opponents, each with unique abilities and strategies
 
 ## 🚀 Getting Started
 

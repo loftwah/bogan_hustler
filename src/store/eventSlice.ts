@@ -99,7 +99,7 @@ const standardOutcomes: Record<string, StandardOutcome> = {
     text: "👊 Fight",
     outcome: {
       triggerMinigame: true as const,
-      opponentType: 'police',
+      opponentType: 'police' as const,
       requireLocation: {
         blacklist: ["Kings Cross", "Sydney CBD"],
         failureMessage: "Can't fight here - too many witnesses!"
