@@ -88,13 +88,13 @@ npm run dev
 
 ```bash
 # Run tests
-bun test
+bun run test
 
 # Run tests with coverage
-bun test:coverage
+bun run test:coverage
 
 # Run tests with UI
-bun test:ui
+bun run test:ui
 ```
 
 ## 📦 Building for Production
