@@ -3,7 +3,7 @@ import { clearEvent } from "../store/eventSlice";
 import { adjustStatsFromEvent } from "../store/playerSlice";
 import { RootState } from "../store/store";
 import { useEffect, useState } from "react";
-import { PoliceFightMinigame } from './PoliceFightMinigame';
+import { CombatMinigame } from './CombatMinigame';
 import { toast } from "react-hot-toast";
 import type {
   EventOutcome,
@@ -22,6 +22,7 @@ interface EventChoiceOutcome {
   failure?: EventOutcome;
   triggerMinigame?: boolean;
   requireLocation?: LocationRequirement;
+  opponentType?: 'police' | 'gang' | 'bikie' | 'dealer';
 }
 
 interface EventChoice {
@@ -33,6 +34,7 @@ const EventPopup = () => {
   const dispatch = useDispatch();
   const event = useSelector((state: RootState) => state.events.activeEvent);
   const [showMinigame, setShowMinigame] = useState(false);
+  const [opponentType, setOpponentType] = useState<'police' | 'gang' | 'bikie' | 'dealer'>('police');
 
   useEffect(() => {
     if (event?.id.includes('police')) {
@@ -92,6 +94,7 @@ const EventPopup = () => {
     // Handle complex EventChoiceOutcome
     if ('triggerMinigame' in outcome && outcome.triggerMinigame) {
       setShowMinigame(true);
+      setOpponentType(outcome.opponentType || 'police');
       return;
     }
 
@@ -115,6 +118,15 @@ const EventPopup = () => {
     }
 
     dispatch(clearEvent());
+  };
+
+  const handleMinigameComplete = (success: boolean) => {
+    setShowMinigame(false);
+    if (success) {
+      toast("You won the fight!", { icon: '🎉' });
+    } else {
+      toast("You lost the fight...", { icon: '💀' });
+    }
   };
 
   const renderOutcomeDetails = (choice: EventChoice) => {
@@ -337,7 +349,10 @@ const EventPopup = () => {
   return (
     <>
       {showMinigame ? (
-        <PoliceFightMinigame onComplete={() => setShowMinigame(false)} />
+        <CombatMinigame 
+          onComplete={handleMinigameComplete} 
+          opponentType={opponentType}
+        />
       ) : (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-surface rounded-lg shadow-lg border border-border p-4 max-w-md w-full">

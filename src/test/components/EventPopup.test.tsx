@@ -4,10 +4,6 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import EventPopup from '../../components/EventPopup';
 import eventReducer from '../../store/eventSlice';
-import type { 
-  EventOutcome, 
-  EventChoiceOutcome 
-} from '../../store/eventSlice';
 import playerReducer from '../../store/playerSlice';
 import { toast } from 'react-hot-toast';
 
@@ -16,24 +12,24 @@ vi.mock('react-hot-toast', () => ({
   toast: vi.fn()
 }));
 
-interface TestEvent {
-  id: string;
-  description: string;
-  choices: Array<{
-    text: string;
-    outcome: EventOutcome | EventChoiceOutcome;
-  }>;
-}
-
 describe('EventPopup', () => {
-  const createTestStore = (eventData: TestEvent | null = null) => configureStore({
+  const createTestStore = (eventData: any = null) => configureStore({
     reducer: {
-      events: eventReducer,
-      player: playerReducer
+      player: playerReducer,
+      events: eventReducer
     },
     preloadedState: {
-      events: { 
-        activeEvent: eventData 
+      events: {
+        activeEvent: eventData ? {
+          ...eventData,
+          choices: eventData.choices.map((choice: any) => ({
+            ...choice,
+            outcome: choice.outcome.triggerMinigame ? {
+              ...choice.outcome,
+              opponentType: choice.outcome.opponentType || 'police'
+            } : choice.outcome
+          }))
+        } : null
       },
       player: {
         cash: 1000,
@@ -170,9 +166,15 @@ describe('EventPopup', () => {
       description: 'Police raid',
       choices: [{
         text: 'Fight',
-        outcome: { triggerMinigame: true }
+        outcome: { 
+          triggerMinigame: true,
+          opponentType: 'police'
+        }
       }]
     });
+
+    // Mock the stun timer
+    vi.useFakeTimers();
 
     render(
       <Provider store={store}>
@@ -180,8 +182,23 @@ describe('EventPopup', () => {
       </Provider>
     );
 
-    fireEvent.click(screen.getByText('Fight'));
+    // First check if the fight button is rendered
+    const fightButton = screen.getByText('Fight');
+    expect(fightButton).toBeInTheDocument();
+
+    // Click the fight button
+    fireEvent.click(fightButton);
+
+    // Check if the minigame title appears
     expect(screen.getByText('Police Fight!')).toBeInTheDocument();
+
+    // Check for health displays
+    expect(screen.getByText('You: 100%')).toBeInTheDocument();
+    expect(screen.getByText('Energy: 100%')).toBeInTheDocument();
+    expect(screen.getByText('Opponent: 100%')).toBeInTheDocument();
+
+    // Clean up timers
+    vi.useRealTimers();
   });
 
   it('should display success chance for probabilistic outcomes', () => {

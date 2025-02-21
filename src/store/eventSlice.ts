@@ -30,6 +30,7 @@ export interface EventChoiceOutcome {
   caughtEffects?: EventOutcome;
   triggerMinigame?: boolean;
   requireLocation?: LocationRequirement;
+  opponentType?: 'police' | 'gang' | 'bikie' | 'dealer';
 }
 
 export interface EventChoice {
@@ -73,6 +74,7 @@ interface StandardOutcome {
   outcome?: {
     triggerMinigame?: boolean;
     requireLocation?: LocationRequirement;
+    opponentType?: 'police' | 'gang' | 'bikie' | 'dealer';
   };
 }
 
@@ -97,6 +99,7 @@ const standardOutcomes: Record<string, StandardOutcome> = {
     text: "👊 Fight",
     outcome: {
       triggerMinigame: true as const,
+      opponentType: 'police',
       requireLocation: {
         blacklist: ["Kings Cross", "Sydney CBD"],
         failureMessage: "Can't fight here - too many witnesses!"
@@ -141,6 +144,7 @@ const createEventChoices = (modifications: Partial<Record<string, StandardOutcom
       text: standardOutcomes.fight.text || "👊 Fight",
       outcome: {
         triggerMinigame: true as const,
+        opponentType: modifications.fight?.outcome?.opponentType || 'police',
         requireLocation: standardOutcomes.fight.outcome?.requireLocation || {
           blacklist: [],
           failureMessage: "You can't fight here!"
