@@ -6,36 +6,32 @@ import EventPopup from '../../components/EventPopup';
 import eventReducer from '../../store/eventSlice';
 import playerReducer from '../../store/playerSlice';
 import { toast } from 'react-hot-toast';
+import { act } from 'react-dom/test-utils';
 
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
   toast: vi.fn()
 }));
 
-interface TestEventChoice {
-  text: string;
-  outcome: {
-    successChance?: number;
-    success?: { cash: number };
-    failure?: { cash: number };
-    triggerMinigame?: boolean;
-  };
-}
-
-interface TestEvent {
-  id: string;
-  description: string;
-  choices: TestEventChoice[];
-}
-
 describe('EventPopup', () => {
-  const createTestStore = (eventData: TestEvent | null = null) => configureStore({
+  const createTestStore = (eventData: any = null) => configureStore({
     reducer: {
-      events: eventReducer,
-      player: playerReducer
+      player: playerReducer,
+      events: eventReducer
     },
     preloadedState: {
-      events: { activeEvent: eventData },
+      events: {
+        activeEvent: eventData ? {
+          ...eventData,
+          choices: eventData.choices.map((choice: any) => ({
+            ...choice,
+            outcome: choice.outcome.triggerMinigame ? {
+              ...choice.outcome,
+              opponentType: choice.outcome.opponentType || 'police'
+            } : choice.outcome
+          }))
+        } : null
+      },
       player: {
         cash: 1000,
         inventory: [],
@@ -68,8 +64,18 @@ describe('EventPopup', () => {
         text: 'Risky Choice',
         outcome: {
           successChance: 0.7,
-          success: { cash: 100 },
-          failure: { cash: -100 }
+          success: { 
+            cash: 100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: []
+          },
+          failure: { 
+            cash: -100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: []
+          }
         }
       }]
     });
@@ -84,7 +90,7 @@ describe('EventPopup', () => {
   });
 
   it('should handle successful probabilistic outcome', () => {
-    vi.spyOn(Math, 'random').mockReturnValue(0.5); // Below 0.7 threshold
+    vi.spyOn(Math, 'random').mockReturnValue(0.5); // Below 0.7 threshold for success
 
     const store = createTestStore({
       id: 'test_event',
@@ -93,8 +99,18 @@ describe('EventPopup', () => {
         text: 'Risky Choice',
         outcome: {
           successChance: 0.7,
-          success: { cash: 100 },
-          failure: { cash: -100 }
+          success: { 
+            cash: 100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: []
+          },
+          failure: { 
+            cash: -100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: []
+          }
         }
       }]
     });
@@ -119,8 +135,18 @@ describe('EventPopup', () => {
         text: 'Risky Choice',
         outcome: {
           successChance: 0.7,
-          success: { cash: 100 },
-          failure: { cash: -100 }
+          success: { 
+            cash: 100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: []
+          },
+          failure: { 
+            cash: -100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: []
+          }
         }
       }]
     });
@@ -135,13 +161,16 @@ describe('EventPopup', () => {
     expect(toast).toHaveBeenCalledWith("Things didn't go as planned...", expect.any(Object));
   });
 
-  it('should trigger minigame for fight choice', () => {
+  it('should trigger minigame for fight choice', async () => {
     const store = createTestStore({
       id: 'police_raid',
       description: 'Police raid',
       choices: [{
         text: 'Fight',
-        outcome: { triggerMinigame: true }
+        outcome: { 
+          triggerMinigame: true,
+          opponentType: 'police'
+        }
       }]
     });
 
@@ -151,7 +180,84 @@ describe('EventPopup', () => {
       </Provider>
     );
 
-    fireEvent.click(screen.getByText('Fight'));
+    // Click the fight button
+    await act(async () => {
+      fireEvent.click(screen.getByText('Fight'));
+    });
+
+    // Check if the minigame title appears
     expect(screen.getByText('Police Fight!')).toBeInTheDocument();
+
+    // Check for health displays using data-testid
+    expect(screen.getByTestId('player-health')).toHaveTextContent('100%');
+    expect(screen.getByTestId('player-energy')).toHaveTextContent('100%');
+    expect(screen.getByTestId('opponent-health')).toHaveTextContent('100%');
+  });
+
+  it('should display success chance for probabilistic outcomes', () => {
+    const store = createTestStore({
+      id: 'police_raid',
+      description: 'Test raid',
+      choices: [{
+        text: '💰 Bribe ($500)',
+        outcome: {
+          successChance: 0.8,
+          success: {
+            cash: -500,
+            reputation: 10,
+            policeEvasion: 0,
+            inventory: []
+          },
+          failure: {
+            cash: -1000,
+            reputation: -20,
+            policeEvasion: -5,
+            inventory: []
+          }
+        }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    expect(screen.getByText('Success chance: 80%')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /💰 Bribe \(\$500\)/ })).toBeInTheDocument();
+  });
+
+  it('should show minigame text for fight options', () => {
+    const store = createTestStore({
+      id: 'police_raid',
+      description: 'Test raid',
+      choices: [{
+        text: '👊 Fight',
+        outcome: {
+          triggerMinigame: true,
+          success: {
+            cash: 0,
+            reputation: 20,
+            policeEvasion: 0,
+            inventory: []
+          },
+          failure: {
+            cash: 0,
+            reputation: -10,
+            policeEvasion: -5,
+            inventory: []
+          }
+        }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    expect(screen.getByText('Fight to win reputation!')).toBeInTheDocument();
   });
 }); 

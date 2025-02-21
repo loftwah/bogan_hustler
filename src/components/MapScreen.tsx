@@ -103,11 +103,20 @@ const MapScreen = () => {
         adultMode,
         prevLocation: currentLocation 
       }));
+
+      // Get last event time from localStorage or default to 0
+      const lastEventTime = Number(localStorage.getItem('lastEventTime')) || 0;
+      const currentTime = Date.now();
+      const cooldownPeriod = 30000; // 30 seconds cooldown
+
       // Police risk is reduced by player's evasion skill
       const baseRisk = 0.2;
       const modifiedRisk = baseRisk * (1 - policeEvasion / 100);
-      if (Math.random() < modifiedRisk) {
+
+      // Only trigger event if enough time has passed since the last event
+      if (Math.random() < modifiedRisk && currentTime - lastEventTime > cooldownPeriod) {
         dispatch(triggerRandomEvent(location));
+        localStorage.setItem('lastEventTime', currentTime.toString());
       }
     }
   };

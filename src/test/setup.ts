@@ -3,10 +3,10 @@ import { expect, afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import * as matchers from '@testing-library/jest-dom/matchers'
 
-// Extend Vitest's expect method with methods from react-testing-library
+// Extend Vitest's expect method
 expect.extend(matchers)
 
-// Mock DOM-specific properties
+// Mock DOM APIs
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
@@ -28,7 +28,19 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Runs a cleanup after each test case
+// Mock document if needed
+if (typeof document === 'undefined') {
+  global.document = {
+    documentElement: {
+      setAttribute: vi.fn(),
+      removeAttribute: vi.fn(),
+      getAttribute: vi.fn()
+    }
+  } as any;
+}
+
+// Cleanup after each test
 afterEach(() => {
   cleanup()
+  vi.clearAllMocks()
 }) 

@@ -24,6 +24,20 @@ class MockAudio {
 // Replace global Audio with mock
 global.Audio = MockAudio as any;
 
+// Mock DOM API
+beforeEach(() => {
+  // Create mock document if it doesn't exist
+  if (typeof document === 'undefined') {
+    global.document = {
+      documentElement: {
+        setAttribute: vi.fn(),
+        removeAttribute: vi.fn(),
+        getAttribute: vi.fn()
+      }
+    } as any;
+  }
+});
+
 // Add tests for user interaction requirement
 describe('Audio Playback with User Interaction', () => {
   beforeEach(() => {

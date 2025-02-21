@@ -61,18 +61,26 @@ const playerSlice = createSlice({
     },
     buyDrug: (state, action: PayloadAction<{ drug: string; quantity: number; price: number }>) => {
       const { drug, quantity, price } = action.payload;
+      
+      // Add input validation
+      if (quantity <= 0 || price < 0) {
+        console.error('Invalid quantity or price');
+        return;
+      }
+
       // Round quantity and price to ensure integers
       const intQuantity = Math.round(quantity);
       const intPrice = Math.round(price);
       const totalCost = intQuantity * intPrice;
       
-      const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
-      const spaceNeeded = intQuantity;
-      
+      // Add more descriptive error messages
       if (totalCost > state.cash) {
-        console.warn(`Insufficient funds: Required ${totalCost}, have ${state.cash}`);
+        console.warn(`Insufficient funds: Required $${totalCost}, have $${state.cash}`);
         return;
       }
+      
+      const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const spaceNeeded = intQuantity;
       
       if (currentSpace + spaceNeeded > state.inventorySpace) {
         console.warn(`Insufficient space: Required ${spaceNeeded}, have ${state.inventorySpace - currentSpace}`);

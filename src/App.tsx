@@ -12,15 +12,15 @@ import bannerImage from './assets/banner.jpg'
 import squareImage from './assets/square.jpg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faVolumeUp, 
-  faVolumeMute, 
   faShieldAlt, 
   faChild,
   faMap,
   faStore,
   faLandmark,
   faBolt,
-  faLink
+  faLink,
+  faPause,
+  faPlay
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 import { ToastContainer } from 'react-toastify';
@@ -172,11 +172,10 @@ function App() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={toggleAudio}
-                  className="btn btn-surface flex items-center gap-2 hover:scale-105 transform transition-all"
-                  aria-label={isPlaying ? "Mute music" : "Play music"}
+                  aria-label={isPlaying ? "Pause background music" : "Play background music"}
+                  className="btn btn-secondary"
                 >
-                  <FontAwesomeIcon icon={isPlaying ? faVolumeUp : faVolumeMute} />
-                  <span className="hidden sm:inline">{isPlaying ? 'Mute' : 'Play'}</span>
+                  <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
                 </button>
                 
                 <button
