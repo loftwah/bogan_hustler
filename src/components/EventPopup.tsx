@@ -113,6 +113,74 @@ const EventPopup = () => {
     dispatch(clearEvent());
   };
 
+  const renderOutcomeDetails = (choice: EventChoice) => {
+    // Handle minigame outcome
+    if ('triggerMinigame' in choice.outcome) {
+      return (
+        <div className="text-xs opacity-75 mt-1">
+          <span className="text-yellow-400">Fight for max reputation!</span>
+        </div>
+      );
+    }
+
+    // Handle probabilistic outcome
+    if ('successChance' in choice.outcome) {
+      const { success, failure } = choice.outcome;
+      if (!success || !failure) return null;
+      
+      return (
+        <div className="text-xs opacity-75 mt-1">
+          <div className="flex flex-col gap-1">
+            <div className="flex gap-2 justify-center items-center">
+              <span className="text-green-400">
+                {Math.round((choice.outcome.successChance || 0) * 100)}% Success
+              </span>
+              {success.cash && success.cash !== 0 && (
+                <span className={success.cash > 0 ? 'text-green-400' : 'text-red-400'}>
+                  ${Math.abs(success.cash)}
+                </span>
+              )}
+              {success.reputation && success.reputation !== 0 && (
+                <span className={success.reputation > 0 ? 'text-green-400' : 'text-red-400'}>
+                  Rep {success.reputation > 0 ? '+' : ''}{success.reputation}
+                </span>
+              )}
+            </div>
+            <div className="text-red-400/75 text-[10px] flex gap-2 justify-center">
+              <span>Failure:</span>
+              {failure.cash && failure.cash !== 0 && 
+                <span>${Math.abs(failure.cash)}</span>
+              }
+              {failure.reputation && failure.reputation !== 0 && 
+                <span>Rep {failure.reputation}</span>
+              }
+              {failure.inventory && Object.keys(failure.inventory).length > 0 && (
+                <span>Lose drugs</span>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Handle direct outcome
+    const outcome = choice.outcome as EventOutcome;
+    return (
+      <div className="text-xs opacity-75 mt-1 flex gap-2 justify-center">
+        {outcome.cash && outcome.cash !== 0 && (
+          <span className={outcome.cash > 0 ? 'text-green-400' : 'text-red-400'}>
+            ${Math.abs(outcome.cash)}
+          </span>
+        )}
+        {outcome.reputation && outcome.reputation !== 0 && (
+          <span className={outcome.reputation > 0 ? 'text-green-400' : 'text-red-400'}>
+            Rep {outcome.reputation > 0 ? '+' : ''}{outcome.reputation}
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
       {showMinigame ? (
@@ -134,18 +202,7 @@ const EventPopup = () => {
                   aria-label={choice.text}
                 >
                   <span>{choice.text}</span>
-                  <div className="text-xs opacity-75 mt-1">
-                    {('cash' in choice.outcome) && choice.outcome.cash && (
-                      <span className={choice.outcome.cash > 0 ? 'text-green-400' : 'text-red-400'}>
-                        ${choice.outcome.cash}
-                      </span>
-                    )}
-                    {('reputation' in choice.outcome) && choice.outcome.reputation && (
-                      <span className={choice.outcome.reputation > 0 ? 'text-green-400' : 'text-red-400'}>
-                        {' '}Rep: {choice.outcome.reputation > 0 ? '+' : ''}{choice.outcome.reputation}
-                      </span>
-                    )}
-                  </div>
+                  {renderOutcomeDetails(choice)}
                 </button>
               ))}
             </div>

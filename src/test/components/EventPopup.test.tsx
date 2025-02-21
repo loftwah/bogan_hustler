@@ -16,9 +16,23 @@ interface TestEventChoice {
   text: string;
   outcome: {
     successChance?: number;
-    success?: { cash: number };
-    failure?: { cash: number };
+    success?: { 
+      cash: number;
+      reputation: number;
+      policeEvasion: number;
+      inventory: Record<string, number>;
+    };
+    failure?: { 
+      cash: number;
+      reputation: number;
+      policeEvasion: number;
+      inventory: Record<string, number>;
+    };
     triggerMinigame?: boolean;
+    requireLocation?: {
+      blacklist: string[];
+      failureMessage: string;
+    };
   };
 }
 
@@ -68,8 +82,18 @@ describe('EventPopup', () => {
         text: 'Risky Choice',
         outcome: {
           successChance: 0.7,
-          success: { cash: 100 },
-          failure: { cash: -100 }
+          success: { 
+            cash: 100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: {}
+          },
+          failure: { 
+            cash: -100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: {}
+          }
         }
       }]
     });
@@ -93,8 +117,18 @@ describe('EventPopup', () => {
         text: 'Risky Choice',
         outcome: {
           successChance: 0.7,
-          success: { cash: 100 },
-          failure: { cash: -100 }
+          success: { 
+            cash: 100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: {}
+          },
+          failure: { 
+            cash: -100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: {}
+          }
         }
       }]
     });
@@ -119,8 +153,18 @@ describe('EventPopup', () => {
         text: 'Risky Choice',
         outcome: {
           successChance: 0.7,
-          success: { cash: 100 },
-          failure: { cash: -100 }
+          success: { 
+            cash: 100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: {}
+          },
+          failure: { 
+            cash: -100,
+            reputation: 0,
+            policeEvasion: 0,
+            inventory: {}
+          }
         }
       }]
     });
@@ -153,5 +197,58 @@ describe('EventPopup', () => {
 
     fireEvent.click(screen.getByText('Fight'));
     expect(screen.getByText('Police Fight!')).toBeInTheDocument();
+  });
+
+  it('should display success chance for probabilistic outcomes', () => {
+    const store = createTestStore({
+      id: 'police_raid',
+      description: 'Test raid',
+      choices: [{
+        text: "💰 Bribe ($500)",
+        outcome: {
+          successChance: 0.8,
+          success: { 
+            cash: -500, 
+            reputation: 10,
+            policeEvasion: 0,
+            inventory: {}
+          },
+          failure: { 
+            cash: -1000, 
+            reputation: -20,
+            policeEvasion: 0,
+            inventory: {}
+          }
+        }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    expect(screen.getByText('80% Success')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /💰 Bribe \(\$500\)/ })).toBeInTheDocument();
+  });
+
+  it('should show minigame text for fight options', () => {
+    const store = createTestStore({
+      id: 'police_raid',
+      description: 'Test raid',
+      choices: [{
+        text: "👊 Fight",
+        outcome: { triggerMinigame: true }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    expect(screen.getByText('Fight for max reputation!')).toBeInTheDocument();
   });
 }); 

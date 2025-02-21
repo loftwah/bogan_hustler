@@ -3,9 +3,18 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { PlayerState } from '../types';
 
+// First, let's define the valid drug types
+interface DrugInventory {
+  Ice: number;
+  Heroin: number;
+  Weed?: number;
+  Cocaine?: number;
+  // Add other drugs as needed
+}
+
 interface EventOutcome {
   cash?: number;
-  inventory?: Record<string, number>;
+  inventory?: Partial<DrugInventory>;
   reputation?: number;
   policeEvasion?: number;
 }
@@ -52,7 +61,106 @@ export interface EventState {
   activeEvent: Event | null;
 }
 
-// Define some events
+// First, let's define some standardized outcomes
+const standardOutcomes: {
+  bribe: {
+    text: string;
+    baseSuccess: number;
+    success: EventOutcome;
+    failure: EventOutcome;
+  };
+  run: {
+    text: string;
+    baseSuccess: number;
+    success: EventOutcome;
+    failure: EventOutcome;
+  };
+  fight: {
+    text: string;
+    outcome: {
+      triggerMinigame: true;
+      requireLocation: LocationRequirement;
+    };
+  };
+} = {
+  bribe: {
+    text: "💰 Bribe",
+    baseSuccess: 0.75,
+    success: {
+      cash: -500,
+      reputation: 15,
+      policeEvasion: 5,
+      inventory: {}
+    },
+    failure: {
+      cash: -500,
+      reputation: -15,
+      policeEvasion: -10,
+      inventory: { Ice: -2 }
+    }
+  },
+  run: {
+    text: "🏃 Run",
+    baseSuccess: 0.65,
+    success: {
+      cash: 0,
+      reputation: -10,
+      policeEvasion: 10,
+      inventory: {}
+    },
+    failure: {
+      cash: -750,
+      reputation: -25,
+      policeEvasion: -15,
+      inventory: { Ice: -3 }
+    }
+  },
+  fight: {
+    text: "👊 Fight",
+    outcome: {
+      triggerMinigame: true,
+      requireLocation: {
+        blacklist: ["Melbourne CBD", "Kings Cross"],
+        failureMessage: "Too many witnesses here for a fight!"
+      }
+    }
+  }
+};
+
+// Helper function to create standardized choices with custom modifications
+const createEventChoices = (modifications: {
+  bribe?: Partial<typeof standardOutcomes.bribe>,
+  run?: Partial<typeof standardOutcomes.run>,
+  fight?: Partial<typeof standardOutcomes.fight>
+}) => {
+  return [
+    {
+      text: `${standardOutcomes.bribe.text} ($${Math.abs(modifications.bribe?.success?.cash ?? standardOutcomes.bribe.success.cash ?? 0)})`,
+      outcome: {
+        successChance: modifications.bribe?.baseSuccess || standardOutcomes.bribe.baseSuccess,
+        success: { ...standardOutcomes.bribe.success, ...modifications.bribe?.success },
+        failure: { ...standardOutcomes.bribe.failure, ...modifications.bribe?.failure }
+      }
+    },
+    {
+      text: standardOutcomes.run.text,
+      outcome: {
+        successChance: modifications.run?.baseSuccess || standardOutcomes.run.baseSuccess,
+        success: { ...standardOutcomes.run.success, ...modifications.run?.success },
+        failure: { ...standardOutcomes.run.failure, ...modifications.run?.failure }
+      }
+    },
+    {
+      text: standardOutcomes.fight.text,
+      outcome: {
+        ...standardOutcomes.fight.outcome,
+        requireLocation: modifications.fight?.outcome?.requireLocation || standardOutcomes.fight.outcome.requireLocation
+      }
+    }
+  ];
+};
+
+// Now we can define events much more concisely
 export const enhancedEvents: EnhancedEvent[] = [
   {
     id: "police_raid",
@@ -65,42 +173,22 @@ export const enhancedEvents: EnhancedEvent[] = [
     },
     repeatable: true,
     cooldown: 5,
-    choices: [
-      { 
-        text: "Bribe ($500)", 
-        outcome: { 
-          successChance: 0.8,
-          success: {
-            cash: -500, 
-            reputation: 10,
-            policeEvasion: -5
-          },
-          failure: {
-            cash: -500,
-            reputation: -20,
-            policeEvasion: -15,
-            inventory: { Ice: -2, Heroin: -1 }
-          }
+    choices: createEventChoices({
+      bribe: {
+        success: { 
+          cash: -500, 
+          reputation: 15,
+          policeEvasion: 5,
+          inventory: {}
+        },
+        failure: { 
+          cash: -500,
+          reputation: -15,
+          policeEvasion: -10,
+          inventory: { Ice: -2, Heroin: -1 }
         }
       },
-      { 
-        text: "Run", 
-        outcome: {
-          successChance: 0.7,
-          success: {
-            reputation: -10,
-            policeEvasion: 15
-          },
-          failure: {
-            cash: -750,
-            inventory: { Ice: -3, Heroin: -2 },
-            reputation: -25,
-            policeEvasion: -10
-          }
-        }
-      },
-      {
-        text: "Fight",
+      fight: {
         outcome: {
           triggerMinigame: true,
           requireLocation: {
@@ -109,7 +197,7 @@ export const enhancedEvents: EnhancedEvent[] = [
           }
         }
       }
-    ]
+    })
   },
   {
     id: "bikie_shakedown",
@@ -121,51 +209,22 @@ export const enhancedEvents: EnhancedEvent[] = [
     },
     repeatable: true,
     cooldown: 7,
-    choices: [
-      { 
-        text: "Bribe ($600)", 
-        outcome: { 
-          successChance: 0.75,
-          success: {
-            cash: -600,
-            reputation: 15,
-            policeEvasion: 5
-          },
-          failure: {
-            cash: -600,
-            reputation: -15,
-            policeEvasion: -10,
-            inventory: { Ice: -2 }
-          }
-        }
-      },
-      { 
-        text: "Run", 
-        outcome: {
-          successChance: 0.65,
-          success: {
-            reputation: -15,
-            policeEvasion: 10
-          },
-          failure: {
-            cash: -900,
-            inventory: { Ice: -4 },
-            reputation: -30,
-            policeEvasion: -15
-          }
-        }
-      },
-      {
-        text: "Fight",
-        outcome: {
-          triggerMinigame: true,
-          requireLocation: {
-            blacklist: ["Melbourne CBD", "Kings Cross"],
-            failureMessage: "Too many witnesses here for a fight!"
-          }
+    choices: createEventChoices({
+      bribe: {
+        success: { 
+          cash: -600, 
+          reputation: 15,
+          policeEvasion: 5,
+          inventory: {}
+        },
+        failure: { 
+          cash: -500,
+          reputation: -15,
+          policeEvasion: -10,
+          inventory: { Ice: -2 }
         }
       }
-    ]
+    })
   },
   {
     id: "underbelly_meeting",
@@ -177,27 +236,50 @@ export const enhancedEvents: EnhancedEvent[] = [
     },
     repeatable: false,
     choices: [
-      {
-        text: "Accept Meeting",
-        outcome: {
-          successChance: 0.6,
+      { 
+        text: "💰 Pay Protection ($2000)", 
+        outcome: { 
+          successChance: 0.8,
           success: {
-            cash: 2000,
+            cash: -2000,
             reputation: 30,
-            policeEvasion: -20,
+            policeEvasion: -10,
             inventory: { Ice: 5 }
           },
           failure: {
+            cash: -2000,
+            reputation: -20,
+            policeEvasion: -15,
+            inventory: {}
+          }
+        }
+      },
+      { 
+        text: "🏃 Lay Low", 
+        outcome: {
+          successChance: 0.7,
+          success: {
+            cash: 0,
+            reputation: -15,
+            policeEvasion: 10,
+            inventory: {}
+          },
+          failure: {
             cash: -1000,
-            reputation: -40,
-            policeEvasion: -30
+            reputation: -30,
+            policeEvasion: -10,
+            inventory: { Ice: -2 }
           }
         }
       },
       {
-        text: "Decline",
+        text: "👊 Stand Your Ground",
         outcome: {
-          reputation: -20
+          triggerMinigame: true,
+          requireLocation: {
+            blacklist: ["Melbourne CBD", "Kings Cross"],
+            failureMessage: "Too many witnesses here for a fight!"
+          }
         }
       }
     ]
@@ -214,27 +296,49 @@ export const enhancedEvents: EnhancedEvent[] = [
     repeatable: true,
     cooldown: 14,
     choices: [
-      {
-        text: "Pay Protection ($1000)",
+      { 
+        text: "💰 Pay Protection ($1000)", 
         outcome: {
-          cash: -1000,
-          reputation: 25,
-          policeEvasion: 10
+          successChance: 0.75,
+          success: {
+            cash: -1000,
+            reputation: 25,
+            policeEvasion: 10,
+            inventory: {}
+          },
+          failure: {
+            cash: -1000,
+            reputation: -15,
+            policeEvasion: -10,
+            inventory: {}
+          }
+        }
+      },
+      { 
+        text: "🏃 Lay Low", 
+        outcome: {
+          successChance: 0.7,
+          success: {
+            cash: 0,
+            reputation: -10,
+            policeEvasion: 15,
+            inventory: {}
+          },
+          failure: {
+            cash: -1500,
+            reputation: -25,
+            policeEvasion: -15,
+            inventory: { Ice: -3 }
+          }
         }
       },
       {
-        text: "Stand Your Ground",
+        text: "👊 Stand Your Ground",
         outcome: {
-          successChance: 0.3,
-          success: {
-            reputation: 50,
-            policeEvasion: 15
-          },
-          failure: {
-            cash: -2000,
-            reputation: -30,
-            policeEvasion: -20,
-            inventory: { Ice: -4, Heroin: -2 }
+          triggerMinigame: true,
+          requireLocation: {
+            blacklist: ["Melbourne CBD"],
+            failureMessage: "Too many witnesses here for a fight!"
           }
         }
       }
@@ -250,27 +354,50 @@ export const enhancedEvents: EnhancedEvent[] = [
     repeatable: true,
     cooldown: 10,
     choices: [
-      {
-        text: "Negotiate Territory",
+      { 
+        text: "💰 Pay Territory Fee ($500)", 
         outcome: {
-          successChance: 0.5,
+          successChance: 0.8,
           success: {
             cash: -500,
             reputation: 20,
-            policeEvasion: 5
+            policeEvasion: 5,
+            inventory: {}
           },
           failure: {
-            cash: -1000,
+            cash: -500,
+            reputation: -15,
+            policeEvasion: -5,
+            inventory: { Ice: -2 }
+          }
+        }
+      },
+      { 
+        text: "🏃 Move to Different Area", 
+        outcome: {
+          successChance: 0.7,
+          success: {
+            cash: 0,
+            reputation: -15,
+            policeEvasion: 10,
+            inventory: {}
+          },
+          failure: {
+            cash: -750,
             reputation: -25,
+            policeEvasion: -10,
             inventory: { Ice: -3 }
           }
         }
       },
       {
-        text: "Move to Different Area",
+        text: "👊 Stand Your Ground",
         outcome: {
-          reputation: -15,
-          policeEvasion: -5
+          triggerMinigame: true,
+          requireLocation: {
+            blacklist: ["Kings Cross CBD"],
+            failureMessage: "Too many witnesses here for a fight!"
+          }
         }
       }
     ]
