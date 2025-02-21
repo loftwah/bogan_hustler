@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "lint:watch": "eslint . --watch",
     "preview": "vite preview",
     "predeploy": "bun run build",
     "deploy": "gh-pages -d dist",
@@ -17,7 +19,7 @@
     "type-check": "tsc --noEmit",
     "test:ci": "vitest run --coverage --reporter=junit",
     "validate": "bun run lint && bun run type-check && bun run test:ci",
-    "precommit": "bun run type-check && bun run test"
+    "precommit": "bun run lint:fix && bun run type-check && bun run test"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
@@ -44,6 +46,10 @@
     "@vitest/coverage-v8": "^1.0.4",
     "autoprefixer": "10.4.17",
     "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.18",
     "gh-pages": "^6.3.0",
@@ -51,6 +57,7 @@
     "happy-dom": "^17.1.1",
     "jsdom": "^26.0.0",
     "postcss": "8.4.35",
+    "prettier": "^3.5.1",
     "tailwindcss": "3.4.1",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0",
