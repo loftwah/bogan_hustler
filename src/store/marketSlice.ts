@@ -180,7 +180,16 @@ const marketSlice = createSlice({
   name: "market",
   initialState,
   reducers: {
-    updatePrices: (state, action: PayloadAction<{ reputation: number; location: string; adultMode: boolean }>) => {
+    /**
+     * Handles market price updates based on various factors
+     * @param state - Current market state
+     * @param action - Contains reputation, location, and mode settings
+     */
+    updatePrices: (state, action: PayloadAction<{ 
+      reputation: number; 
+      location: string; 
+      adultMode: boolean 
+    }>) => {
       const { reputation, location, adultMode } = action.payload;
       const riskFactor = locations[location].policeRisk * (1 - reputation / 100);
       const currentItemData = getItemData(adultMode);

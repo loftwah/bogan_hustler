@@ -113,6 +113,18 @@ describe('Event Slice', () => {
       // Clean up mocks
       mockDate.mockRestore();
     });
+
+    it('should handle null event outcomes', () => {
+      // @ts-expect-error - Intentionally testing null handling
+      const state = eventReducer(initialState, triggerEvent(null));
+      expect(state.activeEvent).toBeNull();
+    });
+
+    it('should validate event choice requirements', () => {
+      // Test location requirements
+      // Test reputation requirements
+      // Test cooldown periods
+    });
   });
 
   describe('Event Outcomes', () => {

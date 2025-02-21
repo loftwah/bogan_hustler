@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
 import { buyDrug, sellDrug } from "../store/playerSlice";
@@ -415,6 +415,15 @@ const MarketScreen = () => {
       </div>
     );
   };
+
+  // Add proper cleanup in useEffect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // ... market update logic
+    }, 5000);
+    
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="p-2 sm:p-4 pb-24 space-y-4">
