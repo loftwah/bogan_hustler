@@ -14,18 +14,29 @@ interface EventOutcome {
   policeEvasion?: number;
 }
 
+// Add the LocationRequirement interface
+interface LocationRequirement {
+  blacklist: string[];
+  failureMessage: string;
+}
+
+// Update the EventChoice interface
 interface EventChoice {
   text: string;
   outcome: {
     successChance?: number;
     success?: EventOutcome;
     failure?: EventOutcome;
-  } | EventOutcome | { triggerMinigame: true };
+  } | EventOutcome | {
+    triggerMinigame: true;
+    requireLocation?: LocationRequirement;
+  };
 }
 
 const EventPopup = () => {
   const dispatch = useDispatch();
   const event = useSelector((state: RootState) => state.events.activeEvent);
+  const currentLocation = useSelector((state: RootState) => state.player.location);
   const [showMinigame, setShowMinigame] = useState(false);
 
   useEffect(() => {
@@ -51,7 +62,18 @@ const EventPopup = () => {
   if (!event) return null;
 
   const handleChoice = (choice: EventChoice) => {
+    // Check location restrictions for fight option
     if ('triggerMinigame' in choice.outcome) {
+      if (choice.outcome.requireLocation) {
+        const { blacklist, failureMessage } = choice.outcome.requireLocation;
+        if (blacklist.includes(currentLocation)) {
+          toast(failureMessage, {
+            icon: "⚠️",
+            duration: 3000
+          });
+          return;
+        }
+      }
       setShowMinigame(true);
       return;
     }

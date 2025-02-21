@@ -10,13 +10,21 @@ interface EventOutcome {
   policeEvasion?: number;
 }
 
+interface LocationRequirement {
+  blacklist: string[];
+  failureMessage: string;
+}
+
 interface EventChoice {
   text: string;
   outcome: {
     successChance?: number;
     success?: EventOutcome;
     failure?: EventOutcome;
-  } | EventOutcome | { triggerMinigame: true };
+  } | EventOutcome | {
+    triggerMinigame: true;
+    requireLocation?: LocationRequirement;
+  };
 }
 
 interface EventConditions {
@@ -99,7 +107,6 @@ export const enhancedEvents: EnhancedEvent[] = [
     conditions: {
       minReputation: -50,
       maxReputation: 50,
-      location: ["Kings Cross", "Redfern", "Cabramatta"],
       timeOfDay: [22, 23, 0, 1, 2, 3, 4, 5],
       chance: 0.3
     },
@@ -145,6 +152,10 @@ export const enhancedEvents: EnhancedEvent[] = [
       {
         text: "Fight",
         outcome: {
+          requireLocation: {
+            blacklist: ["Melbourne CBD", "Kings Cross", "St Kilda"],
+            failureMessage: "Security is too tight here for a fight!"
+          },
           triggerMinigame: true
         }
       }
