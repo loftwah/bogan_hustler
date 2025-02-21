@@ -117,8 +117,8 @@ const EventPopup = () => {
     // Handle minigame outcome
     if ('triggerMinigame' in choice.outcome) {
       return (
-        <div className="text-xs opacity-75 mt-1">
-          <span className="text-yellow-400">Fight for max reputation!</span>
+        <div className="text-sm text-yellow-400/90">
+          Fight for max reputation!
         </div>
       );
     }
@@ -129,35 +129,33 @@ const EventPopup = () => {
       if (!success || !failure) return null;
       
       return (
-        <div className="text-xs opacity-75 mt-1">
-          <div className="flex flex-col gap-1">
-            <div className="flex gap-2 justify-center items-center">
-              <span className="text-green-400">
-                {Math.round((choice.outcome.successChance || 0) * 100)}% Success
+        <div className="space-y-1.5">
+          <div className="flex gap-3 items-center justify-center text-sm">
+            <span className="text-emerald-400 font-medium">
+              {Math.round((choice.outcome.successChance || 0) * 100)}% Success
+            </span>
+            {success.cash && success.cash !== 0 && (
+              <span className={success.cash > 0 ? 'text-emerald-400' : 'text-red-400'}>
+                ${Math.abs(success.cash)}
               </span>
-              {success.cash && success.cash !== 0 && (
-                <span className={success.cash > 0 ? 'text-green-400' : 'text-red-400'}>
-                  ${Math.abs(success.cash)}
-                </span>
-              )}
-              {success.reputation && success.reputation !== 0 && (
-                <span className={success.reputation > 0 ? 'text-green-400' : 'text-red-400'}>
-                  Rep {success.reputation > 0 ? '+' : ''}{success.reputation}
-                </span>
-              )}
-            </div>
-            <div className="text-red-400/75 text-[10px] flex gap-2 justify-center">
-              <span>Failure:</span>
-              {failure.cash && failure.cash !== 0 && 
-                <span>${Math.abs(failure.cash)}</span>
-              }
-              {failure.reputation && failure.reputation !== 0 && 
-                <span>Rep {failure.reputation}</span>
-              }
-              {failure.inventory && Object.keys(failure.inventory).length > 0 && (
-                <span>Lose drugs</span>
-              )}
-            </div>
+            )}
+            {success.reputation && success.reputation !== 0 && (
+              <span className={success.reputation > 0 ? 'text-emerald-400' : 'text-red-400'}>
+                Rep {success.reputation > 0 ? '+' : ''}{success.reputation}
+              </span>
+            )}
+          </div>
+          <div className="text-red-400/90 text-xs flex gap-2 justify-center">
+            <span>Failure:</span>
+            {failure.cash && failure.cash !== 0 && 
+              <span>${Math.abs(failure.cash)}</span>
+            }
+            {failure.reputation && failure.reputation !== 0 && 
+              <span>Rep {failure.reputation}</span>
+            }
+            {failure.inventory && Object.keys(failure.inventory).length > 0 && (
+              <span>Lose drugs</span>
+            )}
           </div>
         </div>
       );
@@ -166,14 +164,14 @@ const EventPopup = () => {
     // Handle direct outcome
     const outcome = choice.outcome as EventOutcome;
     return (
-      <div className="text-xs opacity-75 mt-1 flex gap-2 justify-center">
+      <div className="flex gap-3 justify-center text-sm">
         {outcome.cash && outcome.cash !== 0 && (
-          <span className={outcome.cash > 0 ? 'text-green-400' : 'text-red-400'}>
+          <span className={outcome.cash > 0 ? 'text-emerald-400' : 'text-red-400'}>
             ${Math.abs(outcome.cash)}
           </span>
         )}
         {outcome.reputation && outcome.reputation !== 0 && (
-          <span className={outcome.reputation > 0 ? 'text-green-400' : 'text-red-400'}>
+          <span className={outcome.reputation > 0 ? 'text-emerald-400' : 'text-red-400'}>
             Rep {outcome.reputation > 0 ? '+' : ''}{outcome.reputation}
           </span>
         )}
@@ -198,11 +196,13 @@ const EventPopup = () => {
                 <button 
                   key={index}
                   onClick={() => handleChoice(choice)}
-                  className="btn btn-primary text-sm hover:bg-primary hover:text-white relative overflow-hidden"
+                  className="btn bg-surface/90 hover:bg-surface text-sm p-4 relative overflow-hidden border border-border/50 hover:border-primary/50 transition-all"
                   aria-label={choice.text}
                 >
-                  <span>{choice.text}</span>
-                  {renderOutcomeDetails(choice)}
+                  <div className="flex flex-col gap-2">
+                    <span className="text-base font-medium">{choice.text}</span>
+                    {renderOutcomeDetails(choice)}
+                  </div>
                 </button>
               ))}
             </div>
