@@ -21,7 +21,7 @@ const FloatingInventory = () => {
     return (
       <button 
         id="floating-inventory-btn"
-        className="fixed bottom-24 right-4 md:right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-opacity-80"
+        className="fixed bottom-24 right-4 md:right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-opacity-80 z-[100]"
         onClick={() => setIsOpen(true)}
         aria-label="Show inventory"
       >
@@ -31,7 +31,7 @@ const FloatingInventory = () => {
   }
 
   return (
-    <div className="fixed bottom-24 right-4 md:right-8 w-80 md:w-96 bg-surface rounded-lg shadow-lg border border-border animate-slideIn">
+    <div className="fixed bottom-24 right-4 md:right-8 w-80 md:w-96 bg-surface rounded-lg shadow-lg border border-border animate-slideIn z-[100]">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h3 className="text-lg font-bold">Inventory</h3>
         <button 

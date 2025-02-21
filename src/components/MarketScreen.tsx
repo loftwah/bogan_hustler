@@ -14,8 +14,6 @@ import {
   faPlus, 
   faInfinity,
   faBoxOpen,
-  faHistory,
-  faChartPie,
   faFire,
   faBalanceScale,
   faChartBar,
@@ -108,15 +106,6 @@ interface MarketTrend {
   description: string;
 }
 
-interface TransactionHistory {
-  type: 'buy' | 'sell';
-  drug: string;
-  quantity: number;
-  price: number;
-  timestamp: number;
-  profit?: number;
-}
-
 // Fix debounce to handle string input specifically
 const debounce = <T extends (value: string) => void>(fn: T, ms = 300) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -171,11 +160,9 @@ const MarketScreen = () => {
   
   const [quantity, setQuantity] = useState(1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(false);
-  const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
-  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const [marketAlerts, setMarketAlerts] = useState<string[]>([]);
   const [selectedDrug, setSelectedDrug] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Update the market items calculation
   const marketItems = useMemo(() => {
@@ -237,16 +224,6 @@ const MarketScreen = () => {
       await dispatch(adjustMarket({ location, item: originalDrug, quantity: finalQuantity, isBuy: true }));
       logTransaction('buy', originalDrug, finalQuantity, price, true);
 
-      // Add transaction to history
-      const transaction: TransactionHistory = {
-        type: 'buy',
-        drug: originalDrug,
-        quantity: finalQuantity,
-        price,
-        timestamp: Date.now()
-      };
-      setTransactionHistory(prev => [transaction, ...prev].slice(0, 50));
-
       // Check for good deals using market data
       const marketData = prices[drug];
       if (marketData && marketData.supply < 30 && marketData.demand > 70) {
@@ -272,21 +249,6 @@ const MarketScreen = () => {
       await dispatch(sellDrug({ drug: originalDrug, quantity, price }));
       await dispatch(adjustMarket({ location, item: originalDrug, quantity, isBuy: false }));
       logTransaction('sell', originalDrug, quantity, price, true);
-
-      // Add transaction to history with profit calculation
-      const boughtAt = transactionHistory.find(t => 
-        t.type === 'buy' && t.drug === originalDrug
-      )?.price || price;
-      
-      const transaction: TransactionHistory = {
-        type: 'sell',
-        drug: originalDrug,
-        quantity,
-        price,
-        timestamp: Date.now(),
-        profit: (price - boughtAt) * quantity
-      };
-      setTransactionHistory(prev => [transaction, ...prev].slice(0, 50));
     } catch (error) {
       console.error('Sell transaction failed:', error);
     }
@@ -684,60 +646,6 @@ const MarketScreen = () => {
             </div>
           );
         })}
-      </div>
-
-      {/* Add Transaction History Panel */}
-      <div className="fixed bottom-24 right-4 z-50">
-        <button
-          onClick={() => setShowTransactionHistory(prev => !prev)}
-          className="btn btn-primary rounded-full p-4 shadow-lg hover:scale-105 transition-transform"
-        >
-          <FontAwesomeIcon icon={faHistory} className="text-xl" />
-        </button>
-        {showTransactionHistory && (
-          <div className="absolute bottom-full right-0 mb-2 w-96 max-h-[70vh] overflow-y-auto card bg-surface/95 backdrop-blur shadow-xl rounded-lg border border-primary/20 animate-slideIn">
-            <div className="sticky top-0 bg-surface/95 backdrop-blur p-4 border-b border-border">
-              <div className="flex items-center gap-3">
-                <FontAwesomeIcon icon={faChartPie} className="text-primary text-xl" />
-                <h3 className="text-lg font-bold">Transaction History</h3>
-              </div>
-            </div>
-            <div className="p-4 space-y-3">
-              {transactionHistory.map((t, i) => (
-                <div 
-                  key={i}
-                  className={`p-3 rounded-lg transition-all duration-300 hover:scale-102 ${
-                    t.type === 'buy' 
-                      ? 'bg-green-900/20 hover:bg-green-900/30' 
-                      : 'bg-red-900/20 hover:bg-red-900/30'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-2">
-                      <FontAwesomeIcon 
-                        icon={t.type === 'buy' ? faArrowTrendDown : faArrowTrendUp} 
-                        className={t.type === 'buy' ? 'text-green-400' : 'text-red-400'} 
-                      />
-                      {t.type === 'buy' ? 'Bought' : 'Sold'} {t.quantity} {t.drug}
-                    </span>
-                    <span className="font-medium">${t.price}</span>
-                  </div>
-                  {t.profit && (
-                    <div className={`mt-1 text-sm font-medium flex items-center gap-2 ${
-                      t.profit > 0 ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      <FontAwesomeIcon icon={t.profit > 0 ? faArrowTrendUp : faArrowTrendDown} />
-                      Profit: ${Math.abs(t.profit).toLocaleString()}
-                    </div>
-                  )}
-                  <div className="text-xs text-text/50 mt-1">
-                    {new Date(t.timestamp).toLocaleString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
