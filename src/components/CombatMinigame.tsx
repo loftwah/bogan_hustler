@@ -59,8 +59,10 @@ const processStatusEffects = (
       .map(effect => ({ ...effect, duration: effect.duration - 1 }))
       .filter(effect => effect.duration > 0);
     
-    // Clear status effect message if all effects are gone
-    if (prev.length > 0 && updated.length === 0) {
+    // Clear status effect message if all effects are gone or if the specific effect expired
+    if (updated.length === 0 || 
+        (prev.some(e => e.effect === 'rage') && !updated.some(e => e.effect === 'rage')) ||
+        (prev.some(e => e.effect === 'defense') && !updated.some(e => e.effect === 'defense'))) {
       setGameMessage(null);
     }
     
@@ -131,12 +133,13 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
     const gameLoop = setInterval(() => {
       if (gameState !== 'playing') return;
 
-      // Process status effects
+      // Process status effects first
       processStatusEffects(playerStatusEffects, setPlayerStatusEffects, setGameMessage);
       processStatusEffects(opponentStatusEffects, setOpponentStatusEffects, setGameMessage);
 
-      // Apply damage from effects
-      if (opponentStatusEffects.some(e => e.effect === 'bleed')) {
+      // Only set bleeding message if there are no other status effects being processed
+      if (opponentStatusEffects.some(e => e.effect === 'bleed') && 
+          !playerStatusEffects.some(e => e.effect === 'rage' || e.effect === 'defense')) {
         setOpponentHealth(prev => Math.max(0, prev - 5));
         setGameMessage('Opponent is bleeding!');
       }
@@ -146,7 +149,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
     }, 1000);
 
     return () => clearInterval(gameLoop);
-  }, [gameState, opponentStatusEffects]);
+  }, [gameState, opponentStatusEffects, playerStatusEffects]);
 
   // Check win/loss conditions
   useEffect(() => {
