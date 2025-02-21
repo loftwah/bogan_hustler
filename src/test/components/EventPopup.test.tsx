@@ -1,0 +1,133 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import EventPopup from '../../components/EventPopup';
+import eventReducer from '../../store/eventSlice';
+import playerReducer from '../../store/playerSlice';
+import { toast } from 'react-hot-toast';
+
+// Mock react-hot-toast
+vi.mock('react-hot-toast', () => ({
+  toast: vi.fn()
+}));
+
+describe('EventPopup', () => {
+  const createTestStore = (eventData = null) => configureStore({
+    reducer: {
+      events: eventReducer,
+      player: playerReducer
+    },
+    preloadedState: {
+      events: { activeEvent: eventData },
+      player: {
+        cash: 1000,
+        reputation: 0,
+        policeEvasion: 0,
+        inventory: []
+      }
+    }
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Mock HTMLMediaElement.play()
+    window.HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined);
+    window.HTMLMediaElement.prototype.pause = vi.fn();
+  });
+
+  it('should render probabilistic choice outcomes correctly', () => {
+    const store = createTestStore({
+      id: 'test_event',
+      description: 'Test event',
+      choices: [{
+        text: 'Risky Choice',
+        outcome: {
+          successChance: 0.7,
+          success: { cash: 100 },
+          failure: { cash: -100 }
+        }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    expect(screen.getByText('Risky Choice')).toBeInTheDocument();
+  });
+
+  it('should handle successful probabilistic outcome', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5); // Below 0.7 threshold
+
+    const store = createTestStore({
+      id: 'test_event',
+      description: 'Test event',
+      choices: [{
+        text: 'Risky Choice',
+        outcome: {
+          successChance: 0.7,
+          success: { cash: 100 },
+          failure: { cash: -100 }
+        }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    fireEvent.click(screen.getByText('Risky Choice'));
+    expect(toast).toHaveBeenCalledWith("You got lucky!", expect.any(Object));
+  });
+
+  it('should handle failed probabilistic outcome', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.8); // Above 0.7 threshold
+
+    const store = createTestStore({
+      id: 'test_event',
+      description: 'Test event',
+      choices: [{
+        text: 'Risky Choice',
+        outcome: {
+          successChance: 0.7,
+          success: { cash: 100 },
+          failure: { cash: -100 }
+        }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    fireEvent.click(screen.getByText('Risky Choice'));
+    expect(toast).toHaveBeenCalledWith("Things didn't go as planned...", expect.any(Object));
+  });
+
+  it('should trigger minigame for fight choice', () => {
+    const store = createTestStore({
+      id: 'police_raid',
+      description: 'Police raid',
+      choices: [{
+        text: 'Fight',
+        outcome: { triggerMinigame: true }
+      }]
+    });
+
+    render(
+      <Provider store={store}>
+        <EventPopup />
+      </Provider>
+    );
+
+    fireEvent.click(screen.getByText('Fight'));
+    expect(screen.getByText('Police Fight!')).toBeInTheDocument();
+  });
+}); 

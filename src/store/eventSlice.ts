@@ -3,14 +3,20 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { PlayerState } from '../types';
 
+interface EventOutcome {
+  cash?: number;
+  inventory?: Record<string, number>;
+  reputation?: number;
+  policeEvasion?: number;
+}
+
 interface EventChoice {
   text: string;
   outcome: {
-    cash?: number;
-    inventory?: Record<string, number>;
-    reputation?: number;
-    policeEvasion?: number;
-  };
+    successChance?: number;
+    success?: EventOutcome;
+    failure?: EventOutcome;
+  } | EventOutcome | { triggerMinigame: true };
 }
 
 interface EventConditions {
@@ -27,7 +33,7 @@ interface Event {
   choices: EventChoice[];
 }
 
-interface EnhancedEvent extends Event {
+export interface EnhancedEvent extends Event {
   conditions: EventConditions;
   repeatable: boolean;
   cooldown?: number;
@@ -86,7 +92,7 @@ const events: Event[] = [
   },
 ];
 
-const enhancedEvents: EnhancedEvent[] = [
+export const enhancedEvents: EnhancedEvent[] = [
   {
     id: "police_raid",
     description: "Cops kick down your door in %location%. Your neighbor sold you out.",
@@ -103,103 +109,151 @@ const enhancedEvents: EnhancedEvent[] = [
       { 
         text: "Bribe ($500)", 
         outcome: { 
-          cash: -500, 
-          reputation: 5,
-          policeEvasion: -10 
+          // 70% chance of success
+          successChance: 0.7,
+          success: {
+            cash: -500, 
+            reputation: 5,
+            policeEvasion: -10
+          },
+          failure: {
+            cash: -500,
+            reputation: -30,
+            policeEvasion: -20,
+            inventory: { Ice: -3, Heroin: -2 }
+          }
         }
       },
       { 
         text: "Run", 
-        outcome: { 
-          inventory: { Ice: -5, Heroin: -3 }, 
-          reputation: -20,
-          policeEvasion: 5
+        outcome: {
+          // 80% chance of escape, modified by policeEvasion
+          successChance: 0.8,
+          success: {
+            inventory: { Ice: -2 }, // Drop some stuff while running
+            reputation: -10,
+            policeEvasion: 10
+          },
+          failure: {
+            inventory: { Ice: -5, Heroin: -3 },
+            reputation: -25,
+            policeEvasion: -15,
+            cash: -300
+          }
         }
       },
-    ],
+      {
+        text: "Fight",
+        outcome: {
+          triggerMinigame: true
+        }
+      }
+    ]
   },
   {
-    id: "street_deal",
-    description: "A sketchy character offers to buy your entire stock in %location%.",
+    id: "underbelly_meeting",
+    description: "Carl Williams wants to meet at %location%. Says he's got a business proposition.",
     conditions: {
-      minReputation: -100,
-      location: ["Kings Cross", "Redfern", "Mount Druitt"],
-      timeOfDay: [0, 1, 2, 3, 4],
+      minReputation: 30,
+      location: ["Carlton", "Melbourne CBD", "St Kilda"],
       chance: 0.2
     },
-    repeatable: true,
-    cooldown: 3,
+    repeatable: false,
     choices: [
       {
-        text: "Accept Deal",
+        text: "Accept Meeting",
         outcome: {
-          cash: 1000,
-          reputation: -10,
-          policeEvasion: -5
+          successChance: 0.6,
+          success: {
+            cash: 2000,
+            reputation: 30,
+            policeEvasion: -20,
+            inventory: { Ice: 5 }
+          },
+          failure: {
+            cash: -1000,
+            reputation: -40,
+            policeEvasion: -30
+          }
         }
       },
       {
         text: "Decline",
         outcome: {
-          reputation: 5,
-          policeEvasion: 2
+          reputation: -20
         }
       }
     ]
   },
   {
-    id: "turf_protection",
-    description: "Local gang in %location% demands protection money.",
+    id: "chopper_shakedown",
+    description: "Mark 'Chopper' Read caught wind of your operation. He's waiting outside.",
     conditions: {
-      minReputation: -30,
-      maxReputation: 30,
-      chance: 0.25
-    },
-    repeatable: true,
-    cooldown: 7,
-    choices: [
-      {
-        text: "Pay Up ($300)",
-        outcome: {
-          cash: -300,
-          reputation: 15,
-          policeEvasion: 5
-        }
-      },
-      {
-        text: "Refuse",
-        outcome: {
-          reputation: -25,
-          policeEvasion: -10,
-          inventory: { Ice: -2, Heroin: -1 }
-        }
-      }
-    ]
-  },
-  {
-    id: "festival_opportunity",
-    description: "Music festival happening in %location%. Huge demand for party drugs!",
-    conditions: {
-      location: ["Byron Bay", "Sydney CBD", "Melbourne CBD"],
-      timeOfDay: [12, 13, 14, 15, 16, 17, 18, 19, 20],
-      chance: 0.4
+      minReputation: -20,
+      maxReputation: 40,
+      location: ["Melbourne CBD", "Pentridge", "Brunswick"],
+      chance: 0.15
     },
     repeatable: true,
     cooldown: 14,
     choices: [
       {
-        text: "Set Up Shop",
+        text: "Pay Protection ($1000)",
         outcome: {
-          cash: 800,
-          reputation: 10,
-          policeEvasion: -15
+          cash: -1000,
+          reputation: 25,
+          policeEvasion: 10
         }
       },
       {
-        text: "Play It Safe",
+        text: "Stand Your Ground",
         outcome: {
-          policeEvasion: 5,
-          reputation: -5
+          successChance: 0.3,
+          success: {
+            reputation: 50,
+            policeEvasion: 15
+          },
+          failure: {
+            cash: -2000,
+            reputation: -30,
+            policeEvasion: -20,
+            inventory: { Ice: -4, Heroin: -2 }
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: "kings_cross_incident",
+    description: "John Ibrahim's boys spotted you dealing on their turf in %location%.",
+    conditions: {
+      location: ["Kings Cross"],
+      chance: 0.25
+    },
+    repeatable: true,
+    cooldown: 10,
+    choices: [
+      {
+        text: "Negotiate Territory",
+        outcome: {
+          successChance: 0.5,
+          success: {
+            cash: -500,
+            reputation: 20,
+            policeEvasion: 5
+          },
+          failure: {
+            cash: -1000,
+            reputation: -25,
+            inventory: { Ice: -3 }
+          }
+        }
+      },
+      {
+        text: "Move to Different Area",
+        outcome: {
+          reputation: -15,
+          policeEvasion: -5
         }
       }
     ]
@@ -241,10 +295,14 @@ export const triggerRandomEventAsync = createAsyncThunk(
     const { reputation, currentDay, policeEvasion } = state.player;
     const hour = new Date().getHours();
 
+    console.log('Triggering event for location:', location);
+    console.log('Player state:', { reputation, currentDay, policeEvasion, hour });
+
     const eligibleEvents = enhancedEvents.filter(event => {
       // Skip events on cooldown
       if (event.lastTriggered && 
           currentDay - event.lastTriggered < (event.cooldown || 0)) {
+        console.log('Event on cooldown:', event.id);
         return false;
       }
 
@@ -252,15 +310,32 @@ export const triggerRandomEventAsync = createAsyncThunk(
       
       // Consider police evasion skill in chance calculation
       const modifiedChance = (conditions.chance || 0) * (1 - policeEvasion / 200);
+      console.log('Event chance check:', {
+        eventId: event.id,
+        baseChance: conditions.chance,
+        modifiedChance,
+        roll: Math.random()
+      });
 
-      return (
+      const isEligible = (
         (!conditions.minReputation || reputation >= conditions.minReputation) &&
         (!conditions.maxReputation || reputation <= conditions.maxReputation) &&
         (!conditions.location || conditions.location.includes(location)) &&
         (!conditions.timeOfDay || conditions.timeOfDay.includes(hour)) &&
         (Math.random() < modifiedChance)
       );
+
+      console.log('Event eligibility:', {
+        eventId: event.id,
+        isEligible,
+        conditions,
+        location
+      });
+
+      return isEligible;
     });
+
+    console.log('Eligible events:', eligibleEvents.map(e => e.id));
 
     if (eligibleEvents.length === 0) return null;
 
@@ -270,14 +345,23 @@ export const triggerRandomEventAsync = createAsyncThunk(
       weight: calculateEventWeight(event, state.player)
     }));
 
+    console.log('Weighted events:', weightedEvents.map(e => ({
+      id: e.event.id,
+      weight: e.weight
+    })));
+
     // Select event using weighted random
     const totalWeight = weightedEvents.reduce((sum, e) => sum + e.weight, 0);
     let random = Math.random() * totalWeight;
     
+    console.log('Event selection:', { totalWeight, random });
+
     const selectedEvent = weightedEvents.find(e => {
       random -= e.weight;
       return random <= 0;
     })?.event || eligibleEvents[0];
+
+    console.log('Selected event:', selectedEvent.id);
 
     selectedEvent.lastTriggered = currentDay;
     
