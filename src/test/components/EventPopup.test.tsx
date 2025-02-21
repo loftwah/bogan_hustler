@@ -224,8 +224,9 @@ describe('EventPopup', () => {
       </Provider>
     );
 
-    expect(screen.getByText('Success chance: 80%')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /💰 Bribe \(\$500\)/ })).toBeInTheDocument();
+    expect(screen.getByText('80% chance:')).toBeInTheDocument();
+    expect(screen.getByText('✅ $-500 +10r')).toBeInTheDocument();
+    expect(screen.getByText('❌ $-1000 -20r -5e')).toBeInTheDocument();
   });
 
   it('should show minigame text for fight options', () => {
@@ -236,18 +237,7 @@ describe('EventPopup', () => {
         text: '👊 Fight',
         outcome: {
           triggerMinigame: true,
-          success: {
-            cash: 0,
-            reputation: 20,
-            policeEvasion: 0,
-            inventory: []
-          },
-          failure: {
-            cash: 0,
-            reputation: -10,
-            policeEvasion: -5,
-            inventory: []
-          }
+          opponentType: 'police'
         }
       }]
     });
@@ -258,6 +248,6 @@ describe('EventPopup', () => {
       </Provider>
     );
 
-    expect(screen.getByText('Fight to win reputation!')).toBeInTheDocument();
+    expect(screen.getByText('💥 Fight to win reputation!')).toBeInTheDocument();
   });
 }); 
