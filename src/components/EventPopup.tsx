@@ -7,28 +7,20 @@ import { PoliceFightMinigame } from './PoliceFightMinigame';
 import { toast } from "react-hot-toast";
 
 // Add type for choice parameter
+interface EventOutcome {
+  cash?: number;
+  inventory?: Record<string, number>;
+  reputation?: number;
+  policeEvasion?: number;
+}
+
 interface EventChoice {
   text: string;
   outcome: {
-    cash?: number;
-    inventory?: Record<string, number>;
-    reputation?: number;
-    policeEvasion?: number;
     successChance?: number;
-    success?: {
-      cash?: number;
-      inventory?: Record<string, number>;
-      reputation?: number;
-      policeEvasion?: number;
-    };
-    failure?: {
-      cash?: number;
-      inventory?: Record<string, number>;
-      reputation?: number;
-      policeEvasion?: number;
-    };
-  };
-  triggerMinigame?: boolean;
+    success?: EventOutcome;
+    failure?: EventOutcome;
+  } | EventOutcome | { triggerMinigame: true };
 }
 
 const EventPopup = () => {
@@ -65,28 +57,26 @@ const EventPopup = () => {
     }
 
     // Handle probabilistic outcomes
-    if ('successChance' in choice.outcome) {
+    if ('successChance' in choice.outcome && choice.outcome.success && choice.outcome.failure) {
       const roll = Math.random();
       const succeeded = roll < (choice.outcome.successChance || 0);
       
       const outcome = succeeded ? choice.outcome.success : choice.outcome.failure;
       
-      if (outcome) {
-        dispatch(adjustStatsFromEvent(outcome));
-        
-        if (outcome.inventory) {
-          Object.entries(outcome.inventory).forEach(([drug, qty]) => {
-            if (qty > 0) dispatch(buyDrug({ drug, quantity: qty, price: 0 }));
-            else dispatch(sellDrug({ drug, quantity: -qty, price: 0 }));
-          });
-        }
+      dispatch(adjustStatsFromEvent(outcome));
+      
+      if (outcome.inventory) {
+        Object.entries(outcome.inventory).forEach(([drug, qty]) => {
+          if (qty > 0) dispatch(buyDrug({ drug, quantity: qty, price: 0 }));
+          else dispatch(sellDrug({ drug, quantity: -qty, price: 0 }));
+        });
       }
 
       // Show outcome message
       toast(succeeded ? "You got lucky!" : "Things didn't go as planned...", {
-        type: succeeded ? "success" : "error"
+        icon: succeeded ? "✅" : "❌"
       });
-    } else {
+    } else if ('cash' in choice.outcome || 'inventory' in choice.outcome || 'reputation' in choice.outcome || 'policeEvasion' in choice.outcome) {
       // Handle direct outcomes
       dispatch(adjustStatsFromEvent(choice.outcome));
       
@@ -114,7 +104,7 @@ const EventPopup = () => {
             </h3>
             <p className="mb-4">{event.description}</p>
             <div className="grid gap-2">
-              {event.choices.map((choice: EventChoice, index: number) => (
+              {event.choices.map((choice, index) => (
                 <button 
                   key={index}
                   onClick={() => handleChoice(choice)}
@@ -123,12 +113,12 @@ const EventPopup = () => {
                 >
                   <span>{choice.text}</span>
                   <div className="text-xs opacity-75 mt-1">
-                    {choice.outcome.cash && (
+                    {('cash' in choice.outcome) && choice.outcome.cash && (
                       <span className={choice.outcome.cash > 0 ? 'text-green-400' : 'text-red-400'}>
                         ${choice.outcome.cash}
                       </span>
                     )}
-                    {choice.outcome.reputation && (
+                    {('reputation' in choice.outcome) && choice.outcome.reputation && (
                       <span className={choice.outcome.reputation > 0 ? 'text-green-400' : 'text-red-400'}>
                         {' '}Rep: {choice.outcome.reputation > 0 ? '+' : ''}{choice.outcome.reputation}
                       </span>

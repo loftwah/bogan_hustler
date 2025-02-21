@@ -12,8 +12,24 @@ vi.mock('react-hot-toast', () => ({
   toast: vi.fn()
 }));
 
+interface TestEventChoice {
+  text: string;
+  outcome: {
+    successChance?: number;
+    success?: { cash: number };
+    failure?: { cash: number };
+    triggerMinigame?: boolean;
+  };
+}
+
+interface TestEvent {
+  id: string;
+  description: string;
+  choices: TestEventChoice[];
+}
+
 describe('EventPopup', () => {
-  const createTestStore = (eventData = null) => configureStore({
+  const createTestStore = (eventData: TestEvent | null = null) => configureStore({
     reducer: {
       events: eventReducer,
       player: playerReducer
@@ -22,9 +38,17 @@ describe('EventPopup', () => {
       events: { activeEvent: eventData },
       player: {
         cash: 1000,
+        inventory: [],
+        inventorySpace: 10,
         reputation: 0,
+        location: "Kings Cross",
+        currentDay: 1,
+        maxDays: 30,
+        debt: 0,
+        debtInterest: 0.05,
         policeEvasion: 0,
-        inventory: []
+        marketIntel: 0,
+        adultMode: false
       }
     }
   });
