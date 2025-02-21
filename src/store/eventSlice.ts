@@ -3,37 +3,38 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { PlayerState } from '../types';
 
-// First, let's define the valid drug types
-interface DrugInventory {
-  Ice: number;
-  Heroin: number;
-  Weed?: number;
-  Cocaine?: number;
-  // Add other drugs as needed
+export interface InventoryItem {
+  name: string;
+  quantity: number;
 }
 
-interface EventOutcome {
+export interface EventOutcome {
   cash?: number;
-  inventory?: Partial<DrugInventory>;
   reputation?: number;
+  inventory?: InventoryItem[];
+  message?: string;
   policeEvasion?: number;
 }
 
-interface LocationRequirement {
+export interface LocationRequirement {
   blacklist: string[];
   failureMessage: string;
 }
 
-interface EventChoice {
+export interface EventChoiceOutcome {
+  successChance?: number;
+  success?: EventOutcome;
+  failure?: EventOutcome;
+  baseEffects?: EventOutcome;
+  catchChance?: number;
+  caughtEffects?: EventOutcome;
+  triggerMinigame?: boolean;
+  requireLocation?: LocationRequirement;
+}
+
+export interface EventChoice {
   text: string;
-  outcome: {
-    successChance?: number;
-    success?: EventOutcome;
-    failure?: EventOutcome;
-  } | EventOutcome | {
-    triggerMinigame: true;
-    requireLocation?: LocationRequirement;
-  };
+  outcome: EventOutcome | EventChoiceOutcome;
 }
 
 interface EventConditions {
@@ -61,100 +62,103 @@ export interface EventState {
   activeEvent: Event | null;
 }
 
-// First, let's define some standardized outcomes
-const standardOutcomes: {
-  bribe: {
-    text: string;
-    baseSuccess: number;
-    success: EventOutcome;
-    failure: EventOutcome;
+// First fix the standardOutcomes interface
+interface StandardOutcome {
+  text?: string;
+  baseEffects?: EventOutcome;
+  catchChance?: number;
+  caughtEffects?: EventOutcome;
+  success?: EventOutcome;
+  failure?: EventOutcome;
+  outcome?: {
+    triggerMinigame?: boolean;
+    requireLocation?: LocationRequirement;
   };
-  run: {
-    text: string;
-    baseSuccess: number;
-    success: EventOutcome;
-    failure: EventOutcome;
-  };
-  fight: {
-    text: string;
-    outcome: {
-      triggerMinigame: true;
-      requireLocation: LocationRequirement;
-    };
-  };
-} = {
+}
+
+// Update the standardOutcomes object
+const standardOutcomes: Record<string, StandardOutcome> = {
   bribe: {
     text: "💰 Bribe",
-    baseSuccess: 0.75,
     success: {
       cash: -500,
       reputation: 15,
-      policeEvasion: 5,
-      inventory: {}
-    },
-    failure: {
-      cash: -500,
-      reputation: -15,
-      policeEvasion: -10,
-      inventory: { Ice: -2 }
-    }
-  },
-  run: {
-    text: "🏃 Run",
-    baseSuccess: 0.65,
-    success: {
-      cash: 0,
-      reputation: -10,
-      policeEvasion: 10,
-      inventory: {}
+      policeEvasion: 0,
+      inventory: []
     },
     failure: {
       cash: -750,
-      reputation: -25,
-      policeEvasion: -15,
-      inventory: { Ice: -3 }
+      reputation: -20,
+      policeEvasion: -10,
+      inventory: [{ name: "Ice", quantity: -2 }]
     }
   },
   fight: {
     text: "👊 Fight",
     outcome: {
-      triggerMinigame: true,
+      triggerMinigame: true as const,
       requireLocation: {
-        blacklist: ["Melbourne CBD", "Kings Cross"],
-        failureMessage: "Too many witnesses here for a fight!"
+        blacklist: ["Kings Cross", "Sydney CBD"],
+        failureMessage: "Can't fight here - too many witnesses!"
       }
+    }
+  },
+  runaway: {
+    text: "🏃 Run Away",
+    success: {
+      cash: 0,
+      reputation: -10,
+      policeEvasion: 10,
+      inventory: []
+    },
+    failure: {
+      cash: -200,
+      reputation: -15,
+      policeEvasion: -5,
+      inventory: []
     }
   }
 };
 
-// Helper function to create standardized choices with custom modifications
-const createEventChoices = (modifications: {
-  bribe?: Partial<typeof standardOutcomes.bribe>,
-  run?: Partial<typeof standardOutcomes.run>,
-  fight?: Partial<typeof standardOutcomes.fight>
-}) => {
+// Update createEventChoices to handle the new structure
+const createEventChoices = (modifications: Partial<Record<string, StandardOutcome>> = {}): EventChoice[] => {
   return [
     {
-      text: `${standardOutcomes.bribe.text} ($${Math.abs(modifications.bribe?.success?.cash ?? standardOutcomes.bribe.success.cash ?? 0)})`,
+      text: standardOutcomes.bribe.text || "💰 Bribe",
       outcome: {
-        successChance: modifications.bribe?.baseSuccess || standardOutcomes.bribe.baseSuccess,
-        success: { ...standardOutcomes.bribe.success, ...modifications.bribe?.success },
-        failure: { ...standardOutcomes.bribe.failure, ...modifications.bribe?.failure }
+        successChance: 0.7,
+        success: {
+          ...standardOutcomes.bribe.success,
+          ...(modifications.bribe?.success || {})
+        },
+        failure: {
+          ...standardOutcomes.bribe.failure,
+          ...(modifications.bribe?.failure || {})
+        }
       }
     },
     {
-      text: standardOutcomes.run.text,
+      text: standardOutcomes.fight.text || "👊 Fight",
       outcome: {
-        successChance: modifications.run?.baseSuccess || standardOutcomes.run.baseSuccess,
-        success: { ...standardOutcomes.run.success, ...modifications.run?.success },
-        failure: { ...standardOutcomes.run.failure, ...modifications.run?.failure }
+        triggerMinigame: true as const,
+        requireLocation: standardOutcomes.fight.outcome?.requireLocation || {
+          blacklist: [],
+          failureMessage: "You can't fight here!"
+        }
       }
     },
     {
-      text: standardOutcomes.fight.text,
+      text: standardOutcomes.runaway.text || "🏃 Run Away",
       outcome: {
-        ...standardOutcomes.fight.outcome,
-        requireLocation: modifications.fight?.outcome?.requireLocation || standardOutcomes.fight.outcome.requireLocation
+        successChance: 0.7,
+        success: {
+          ...standardOutcomes.runaway.success,
+          ...(modifications.runaway?.success || {})
+        },
+        failure: {
+          ...standardOutcomes.runaway.failure,
+          ...(modifications.runaway?.failure || {})
+        }
       }
     }
   ];
@@ -163,41 +167,54 @@ const createEventChoices = (modifications: {
 // Now we can define events much more concisely
 export const enhancedEvents: EnhancedEvent[] = [
   {
-    id: "police_raid",
-    description: "Cops kick down your door in %location%. Your neighbor sold you out.",
+    id: 'police_raid',
+    description: "Police are conducting a raid! What's your move?",
+    choices: [
+      {
+        text: "💰 Bribe ($500)",
+        outcome: standardOutcomes.bribe
+      },
+      {
+        text: "👊 Fight",
+        outcome: standardOutcomes.fight
+      },
+      {
+        text: "🏃 Run Away",
+        outcome: standardOutcomes.runaway
+      }
+    ],
     conditions: {
-      minReputation: -50,
-      maxReputation: 50,
-      timeOfDay: [22, 23, 0, 1, 2, 3, 4, 5],
+      minReputation: -100,
+      maxReputation: 100,
       chance: 0.3
     },
     repeatable: true,
-    cooldown: 5,
-    choices: createEventChoices({
-      bribe: {
-        success: { 
-          cash: -500, 
-          reputation: 15,
-          policeEvasion: 5,
-          inventory: {}
-        },
-        failure: { 
-          cash: -500,
-          reputation: -15,
-          policeEvasion: -10,
-          inventory: { Ice: -2, Heroin: -1 }
-        }
+    cooldown: 3
+  },
+  {
+    id: 'gang_encounter',
+    description: "Local gang members have spotted you! They demand payment!",
+    choices: [
+      {
+        text: "💰 Pay them off ($500)",
+        outcome: standardOutcomes.bribe
       },
-      fight: {
-        outcome: {
-          triggerMinigame: true,
-          requireLocation: {
-            blacklist: ["Melbourne CBD", "Kings Cross", "St Kilda"],
-            failureMessage: "Security is too tight here for a fight!"
-          }
-        }
+      {
+        text: "👊 Stand and Fight",
+        outcome: standardOutcomes.fight
+      },
+      {
+        text: "🏃 Run Away",
+        outcome: standardOutcomes.runaway
       }
-    })
+    ],
+    conditions: {
+      minReputation: -100,
+      maxReputation: 100,
+      chance: 0.25
+    },
+    repeatable: true,
+    cooldown: 4
   },
   {
     id: "bikie_shakedown",
@@ -215,13 +232,13 @@ export const enhancedEvents: EnhancedEvent[] = [
           cash: -600, 
           reputation: 15,
           policeEvasion: 5,
-          inventory: {}
+          inventory: []
         },
         failure: { 
           cash: -500,
           reputation: -15,
           policeEvasion: -10,
-          inventory: { Ice: -2 }
+          inventory: [{ name: "Ice", quantity: -2 }]
         }
       }
     })
@@ -244,13 +261,13 @@ export const enhancedEvents: EnhancedEvent[] = [
             cash: -2000,
             reputation: 30,
             policeEvasion: -10,
-            inventory: { Ice: 5 }
+            inventory: [{ name: "Ice", quantity: 5 }]
           },
           failure: {
             cash: -2000,
             reputation: -20,
             policeEvasion: -15,
-            inventory: {}
+            inventory: []
           }
         }
       },
@@ -262,13 +279,13 @@ export const enhancedEvents: EnhancedEvent[] = [
             cash: 0,
             reputation: -15,
             policeEvasion: 10,
-            inventory: {}
+            inventory: []
           },
           failure: {
             cash: -1000,
             reputation: -30,
             policeEvasion: -10,
-            inventory: { Ice: -2 }
+            inventory: [{ name: "Ice", quantity: -2 }]
           }
         }
       },
@@ -304,13 +321,13 @@ export const enhancedEvents: EnhancedEvent[] = [
             cash: -1000,
             reputation: 25,
             policeEvasion: 10,
-            inventory: {}
+            inventory: []
           },
           failure: {
             cash: -1000,
             reputation: -15,
             policeEvasion: -10,
-            inventory: {}
+            inventory: []
           }
         }
       },
@@ -322,13 +339,13 @@ export const enhancedEvents: EnhancedEvent[] = [
             cash: 0,
             reputation: -10,
             policeEvasion: 15,
-            inventory: {}
+            inventory: []
           },
           failure: {
             cash: -1500,
             reputation: -25,
             policeEvasion: -15,
-            inventory: { Ice: -3 }
+            inventory: [{ name: "Ice", quantity: -3 }]
           }
         }
       },
@@ -362,13 +379,13 @@ export const enhancedEvents: EnhancedEvent[] = [
             cash: -500,
             reputation: 20,
             policeEvasion: 5,
-            inventory: {}
+            inventory: []
           },
           failure: {
             cash: -500,
             reputation: -15,
             policeEvasion: -5,
-            inventory: { Ice: -2 }
+            inventory: [{ name: "Ice", quantity: -2 }]
           }
         }
       },
@@ -380,13 +397,13 @@ export const enhancedEvents: EnhancedEvent[] = [
             cash: 0,
             reputation: -15,
             policeEvasion: 10,
-            inventory: {}
+            inventory: []
           },
           failure: {
             cash: -750,
             reputation: -25,
             policeEvasion: -10,
-            inventory: { Ice: -3 }
+            inventory: [{ name: "Ice", quantity: -3 }]
           }
         }
       },
@@ -439,8 +456,8 @@ export const triggerRandomEventAsync = createAsyncThunk(
     const { reputation, currentDay, policeEvasion } = state.player;
     const hour = new Date().getHours();
 
-    // Increase base chance of events
-    const baseEventChance = 0.4; // Increased from 0.2
+    // First check if event happens at all based on police evasion
+    const baseEventChance = 0.4;
     const modifiedChance = baseEventChance * (1 - policeEvasion / 200);
 
     if (Math.random() > modifiedChance) return null;

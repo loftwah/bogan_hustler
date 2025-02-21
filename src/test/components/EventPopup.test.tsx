@@ -4,6 +4,10 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import EventPopup from '../../components/EventPopup';
 import eventReducer from '../../store/eventSlice';
+import type { 
+  EventOutcome, 
+  EventChoiceOutcome 
+} from '../../store/eventSlice';
 import playerReducer from '../../store/playerSlice';
 import { toast } from 'react-hot-toast';
 
@@ -12,34 +16,13 @@ vi.mock('react-hot-toast', () => ({
   toast: vi.fn()
 }));
 
-interface TestEventChoice {
-  text: string;
-  outcome: {
-    successChance?: number;
-    success?: { 
-      cash: number;
-      reputation: number;
-      policeEvasion: number;
-      inventory: Record<string, number>;
-    };
-    failure?: { 
-      cash: number;
-      reputation: number;
-      policeEvasion: number;
-      inventory: Record<string, number>;
-    };
-    triggerMinigame?: boolean;
-    requireLocation?: {
-      blacklist: string[];
-      failureMessage: string;
-    };
-  };
-}
-
 interface TestEvent {
   id: string;
   description: string;
-  choices: TestEventChoice[];
+  choices: Array<{
+    text: string;
+    outcome: EventOutcome | EventChoiceOutcome;
+  }>;
 }
 
 describe('EventPopup', () => {
@@ -49,7 +32,9 @@ describe('EventPopup', () => {
       player: playerReducer
     },
     preloadedState: {
-      events: { activeEvent: eventData },
+      events: { 
+        activeEvent: eventData 
+      },
       player: {
         cash: 1000,
         inventory: [],
@@ -86,13 +71,13 @@ describe('EventPopup', () => {
             cash: 100,
             reputation: 0,
             policeEvasion: 0,
-            inventory: {}
+            inventory: []
           },
           failure: { 
             cash: -100,
             reputation: 0,
             policeEvasion: 0,
-            inventory: {}
+            inventory: []
           }
         }
       }]
@@ -108,7 +93,7 @@ describe('EventPopup', () => {
   });
 
   it('should handle successful probabilistic outcome', () => {
-    vi.spyOn(Math, 'random').mockReturnValue(0.5); // Below 0.7 threshold
+    vi.spyOn(Math, 'random').mockReturnValue(0.5); // Below 0.7 threshold for success
 
     const store = createTestStore({
       id: 'test_event',
@@ -121,13 +106,13 @@ describe('EventPopup', () => {
             cash: 100,
             reputation: 0,
             policeEvasion: 0,
-            inventory: {}
+            inventory: []
           },
           failure: { 
             cash: -100,
             reputation: 0,
             policeEvasion: 0,
-            inventory: {}
+            inventory: []
           }
         }
       }]
@@ -157,13 +142,13 @@ describe('EventPopup', () => {
             cash: 100,
             reputation: 0,
             policeEvasion: 0,
-            inventory: {}
+            inventory: []
           },
           failure: { 
             cash: -100,
             reputation: 0,
             policeEvasion: 0,
-            inventory: {}
+            inventory: []
           }
         }
       }]
@@ -204,20 +189,20 @@ describe('EventPopup', () => {
       id: 'police_raid',
       description: 'Test raid',
       choices: [{
-        text: "💰 Bribe ($500)",
+        text: '💰 Bribe ($500)',
         outcome: {
           successChance: 0.8,
-          success: { 
-            cash: -500, 
+          success: {
+            cash: -500,
             reputation: 10,
             policeEvasion: 0,
-            inventory: {}
+            inventory: []
           },
-          failure: { 
-            cash: -1000, 
+          failure: {
+            cash: -1000,
             reputation: -20,
-            policeEvasion: 0,
-            inventory: {}
+            policeEvasion: -5,
+            inventory: []
           }
         }
       }]
@@ -229,7 +214,7 @@ describe('EventPopup', () => {
       </Provider>
     );
 
-    expect(screen.getByText('80% Success')).toBeInTheDocument();
+    expect(screen.getByText('Success chance: 80%')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /💰 Bribe \(\$500\)/ })).toBeInTheDocument();
   });
 
@@ -238,8 +223,22 @@ describe('EventPopup', () => {
       id: 'police_raid',
       description: 'Test raid',
       choices: [{
-        text: "👊 Fight",
-        outcome: { triggerMinigame: true }
+        text: '👊 Fight',
+        outcome: {
+          triggerMinigame: true,
+          success: {
+            cash: 0,
+            reputation: 20,
+            policeEvasion: 0,
+            inventory: []
+          },
+          failure: {
+            cash: 0,
+            reputation: -10,
+            policeEvasion: -5,
+            inventory: []
+          }
+        }
       }]
     });
 
@@ -249,6 +248,6 @@ describe('EventPopup', () => {
       </Provider>
     );
 
-    expect(screen.getByText('Fight for max reputation!')).toBeInTheDocument();
+    expect(screen.getByText('Fight to win reputation!')).toBeInTheDocument();
   });
 }); 
