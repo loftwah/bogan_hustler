@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBolt, faShieldHalved, faPersonRunning, faDumbbell } from '@fortawesome/free-solid-svg-icons';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 export type OpponentType = 'police' | 'gang' | 'bikie' | 'dealer';
 
@@ -15,8 +16,60 @@ interface StatusEffect {
   effect: 'stun' | 'bleed' | 'defense' | 'rage';
 }
 
+interface SpecialMove {
+  energyCost: number;
+  damage: number;
+  description: string;
+}
+
+interface OpponentConfig {
+  title: string;
+  health: number;
+  damage: number;
+  specialMoves: Record<string, SpecialMove>;
+}
+
+const CombatButton: React.FC<{
+  moveType: string;
+  move: SpecialMove;
+  icon: IconDefinition;
+  disabled: boolean;
+  onClick: () => void;
+}> = ({ moveType, move, icon, disabled, onClick }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className="btn btn-primary flex items-center justify-center"
+    title={move.description}
+  >
+    <FontAwesomeIcon icon={icon} className="mr-2" />
+    {moveType} ({move.energyCost})
+  </button>
+);
+
+const processStatusEffects = (
+  effects: StatusEffect[],
+  setEffects: React.Dispatch<React.SetStateAction<StatusEffect[]>>,
+  setGameMessage: React.Dispatch<React.SetStateAction<string | null>>
+) => {
+  if (effects.length === 0) return;
+
+  setEffects(prev => {
+    const updated = prev
+      .map(effect => ({ ...effect, duration: effect.duration - 1 }))
+      .filter(effect => effect.duration > 0);
+    
+    // Clear status effect message if all effects are gone
+    if (prev.length > 0 && updated.length === 0) {
+      setGameMessage(null);
+    }
+    
+    return updated;
+  });
+};
+
 export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
-  const opponentConfigs = {
+  const opponentConfigs: Record<OpponentType, OpponentConfig> = {
     police: {
       title: 'Police Fight!',
       health: 100,
@@ -79,31 +132,8 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
       if (gameState !== 'playing') return;
 
       // Process status effects
-      setPlayerStatusEffects(prev => {
-        const updated = prev
-          .map(effect => ({ ...effect, duration: effect.duration - 1 }))
-          .filter(effect => effect.duration > 0);
-        
-        // Clear status effect message if all effects are gone
-        if (prev.length > 0 && updated.length === 0) {
-          setGameMessage(null);
-        }
-        
-        return updated;
-      });
-
-      setOpponentStatusEffects(prev => {
-        const updated = prev
-          .map(effect => ({ ...effect, duration: effect.duration - 1 }))
-          .filter(effect => effect.duration > 0);
-        
-        // Clear status effect message if all effects are gone
-        if (prev.length > 0 && updated.length === 0) {
-          setGameMessage(null);
-        }
-        
-        return updated;
-      });
+      processStatusEffects(playerStatusEffects, setPlayerStatusEffects, setGameMessage);
+      processStatusEffects(opponentStatusEffects, setOpponentStatusEffects, setGameMessage);
 
       // Apply damage from effects
       if (opponentStatusEffects.some(e => e.effect === 'bleed')) {
@@ -221,45 +251,34 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
 
         {gameState === 'playing' && (
           <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => executeMove('quickStrike')}
+            <CombatButton
+              moveType="Quick Strike"
+              move={config.specialMoves.quickStrike}
+              icon={faBolt}
               disabled={playerEnergy < config.specialMoves.quickStrike.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              className="btn btn-primary flex items-center justify-center"
-              title={config.specialMoves.quickStrike.description}
-            >
-              <FontAwesomeIcon icon={faBolt} className="mr-2" />
-              Quick Strike ({config.specialMoves.quickStrike.energyCost})
-            </button>
-
-            <button
-              onClick={() => executeMove('heavyBlow')}
+              onClick={() => executeMove('quickStrike')}
+            />
+            <CombatButton
+              moveType="Heavy Blow"
+              move={config.specialMoves.heavyBlow}
+              icon={faDumbbell}
               disabled={playerEnergy < config.specialMoves.heavyBlow.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              className="btn btn-primary flex items-center justify-center"
-              title={config.specialMoves.heavyBlow.description}
-            >
-              <FontAwesomeIcon icon={faDumbbell} className="mr-2" />
-              Heavy Blow ({config.specialMoves.heavyBlow.energyCost})
-            </button>
-
-            <button
-              onClick={() => executeMove('defensive')}
+              onClick={() => executeMove('heavyBlow')}
+            />
+            <CombatButton
+              moveType="Defensive"
+              move={config.specialMoves.defensive}
+              icon={faShieldHalved}
               disabled={playerEnergy < config.specialMoves.defensive.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              className="btn btn-primary flex items-center justify-center"
-              title={config.specialMoves.defensive.description}
-            >
-              <FontAwesomeIcon icon={faShieldHalved} className="mr-2" />
-              Defensive ({config.specialMoves.defensive.energyCost})
-            </button>
-
-            <button
-              onClick={() => executeMove('adrenaline')}
+              onClick={() => executeMove('defensive')}
+            />
+            <CombatButton
+              moveType="Adrenaline"
+              move={config.specialMoves.adrenaline}
+              icon={faPersonRunning}
               disabled={playerEnergy < config.specialMoves.adrenaline.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              className="btn btn-primary flex items-center justify-center"
-              title={config.specialMoves.adrenaline.description}
-            >
-              <FontAwesomeIcon icon={faPersonRunning} className="mr-2" />
-              Adrenaline ({config.specialMoves.adrenaline.energyCost})
-            </button>
+              onClick={() => executeMove('adrenaline')}
+            />
           </div>
         )}
 
