@@ -7,64 +7,65 @@ import { RootState, AppDispatch } from "../store/store";
 // Group locations by region for better organization
 export const locationsByRegion = {
   "New South Wales": [
-    "Kings Cross",
-    "Redfern",
-    "Cabramatta",
-    "Mount Druitt",
-    "Merrylands",
-    "Auburn",
-    "Bankstown",
-    "Liverpool",
-    "Blacktown",
-    "Nimbin",
-    "Penrith",
-    "Campbelltown",
-    "Wollongong",
-    "Newcastle",
-    "Sydney CBD",
-    "Parramatta",
-    "Byron Bay",
-    "Lismore",
-    "Dubbo",
-    "Fairfield",
-    "Woolloomooloo",
+    // Hardcore Areas
+    "Kings Cross", // Major drug hub, nightlife district
+    "Redfern", // Historical drug area, gang presence
+    "Cabramatta", // Former heroin capital, Asian crime networks
+    "Mount Druitt", // Gang territory, high drug activity
+    "Merrylands", // Middle Eastern crime networks
+    "Auburn", // Gang conflicts, drug distribution
+    "Bankstown", // Gang territory, drug trade
+    "Liverpool", // Drug distribution hub
+    "Blacktown", // Street-level dealing
+    "Nimbin", // Cannabis culture, party drugs
+    "Penrith", // Western Sydney drug market
+    "Campbelltown", // Gang presence
+    "Wollongong", // Coastal drug route
+    "Newcastle", // Port city drug entry
+    "Sydney CBD", // Nightlife drug scene
+    "Parramatta", // Western hub
+    "Byron Bay", // Party drug scene
+    "Lismore", // Northern Rivers drug route
+    "Dubbo", // Rural drug distribution
+    "Fairfield", // Gang territory
+    "Woolloomooloo", // Inner city drug zone
   ],
   "Victoria": [
-    "Frankston",
-    "Broadmeadows",
-    "Dandenong",
-    "Sunshine",
-    "Craigieburn",
-    "Springvale",
-    "Werribee",
-    "Norlane",
-    "Moe",
-    "Melbourne CBD",
-    "St Kilda",
-    "Footscray",
-    "Geelong",
-    "Bendigo",
-    "Richmond",
-    "Sunbury",
-    "Collingwood",
-    "Braybrook",
+    "Frankston", // Coastal drug route
+    "Broadmeadows", // Gang territory
+    "Dandenong", // Major drug hub
+    "Sunshine", // Gang presence
+    "Craigieburn", // Emerging drug zone
+    "Springvale", // Asian crime networks
+    "Werribee", // Western drug market
+    "Norlane", // High drug activity
+    "Moe", // Rural drug distribution
+    "Melbourne CBD", // Nightlife scene
+    "St Kilda", // Historical drug area
+    "Footscray", // Asian heroin trade history
+    "Geelong", // Port city route
+    "Bendigo", // Regional distribution
+    "Richmond", // Historical heroin zone
+    "Sunbury", // Outer suburban market
+    "Collingwood", // Inner city drug scene
+    "Braybrook", // Western suburbs trade
   ],
   "Queensland": [
-    "Logan Central",
-    "Inala",
-    "Woodridge",
-    "Southport",
-    "Marsden",
-    "Beenleigh",
-    "Surfers Paradise",
-    "Kingston",
-    "Caboolture",
-    "Ipswich",
-    "Toowoomba",
-    "Cairns",
-    "Townsville",
-    "Fortitude Valley",
-    "Palm Beach",
+    "Logan Central", // Major drug hub
+    "Inala", // Gang territory
+    "Woodridge", // High drug activity
+    "Southport", // Gold Coast drug scene
+    "Marsden", // Gang presence
+    "Beenleigh", // Distribution hub
+    "Surfers Paradise", // Party drug market
+    "Kingston", // Drug activity zone
+    "Caboolture", // Northern corridor
+    "Ipswich", // Western drug route
+    "Toowoomba", // Regional distribution
+    "Cairns", // Northern drug entry
+    "Townsville", // Northern hub
+    "Fortitude Valley", // Nightlife drug scene
+    "Palm Beach", // Gold Coast market
   ],
   "Western Australia": [
     "Rockingham",

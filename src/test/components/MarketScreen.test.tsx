@@ -63,9 +63,9 @@ describe('MarketScreen', () => {
         <MarketScreen />
       </Provider>
     )
-    expect(screen.getByText('Ice')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Ice' })).toBeInTheDocument()
     expect(screen.getByText('$100')).toBeInTheDocument()
-    expect(screen.getByText('Weed')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Weed' })).toBeInTheDocument()
     expect(screen.getByText('$50')).toBeInTheDocument()
   })
 
