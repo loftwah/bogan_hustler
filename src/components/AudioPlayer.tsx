@@ -146,72 +146,75 @@ export const AudioPlayer = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-surface/50 rounded-lg p-2">
-      <div className="flex items-center gap-1">
-        <button
-          onClick={previousTrack}
-          className="btn btn-ghost btn-sm"
-          aria-label="Previous track"
-        >
-          <FontAwesomeIcon icon={faBackward} />
-        </button>
+    <div className="flex flex-col gap-2 bg-surface/50 rounded-lg p-2 text-sm w-full xs:w-auto">
+      <p className="text-xs text-center truncate px-1">
+        {TRACKS[currentTrackIndex].title}
+      </p>
 
-        <button
-          onClick={togglePlay}
-          className="btn btn-primary btn-sm"
-          aria-label={isPlaying ? "Pause" : "Play"}
-        >
-          <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
-        </button>
+      <div className="flex items-center justify-center xs:justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={previousTrack}
+            className="btn btn-ghost btn-xs"
+            aria-label="Previous track"
+          >
+            <FontAwesomeIcon icon={faBackward} />
+          </button>
 
-        <button
-          onClick={nextTrack}
-          className="btn btn-ghost btn-sm"
-          aria-label="Next track"
-        >
-          <FontAwesomeIcon icon={faForward} />
-        </button>
-      </div>
+          <button
+            onClick={togglePlay}
+            className="btn btn-primary btn-xs"
+            aria-label={isPlaying ? "Pause" : "Play"}
+          >
+            <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
+          </button>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm truncate">
-          {TRACKS[currentTrackIndex].title}
-        </p>
-        <div className="flex items-center gap-1 text-xs text-text/70">
-          <span className="hidden xs:inline">{formatTime(currentTime)}</span>
-          <div className="flex-1 h-1 bg-surface rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary"
-              style={{ width: `${(currentTime / duration) * 100}%` }}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={(currentTime / duration) * 100}
-            />
-          </div>
-          <span className="hidden xs:inline">{formatTime(duration)}</span>
+          <button
+            onClick={nextTrack}
+            className="btn btn-ghost btn-xs"
+            aria-label="Next track"
+          >
+            <FontAwesomeIcon icon={faForward} />
+          </button>
         </div>
-      </div>
 
-      <div className="flex items-center gap-1">
-        <button
-          onClick={toggleMute}
-          className="btn btn-ghost btn-sm"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeUp} />
-        </button>
+        <div className="flex-1 min-w-0 mx-2">
+          <div className="flex items-center gap-1 text-xs text-text/70">
+            <span className="w-8 text-right text-[10px]">{formatTime(currentTime)}</span>
+            <div className="flex-1 h-1 bg-surface rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary"
+                style={{ width: `${(currentTime / duration) * 100}%` }}
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={(currentTime / duration) * 100}
+              />
+            </div>
+            <span className="w-8 text-left text-[10px]">{formatTime(duration)}</span>
+          </div>
+        </div>
 
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={volume}
-          onChange={(e) => setVolume(Number(e.target.value))}
-          className="w-12 xs:w-20"
-          aria-label="Volume control"
-        />
+        <div className="flex items-center gap-1">
+          <button
+            onClick={toggleMute}
+            className="btn btn-ghost btn-xs"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+          >
+            <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeUp} />
+          </button>
+
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
+            className="w-12 sm:w-16 hidden xs:block"
+            aria-label="Volume control"
+          />
+        </div>
       </div>
     </div>
   );

@@ -143,12 +143,12 @@ function App() {
               </div>
               
               {/* Control Buttons */}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col xs:flex-row items-center justify-center w-full sm:w-auto gap-3">
                 <AudioPlayer />
                 
                 <button
                   onClick={() => dispatch(toggleAdultMode())}
-                  className={`btn flex items-center gap-2 hover:scale-105 transform transition-all ${
+                  className={`btn btn-xs xs:btn-sm flex items-center justify-center gap-2 hover:scale-105 transform transition-all w-full xs:w-auto ${
                     adultMode 
                       ? 'bg-red-600 hover:bg-red-700 text-white' 
                       : 'bg-green-600 hover:bg-green-700 text-white'
@@ -156,7 +156,7 @@ function App() {
                   aria-label="Toggle adult mode"
                 >
                   <FontAwesomeIcon icon={adultMode ? faShieldAlt : faChild} />
-                  <span className="hidden sm:inline">{adultMode ? '18+ Mode' : 'Family'}</span>
+                  <span>{adultMode ? '18+ Mode' : 'Family'}</span>
                 </button>
               </div>
             </div>
