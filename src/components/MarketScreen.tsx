@@ -266,6 +266,7 @@ const MarketScreen = () => {
   const [marketAlerts, setMarketAlerts] = useState<string[]>([]);
   const [selectedDrug, setSelectedDrug] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showLocationInfo, setShowLocationInfo] = useState(true);
 
   // Update the market items calculation
   const marketItems = useMemo(() => {
@@ -494,102 +495,110 @@ const MarketScreen = () => {
     <div className="max-w-7xl mx-auto p-4 space-y-6">
       {/* Enhanced Location Details Section */}
       <div className="bg-surface/80 rounded-xl p-6 border border-border/50">
-        <div className="space-y-6">
-          {/* Location Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold flex items-center gap-3">
-                {location}
-                <span className="text-sm font-normal px-2 py-1 rounded bg-surface text-text/60">
-                  {getLocationDetails(location).region}
-                </span>
-              </h2>
-              <p className="text-lg mt-2 text-text/70 italic">
-                "{getLocationDetails(location).history}"
-              </p>
-            </div>
+        {/* Collapsible Header */}
+        <button 
+          onClick={() => setShowLocationInfo(!showLocationInfo)}
+          className="w-full flex items-center justify-between"
+        >
+          <div>
+            <h2 className="text-3xl font-bold flex items-center gap-3">
+              {location}
+              <span className="text-sm font-normal px-2 py-1 rounded bg-surface text-text/60">
+                {getLocationDetails(location).region}
+              </span>
+            </h2>
           </div>
+          <span className="text-2xl text-text/60">{showLocationInfo ? '▼' : '▶'}</span>
+        </button>
 
-          {/* Location Story Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="story-card">
-              <div className="flex items-center gap-2 text-primary mb-3">
-                <FontAwesomeIcon icon={faHistory} className="text-xl" />
-                <h3 className="font-bold">Criminal History</h3>
-              </div>
-              <p className="text-text/80">{getLocationDetails(location).history}</p>
-            </div>
+        {/* Collapsible Content */}
+        {showLocationInfo && (
+          <div className="space-y-6 mt-4">
+            <p className="text-lg text-text/70 italic">
+              "{getLocationDetails(location).history}"
+            </p>
 
-            <div className="story-card">
-              <div className="flex items-center gap-2 text-red-500 mb-3">
-                <FontAwesomeIcon icon={faSkull} className="text-xl" />
-                <h3 className="font-bold">Gang Activity</h3>
-              </div>
-              <p className="text-text/80">{getLocationDetails(location).gangs}</p>
-            </div>
-
-            <div className="story-card">
-              <div className="flex items-center gap-2 text-purple-500 mb-3">
-                <FontAwesomeIcon icon={faCapsules} className="text-xl" />
-                <h3 className="font-bold">Drug Scene</h3>
-              </div>
-              <p className="text-text/80">{getLocationDetails(location).drugs.map((drug: string) => (
-                <span 
-                  key={drug}
-                  className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70"
-                >
-                  {drug}
-                </span>
-              ))}</p>
-            </div>
-
-            <div className="story-card">
-              <div className="flex items-center gap-2 text-blue-500 mb-3">
-                <FontAwesomeIcon icon={faHandcuffs} className="text-xl" />
-                <h3 className="font-bold">Police Activity</h3>
-              </div>
-              <p className="text-text/80">{getLocationDetails(location).policeActivity}</p>
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-            <div className="stat-card">
-              <div className="flex items-center gap-2 text-text/70">
-                <FontAwesomeIcon icon={faFire} className="text-red-500" />
-                <span>Heat Level</span>
-              </div>
-              <div className="mt-2">
-                <div className="h-2 w-full bg-gray-200/20 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-red-500 transition-all duration-500"
-                    style={{ width: `${getLocationDetails(location).policeRisk}%` }}
-                  />
+            {/* Location Story Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="story-card">
+                <div className="flex items-center gap-2 text-primary mb-3">
+                  <FontAwesomeIcon icon={faHistory} className="text-xl" />
+                  <h3 className="font-bold">Criminal History</h3>
                 </div>
-                <div className="text-sm mt-1 text-text/60">
-                  Police Activity: {getLocationDetails(location).policeRisk}%
-                </div>
+                <p className="text-text/80">{getLocationDetails(location).history}</p>
               </div>
-            </div>
 
-            <div className="stat-card">
-              <div className="flex items-center gap-2 text-text/70">
-                <FontAwesomeIcon icon={faBoxes} className="text-primary" />
-                <span>Available Products</span>
+              <div className="story-card">
+                <div className="flex items-center gap-2 text-red-500 mb-3">
+                  <FontAwesomeIcon icon={faSkull} className="text-xl" />
+                  <h3 className="font-bold">Gang Activity</h3>
+                </div>
+                <p className="text-text/80">{getLocationDetails(location).gangs}</p>
               </div>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {getLocationDetails(location).drugs.map((drug: string) => (
+
+              <div className="story-card">
+                <div className="flex items-center gap-2 text-purple-500 mb-3">
+                  <FontAwesomeIcon icon={faCapsules} className="text-xl" />
+                  <h3 className="font-bold">Drug Scene</h3>
+                </div>
+                <p className="text-text/80">{getLocationDetails(location).drugs.map((drug: string) => (
                   <span 
                     key={drug}
                     className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70"
                   >
                     {drug}
                   </span>
-                ))}
+                ))}</p>
+              </div>
+
+              <div className="story-card">
+                <div className="flex items-center gap-2 text-blue-500 mb-3">
+                  <FontAwesomeIcon icon={faHandcuffs} className="text-xl" />
+                  <h3 className="font-bold">Police Activity</h3>
+                </div>
+                <p className="text-text/80">{getLocationDetails(location).policeActivity}</p>
+              </div>
+            </div>
+
+            {/* Stats Section */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="stat-card">
+                <div className="flex items-center gap-2 text-text/70">
+                  <FontAwesomeIcon icon={faFire} className="text-red-500" />
+                  <span>Heat Level</span>
+                </div>
+                <div className="mt-2">
+                  <div className="h-2 w-full bg-gray-200/20 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-red-500 transition-all duration-500"
+                      style={{ width: `${getLocationDetails(location).policeRisk}%` }}
+                    />
+                  </div>
+                  <div className="text-sm mt-1 text-text/60">
+                    Police Activity: {getLocationDetails(location).policeRisk}%
+                  </div>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="flex items-center gap-2 text-text/70">
+                  <FontAwesomeIcon icon={faBoxes} className="text-primary" />
+                  <span>Available Products</span>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {getLocationDetails(location).drugs.map((drug: string) => (
+                    <span 
+                      key={drug}
+                      className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70"
+                    >
+                      {drug}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="p-2 sm:p-4 pb-24 space-y-4">
