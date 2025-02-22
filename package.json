@@ -19,7 +19,8 @@
     "type-check": "tsc --noEmit",
     "test:ci": "vitest run --coverage --reporter=junit",
     "validate": "bun run lint && bun run type-check && bun run test:ci",
-    "precommit": "bun run lint:fix && bun run type-check && bun run test"
+    "precommit": "bun run lint:fix && bun run type-check && bun run test",
+    "generate-pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
@@ -62,6 +63,7 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0",
     "vite": "^6.1.0",
+    "vite-plugin-pwa": "^0.21.1",
     "vitest": "^1.0.4"
   },
   "husky": {

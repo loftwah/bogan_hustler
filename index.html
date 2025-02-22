@@ -5,6 +5,13 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff4500">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <!-- Primary Meta Tags -->
     <title>Bogan Hustler - Underground Empire Trading Game</title>
     <meta name="title" content="Bogan Hustler - Underground Empire Trading Game">
@@ -25,15 +32,23 @@
     <meta property="twitter:title" content="Bogan Hustler - Underground Empire Trading Game">
     <meta property="twitter:description" content="Build your underground empire in this Australian-themed trading game. Buy low, sell high, and become the ultimate hustler!">
     <meta property="twitter:image" content="/ogimage.jpg">
-
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#ff4500">
-
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Add PWA check -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/bogan_hustler/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
