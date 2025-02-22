@@ -422,6 +422,54 @@ export const enhancedEvents: EnhancedEvent[] = [
         }
       }
     ]
+  },
+  {
+    id: "junkie_story",
+    description: "A wild-eyed bloke at %location% starts telling you about the time he fought off a drop bear while high on ice.",
+    conditions: {
+      chance: 0.15,
+      minReputation: -50
+    },
+    repeatable: true,
+    cooldown: 7,
+    choices: [
+      {
+        text: "🎭 Listen to his story",
+        outcome: {
+          successChance: 0.7,
+          success: {
+            cash: -50,
+            reputation: 5,
+            policeEvasion: 0,
+            inventory: []
+          },
+          failure: {
+            cash: -100,
+            reputation: -5,
+            policeEvasion: 0,
+            inventory: []
+          }
+        }
+      },
+      {
+        text: "💊 Share some gear",
+        outcome: {
+          successChance: 0.8,
+          success: {
+            cash: 0,
+            reputation: 10,
+            policeEvasion: 5,
+            inventory: [{ name: "Ice", quantity: -1 }]
+          },
+          failure: {
+            cash: 0,
+            reputation: -10,
+            policeEvasion: -5,
+            inventory: [{ name: "Ice", quantity: -2 }]
+          }
+        }
+      }
+    ]
   }
 ];
 
