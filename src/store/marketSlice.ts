@@ -16,40 +16,44 @@ export interface MarketState {
 }
 
 // Define all drugs and their properties
-const itemData: Record<string, { basePrice: number; volatility: number; isIllegal: boolean }> = {
+const itemData: Record<string, { basePrice: number; volatility: number; isIllegal: boolean; name: string }> = {
   // Hard Drugs
-  "Ice": { basePrice: 350, volatility: 1.5, isIllegal: true },
-  "Crack": { basePrice: 250, volatility: 1.4, isIllegal: true },
-  "Heroin": { basePrice: 400, volatility: 1.6, isIllegal: true },
-  "Cocaine": { basePrice: 300, volatility: 1.3, isIllegal: true },
+  "Ice": { basePrice: 350, volatility: 1.5, isIllegal: true, name: "Ice" },
+  "Crack": { basePrice: 250, volatility: 1.4, isIllegal: true, name: "Crack" },
+  "Heroin": { basePrice: 400, volatility: 1.6, isIllegal: true, name: "Heroin" },
+  "Cocaine": { basePrice: 300, volatility: 1.3, isIllegal: true, name: "Cocaine" },
   // Party Drugs
-  "Pingas": { basePrice: 25, volatility: 0.8, isIllegal: true },
-  "MDMA": { basePrice: 100, volatility: 1.0, isIllegal: true },
-  "Acid": { basePrice: 30, volatility: 1.2, isIllegal: true },
-  "Ketamine": { basePrice: 150, volatility: 1.1, isIllegal: true },
+  "Pingas": { basePrice: 25, volatility: 0.8, isIllegal: true, name: "Pingas" },
+  "MDMA": { basePrice: 100, volatility: 1.0, isIllegal: true, name: "MDMA" },
+  "Acid": { basePrice: 30, volatility: 1.2, isIllegal: true, name: "Acid" },
+  "Ketamine": { basePrice: 150, volatility: 1.1, isIllegal: true, name: "Ketamine" },
   // Weed & Natural
-  "Bush Weed": { basePrice: 250, volatility: 0.7, isIllegal: true },
-  "Hydro": { basePrice: 350, volatility: 0.9, isIllegal: true },
-  "Shrooms": { basePrice: 200, volatility: 1.1, isIllegal: true },
+  "Bush Weed": { basePrice: 250, volatility: 0.7, isIllegal: true, name: "Bush Weed" },
+  "Hydro": { basePrice: 350, volatility: 0.9, isIllegal: true, name: "Hydro" },
+  "Shrooms": { basePrice: 200, volatility: 1.1, isIllegal: true, name: "Shrooms" },
   // Prescription
-  "Xannies": { basePrice: 15, volatility: 0.6, isIllegal: true },
+  "Xannies": { basePrice: 15, volatility: 0.6, isIllegal: true, name: "Xannies" },
   // Legal & Grey Market
-  "Durries": { basePrice: 40, volatility: 0.4, isIllegal: false },
-  "Nangs": { basePrice: 10, volatility: 0.3, isIllegal: false },
+  "Durries": { basePrice: 40, volatility: 0.4, isIllegal: false, name: "Durries" },
+  "Nangs": { basePrice: 10, volatility: 0.3, isIllegal: false, name: "Nangs" },
   // New Items
-  "Chop Chop": { basePrice: 80, volatility: 0.7, isIllegal: true }, // Illegal tobacco
-  "Bootleg Spirits": { basePrice: 120, volatility: 0.8, isIllegal: true },
-  "Black Market Vapes": { basePrice: 35, volatility: 0.5, isIllegal: true },
-  "Counterfeit Cigs": { basePrice: 60, volatility: 0.6, isIllegal: true },
-  "Moonshine": { basePrice: 90, volatility: 0.7, isIllegal: true },
-  "Research Chems": { basePrice: 180, volatility: 1.3, isIllegal: true },
+  "Chop Chop": { basePrice: 80, volatility: 0.7, isIllegal: true, name: "Chop Chop" }, // Illegal tobacco
+  "Bootleg Spirits": { basePrice: 120, volatility: 0.8, isIllegal: true, name: "Bootleg Spirits" },
+  "Black Market Vapes": { basePrice: 35, volatility: 0.5, isIllegal: true, name: "Black Market Vapes" },
+  "Counterfeit Cigs": { basePrice: 60, volatility: 0.6, isIllegal: true, name: "Counterfeit Cigs" },
+  "Moonshine": { basePrice: 90, volatility: 0.7, isIllegal: true, name: "Moonshine" },
+  "Research Chems": { basePrice: 180, volatility: 1.3, isIllegal: true, name: "Research Chems" },
 };
 
 // Define location types and their drug distributions
-const locationTypes = {
+export const locationTypes = {
   cityCenter: {
     drugs: ["Ice", "Cocaine", "Pingas", "MDMA", "Xannies", "Durries", "Black Market Vapes", "Counterfeit Cigs"] as string[],
     policeRisk: 0.4
+  },
+  hardcoreArea: {
+    drugs: ["Ice", "Crack", "Heroin", "Cocaine", "MDMA", "Xannies", "Research Chems", "Bootleg Spirits"] as string[],
+    policeRisk: 0.5
   },
   suburb: {
     drugs: ["Ice", "Crack", "Durries", "Nangs", "Xannies", "Chop Chop", "Black Market Vapes"] as string[],
@@ -65,14 +69,72 @@ const locationTypes = {
   }
 };
 
-// Helper function to determine location type
-function getLocationType(location: string): keyof typeof locationTypes {
-  if (location.includes("Cross") || location.includes("Civic")) {
+// Add these near the top of the file
+export const HARDCORE_AREAS = [
+  "Richmond",
+  "St Kilda",
+  "Kings Cross",
+  "Redfern",
+  "Cabramatta",
+  "Mount Druitt",
+  "Footscray",
+  "Logan Central",
+  "Inala",
+  "Elizabeth"
+] as const;
+
+export const RURAL_TOWNS = [
+  "Dubbo",
+  "Moe",
+  "Tennant Creek",
+  "Katherine",
+  "Port Hedland"
+] as const;
+
+export const PARTY_AREAS = [
+  "Nimbin",
+  "Byron Bay",
+  "Fortitude Valley",
+  "Chapel Street"
+] as const;
+
+// Change from function to export function
+export function getLocationType(location: string): keyof typeof locationTypes {
+  // Hardcore areas - known for harder drugs
+  const hardcoreAreas = [
+    "Richmond",
+    "St Kilda",
+    "Kings Cross",
+    "Redfern",
+    "Cabramatta",
+    "Mount Druitt",
+    "Footscray",
+    "Logan Central",
+    "Inala",
+    "Elizabeth"
+  ];
+
+  if (hardcoreAreas.includes(location)) {
+    return "hardcoreArea";
+  }
+  
+  // City centers
+  if (location.includes("CBD") || location.includes("Civic")) {
     return "cityCenter";
   }
-  if (location.includes("Nimbin") || location.includes("Byron")) {
+
+  // Party areas
+  if (location.includes("Nimbin") || location.includes("Byron") || 
+      location.includes("Chapel") || location.includes("Fortitude Valley")) {
     return "partyArea";
   }
+
+  // Rural towns
+  const ruralTowns = ["Dubbo", "Moe", "Tennant Creek", "Katherine", "Port Hedland"];
+  if (ruralTowns.includes(location)) {
+    return "ruralTown";
+  }
+
   return "suburb";
 }
 
@@ -86,11 +148,45 @@ const locations = Object.values(locationsByRegion).flat().reduce<Record<string, 
   return acc;
 }, {});
 
-// Create censored versions of drugs for non-adult mode
+// Update the censored versions of drugs for non-adult mode
 const censoredItemData: typeof itemData = {
-  "Ice": { basePrice: 350, volatility: 1.5, isIllegal: false },
-  "Crack": { basePrice: 250, volatility: 1.4, isIllegal: false },
-  // ... rest of the censored items with same properties but different names
+  "Ice": { ...itemData["Ice"], name: "Energy Drinks" },
+  "Crack": { ...itemData["Crack"], name: "Supplements" },
+  "Heroin": { ...itemData["Heroin"], name: "Protein Powder" },
+  "Cocaine": { ...itemData["Cocaine"], name: "Pre-workout" },
+  "Pingas": { ...itemData["Pingas"], name: "Vitamins" },
+  "MDMA": { ...itemData["MDMA"], name: "Energy Tablets" },
+  "Xannies": { ...itemData["Xannies"], name: "Pain Relief" },
+  "Durries": { ...itemData["Durries"], name: "Cigarettes" },
+  "Nangs": { ...itemData["Nangs"], name: "Cream Chargers" },
+  "Bush Weed": { ...itemData["Bush Weed"], name: "Herbal Tea" },
+  "Hydro": { ...itemData["Hydro"], name: "Coffee Beans" },
+  "Shrooms": { ...itemData["Shrooms"], name: "Mushroom Extract" },
+  "Acid": { ...itemData["Acid"], name: "Caffeine Pills" },
+  "Ketamine": { ...itemData["Ketamine"], name: "Sleep Aid" },
+  "Chop Chop": { ...itemData["Chop Chop"], name: "Loose Leaf Tea" },
+  "Bootleg Spirits": { ...itemData["Bootleg Spirits"], name: "Craft Soda" },
+  "Black Market Vapes": { ...itemData["Black Market Vapes"], name: "Essential Oils" },
+  "Counterfeit Cigs": { ...itemData["Counterfeit Cigs"], name: "Herbal Cigarettes" },
+  "Moonshine": { ...itemData["Moonshine"], name: "Apple Juice" },
+  "Research Chems": { ...itemData["Research Chems"], name: "Dietary Supplements" }
+};
+
+// Update the getItemData function to handle name mapping
+const getItemData = (adultMode: boolean) => {
+  if (adultMode) return itemData;
+  
+  // Create a mapping of adult names to censored names
+  const nameMapping: Record<string, string> = {};
+  Object.entries(censoredItemData).forEach(([adultName, data]) => {
+    nameMapping[adultName] = data.name;
+  });
+
+  // Return censored version with mapped names
+  return Object.entries(itemData).reduce((acc, [key, value]) => {
+    acc[nameMapping[key] || key] = value;
+    return acc;
+  }, {} as typeof itemData);
 };
 
 interface MarketEvent {
@@ -156,15 +252,13 @@ const marketEvents: MarketEvent[] = [
   },
 ];
 
-const getItemData = (adultMode: boolean) => adultMode ? itemData : censoredItemData;
-
 const initialState: MarketState = {
   prices: Object.keys(locations).reduce((acc, loc) => {
     acc[loc] = locations[loc].drugs.reduce((items, item) => {
-      const data = getItemData(true)[item];
-      if (data) {
+      const data = getItemData(true);
+      if (data[item]) {
         items[item] = {
-          price: data.basePrice,
+          price: data[item].basePrice,
           supply: 50 + Math.floor(Math.random() * 20) - 10,
           demand: 50 + Math.floor(Math.random() * 20) - 10,
         };
@@ -194,6 +288,11 @@ const marketSlice = createSlice({
       const riskFactor = locations[location].policeRisk * (1 - reputation / 100);
       const currentItemData = getItemData(adultMode);
       
+      // Add time-based modifier
+      const currentHour = new Date().getHours();
+      const isNighttime = currentHour >= 20 || currentHour <= 4;
+      const timeModifier = isNighttime ? 1.2 : 1.0; // 20% price increase at night
+      
       for (const loc in state.prices) {
         for (const item in state.prices[loc]) {
           const itemInfo = state.prices[loc][item];
@@ -206,7 +305,10 @@ const marketSlice = createSlice({
             const randomShift = (Math.random() * 10 - 5) * volatility;
             
             const finalPrice = Math.max(5, Math.min(300,
-              base + supplyEffect + demandEffect + randomShift + 
+              base * timeModifier + // Apply time modifier to base price
+              supplyEffect + 
+              demandEffect + 
+              randomShift + 
               (baseData.isIllegal ? riskFactor * 20 : riskFactor * 10)
             ));
             
@@ -344,5 +446,8 @@ const LOCATION_COORDS: Record<string, LocationCoordinates> = {
   "Kings Cross": { lat: -33.8775, lng: 151.2252 },
   // Add coordinates for other locations...
 };
+
+// Also export itemData
+export { itemData };
 
 export default marketSlice.reducer; 

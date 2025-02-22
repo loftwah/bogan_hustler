@@ -22,6 +22,9 @@ export const locationsByRegion = {
     "Byron Bay",
     "Lismore",
     "Dubbo",
+    "Liverpool",
+    "Fairfield",
+    "Woolloomooloo",
   ],
   "Victoria": [
     "Frankston",
@@ -37,6 +40,11 @@ export const locationsByRegion = {
     "Footscray",
     "Geelong",
     "Bendigo",
+    "Richmond",
+    "Sunbury",
+    "Collingwood",
+    "Fitzroy",
+    "Braybrook",
   ],
   "Queensland": [
     "Logan Central",
@@ -47,6 +55,8 @@ export const locationsByRegion = {
     "Toowoomba",
     "Cairns",
     "Townsville",
+    "Fortitude Valley",
+    "Palm Beach",
   ],
   "Western Australia": [
     "Rockingham",
