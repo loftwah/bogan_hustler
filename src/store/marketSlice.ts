@@ -55,6 +55,10 @@ export const locationTypes = {
     drugs: ["Ice", "Crack", "Heroin", "Cocaine", "MDMA", "Xannies", "Research Chems", "Bootleg Spirits"] as string[],
     policeRisk: 0.5
   },
+  gangTerritory: {
+    drugs: ["Ice", "Heroin", "Cocaine", "MDMA", "Xannies", "Research Chems", "Bootleg Spirits", "Chop Chop"] as string[],
+    policeRisk: 0.6
+  },
   suburb: {
     drugs: ["Ice", "Crack", "Durries", "Nangs", "Xannies", "Chop Chop", "Black Market Vapes"] as string[],
     policeRisk: 0.3
@@ -80,7 +84,19 @@ export const HARDCORE_AREAS = [
   "Footscray",
   "Logan Central",
   "Inala",
-  "Elizabeth"
+  "Elizabeth",
+  "Merrylands",
+  "Auburn",
+  "Bankstown",
+  "Broadmeadows",
+  "Dandenong",
+  "Sunshine",
+  "Southport",
+  "Marsden",
+  "Beenleigh",
+  "Elizabeth",
+  "Port Augusta",
+  "Salisbury",
 ] as const;
 
 export const RURAL_TOWNS = [
@@ -100,6 +116,25 @@ export const PARTY_AREAS = [
 
 // Change from function to export function
 export function getLocationType(location: string): keyof typeof locationTypes {
+  const gangTerritories = [
+    "Merrylands",
+    "Auburn",
+    "Bankstown",
+    "Broadmeadows",
+    "Dandenong",
+    "Sunshine",
+    "Marsden",
+    "Beenleigh",
+    "Southport",
+    "Elizabeth",
+    "Port Augusta",
+    "Salisbury"
+  ];
+
+  if (gangTerritories.includes(location)) {
+    return "gangTerritory";
+  }
+
   // Hardcore areas - known for harder drugs
   const hardcoreAreas = [
     "Richmond",
@@ -250,6 +285,38 @@ const marketEvents: MarketEvent[] = [
       });
     },
   },
+  {
+    id: "gang_takeover",
+    description: "Gang takeover in %location%! Prices are volatile!",
+    effect: (market) => {
+      Object.values(market).forEach(drug => {
+        drug.price *= Math.random() > 0.5 ? 1.5 : 0.7;
+        drug.supply += Math.floor(Math.random() * 40) - 20;
+      });
+    },
+  },
+  {
+    id: "bikie_war",
+    description: "Bikie war breaks out in %location%! Hard drugs are scarce!",
+    effect: (market) => {
+      ["Ice", "Heroin", "Cocaine"].forEach(drug => {
+        if (market[drug]) {
+          market[drug].price *= 2;
+          market[drug].supply -= 60;
+        }
+      });
+    },
+  },
+  {
+    id: "gang_bust",
+    description: "Major gang bust in %location%! Supply lines disrupted!",
+    effect: (market) => {
+      Object.values(market).forEach(drug => {
+        drug.supply = Math.max(0, drug.supply - 30);
+        drug.price *= 1.4;
+      });
+    },
+  }
 ];
 
 const initialState: MarketState = {
