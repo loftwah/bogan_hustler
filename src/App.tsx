@@ -74,7 +74,11 @@ function App() {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'i' || e.key === 'I') {
-        // No need to toggle inventory here since we're using FloatingInventory component
+        // Find and click the floating inventory button
+        const inventoryBtn = document.getElementById('floating-inventory-btn');
+        if (inventoryBtn) {
+          inventoryBtn.click();
+        }
       }
       if (e.key === 'm' || e.key === 'M') {
         setCurrentScreen('market');
@@ -194,7 +198,8 @@ function App() {
                   <div>
                     <h3 className="text-lg font-bold mb-2">Quick Tips</h3>
                     <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li>Press 'I' to toggle inventory</li>
+                      <li>Press 'I' to toggle the floating inventory</li>
+                      <li>Press 'M' to open the market screen</li>
                       <li>Watch for market trends before buying</li>
                       <li>Higher reputation means better prices</li>
                       <li>Keep an eye on your debt interest!</li>
