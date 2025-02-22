@@ -43,4 +43,14 @@ if (typeof document === 'undefined') {
 afterEach(() => {
   cleanup()
   vi.clearAllMocks()
-}) 
+})
+
+// Add to your existing setup.ts
+vi.mock('window', () => ({
+  Audio: vi.fn().mockImplementation(() => ({
+    play: vi.fn().mockResolvedValue(undefined),
+    pause: vi.fn(),
+    volume: 1,
+    loop: false,
+  })),
+})); 

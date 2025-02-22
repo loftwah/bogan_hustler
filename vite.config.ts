@@ -8,7 +8,35 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: [
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'masked-icon.svg',
+        // Include all audio files
+        'themesong.mp3',
+        'Dust of the Damned.mp3',
+        'Grave of the Outcast.mp3',
+        'Hustler\'s Last Run.mp3',
+        'Junkie\'s Jig.mp3',
+        'Phantom Love.mp3',
+        'Shadows in the Scrub.mp3',
+        'Wraith of the Wastes.mp3',
+        'siren.mp3'
+      ],
+      workbox: {
+        // Configure workbox to handle audio files
+        runtimeCaching: [{
+          urlPattern: /\.mp3$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'audio-cache',
+            expiration: {
+              maxEntries: 20,
+              maxAgeSeconds: 7 * 24 * 60 * 60 // 1 week
+            }
+          }
+        }]
+      },
       manifest: {
         name: 'Bogan Hustler',
         short_name: 'Bogan Hustler',

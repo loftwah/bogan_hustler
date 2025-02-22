@@ -33,32 +33,29 @@ export const AudioPlayer = () => {
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
-    audio.src = TRACKS[currentTrackIndex].file;
-    audio.loop = true;
-    audio.volume = volume;
-
-    const savedPlayingState = localStorage.getItem('boganHustlerAudioPlaying');
-    const savedTrackIndex = localStorage.getItem('boganHustlerCurrentTrack');
-    const savedVolume = localStorage.getItem('boganHustlerVolume');
-
-    if (savedPlayingState === 'true') {
-      playAudio();
-    }
-    if (savedTrackIndex) {
-      setCurrentTrackIndex(Number(savedTrackIndex));
-    }
-    if (savedVolume) {
-      setVolume(Number(savedVolume));
-    }
-
-    return () => {
-      audio.pause();
-      audio.currentTime = 0;
+    const loadAudio = async () => {
+      try {
+        const baseUrl = window.location.hostname === 'boganhustler.deanlofts.xyz' 
+          ? '.'
+          : '/bogan_hustler';
+        
+        audio.src = `${baseUrl}${TRACKS[currentTrackIndex].file.replace('./', '/')}`;
+        audio.loop = true;
+        audio.volume = volume;
+        
+        if (isPlaying) {
+          await audio.play();
+        }
+      } catch (err) {
+        console.error('Failed to load audio:', err);
+        setIsPlaying(false);
+      }
     };
-  }, []);
+
+    loadAudio();
+  }, [currentTrackIndex, isPlaying]);
 
   useEffect(() => {
-    audio.src = TRACKS[currentTrackIndex].file;
     if (isPlaying) {
       playAudio();
     }
@@ -70,12 +67,14 @@ export const AudioPlayer = () => {
     localStorage.setItem('boganHustlerVolume', String(volume));
   }, [volume, isMuted]);
 
-  const playAudio = () => {
-    audio.play().catch(err => {
+  const playAudio = async () => {
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch (err) {
       console.error('Audio playback failed:', err);
       setIsPlaying(false);
-    });
-    setIsPlaying(true);
+    }
   };
 
   const togglePlay = () => {
