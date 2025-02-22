@@ -8,22 +8,19 @@ import { adjustMarket, getLocationType } from "../store/marketSlice";
 import { DEBUG } from '../config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faArrowTrendUp, 
-  faArrowTrendDown, 
   faMinus, 
   faPlus, 
   faInfinity,
   faBoxOpen,
   faFire,
-  faBalanceScale,
-  faChartBar,
   faWallet,
   faBoxes,
   faSpinner,
   faSkull, 
   faHandcuffs, 
   faCapsules,
-  faHistory
+  faHistory,
+  faChartBar
 } from '@fortawesome/free-solid-svg-icons';
 import { calculateMarketDetails } from '../utils/marketCalculations';
 import { locationsByRegion } from './MapScreen';
@@ -446,39 +443,32 @@ const MarketScreen = () => {
 
   // Update the MarketTrendIndicator component
   const MarketTrendIndicator: React.FC<{ trend: MarketTrend }> = ({ trend }) => {
-    const styles = {
-      up: {
-        text: 'text-green-500',
-        bg: 'bg-green-500',
-        icon: faArrowTrendUp
-      },
-      down: {
-        text: 'text-red-500',
-        bg: 'bg-red-500',
-        icon: faArrowTrendDown
-      },
-      stable: {
-        text: 'text-gray-500',
-        bg: 'bg-gray-500',
-        icon: faBalanceScale
+    const getIcon = () => {
+      switch (trend.direction) {
+        case 'up':
+          return '↑';
+        case 'down':
+          return '↓';
+        default:
+          return '→';
       }
     };
 
-    const style = styles[trend.direction];
+    const getColor = () => {
+      switch (trend.direction) {
+        case 'up':
+          return 'text-red-500';
+        case 'down':
+          return 'text-green-500';
+        default:
+          return 'text-gray-500';
+      }
+    };
 
     return (
-      <div className={`flex items-center gap-3 ${style.text} p-3 rounded-lg bg-surface/50 backdrop-blur transition-all duration-300 hover:scale-102`}>
-        <FontAwesomeIcon icon={style.icon} className="text-xl" />
-        <div className="flex-1">
-          <div className="text-sm font-medium">{trend.description}</div>
-          <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden mt-2">
-            <div 
-              className={`h-full ${style.bg} transition-all duration-500 ease-out`}
-              style={{ width: `${trend.strength}%` }}
-            />
-          </div>
-        </div>
-      </div>
+      <span title={trend.description} className={`${getColor()} font-bold`}>
+        {getIcon()} {trend.strength.toFixed(1)}%
+      </span>
     );
   };
 

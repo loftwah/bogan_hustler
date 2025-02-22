@@ -84,6 +84,14 @@ interface StandardOutcome {
     triggerMinigame?: boolean;
     requireLocation?: LocationRequirement;
     opponentType?: 'police' | 'gang' | 'bikie' | 'dealer';
+    combatModifiers?: {
+      playerDamageMultiplier?: number;
+      opponentHealthMultiplier?: number;
+      specialEffects?: {
+        bleed?: number;
+        stun?: number;
+      };
+    };
   };
 }
 
@@ -577,7 +585,7 @@ export const triggerRandomEventAsync = createAsyncThunk(
 );
 
 // Helper function to calculate event weights
-const calculateEventWeight = (event: EnhancedEvent, player: PlayerState): number => {
+export const calculateEventWeight = (event: EnhancedEvent, player: PlayerState): number => {
   let weight = 1;
 
   // Increase weight for police events when police evasion is low

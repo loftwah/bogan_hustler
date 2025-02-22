@@ -489,6 +489,7 @@ export const marketSlice = createSlice({
         variation *= (1 - intelEffect);
         
         // Distance affects prices
+        const distance = calculateDistance(prevLocation, location);
         variation += distance * 0.001; // 0.1% per km
         
         // Time-based effects

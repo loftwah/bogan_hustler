@@ -111,7 +111,7 @@ export const locationsByRegion = {
 
 const MapScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { location: currentLocation, policeEvasion, reputation, adultMode } = useSelector((state: RootState) => state.player);
+  const { location: currentLocation, policeEvasion, reputation, adultMode, marketIntel } = useSelector((state: RootState) => state.player);
 
   const handleTravel = (location: string) => {
     if (location !== currentLocation) {
@@ -120,7 +120,8 @@ const MapScreen = () => {
         reputation, 
         location, 
         adultMode,
-        prevLocation: currentLocation 
+        prevLocation: currentLocation,
+        marketIntel: marketIntel
       }));
 
       // Get last event time from localStorage or default to 0

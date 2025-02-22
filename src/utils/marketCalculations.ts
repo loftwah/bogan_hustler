@@ -1,21 +1,11 @@
-import { MarketTrend, MarketItemDetails } from '../types';
-
-export interface MarketTrend {
-  direction: 'up' | 'down' | 'stable' | 'unknown';
-  strength: number | 'unknown';
-  description?: string;
-  supplyStatus?: string;
-  demandStatus?: string;
-  confidence: number;
-}
+import type { MarketTrend, MarketItemDetails } from '../types';
 
 export const analyzeTrend = (supply: number, demand: number, marketIntel: number): MarketTrend => {
   if (marketIntel < 25) {
     return {
-      direction: 'unknown',
+      direction: 'stable',
       strength: 0,
-      description: 'Market trend unknown - Need more intel',
-      confidence: marketIntel / 100
+      description: 'Market trend unknown - Need more intel'
     };
   }
 
@@ -30,9 +20,7 @@ export const analyzeTrend = (supply: number, demand: number, marketIntel: number
     return {
       direction,
       strength: trendStrength,
-      supplyStatus: supplyTrend,
-      demandStatus: demandTrend,
-      confidence: marketIntel / 100
+      description: `Supply: ${supplyTrend}, Demand: ${demandTrend}`
     };
   }
   
@@ -40,7 +28,7 @@ export const analyzeTrend = (supply: number, demand: number, marketIntel: number
   return {
     direction,
     strength: trendStrength,
-    confidence: marketIntel / 100
+    description: 'Basic market trend'
   };
 };
 
@@ -139,4 +127,37 @@ export const calculateMarketDetails = (
     trend,
     priceChange
   };
-}; 
+};
+
+export function calculateMarketTrend(currentPrice: number, previousPrice: number): MarketTrend {
+  if (!previousPrice) {
+    return {
+      direction: 'stable',
+      strength: 0,
+      description: 'Market is stable'
+    };
+  }
+
+  const percentageChange = ((currentPrice - previousPrice) / previousPrice) * 100;
+  const trendStrength = Math.abs(percentageChange);
+  
+  if (percentageChange > 1) {
+    return {
+      direction: 'up',
+      strength: trendStrength,
+      description: `Price rising (${trendStrength.toFixed(1)}%)`
+    };
+  } else if (percentageChange < -1) {
+    return {
+      direction: 'down',
+      strength: trendStrength,
+      description: `Price falling (${trendStrength.toFixed(1)}%)`
+    };
+  }
+
+  return {
+    direction: 'stable',
+    strength: trendStrength,
+    description: 'Price stable'
+  };
+} 
