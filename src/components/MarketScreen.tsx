@@ -4,7 +4,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { buyDrug, sellDrug } from "../store/playerSlice";
 import { RootState } from "../store/store";
 import type { DrugMarket } from "../store/marketSlice";
-import { adjustMarket, getLocationType, locationTypes, HARDCORE_AREAS } from "../store/marketSlice";
+import { adjustMarket, getLocationType } from "../store/marketSlice";
 import { DEBUG } from '../config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -21,12 +21,8 @@ import {
   faBoxes,
   faSpinner,
   faSkull, 
-  faUserSecret, 
   faHandcuffs, 
   faCapsules,
-  faBuilding,
-  faMapMarkerAlt,
-  faExclamationTriangle,
   faHistory
 } from '@fortawesome/free-solid-svg-icons';
 import { calculateMarketDetails } from '../utils/marketCalculations';
@@ -115,6 +111,75 @@ interface MarketTrend {
   description: string;
 }
 
+// Update the LocationStory interface to include all needed properties
+interface LocationStory {
+  history: string;
+  gangs: string;
+  drugs: string[];
+  policeActivity: string;
+  policeRisk: number;
+  region?: string; // Make region optional since it's added later
+  description?: string; // Add description as an optional property
+}
+
+// Define location stories
+const locationStories: Record<string, LocationStory> = {
+  "Kings Cross": {
+    history: "Once Sydney's red-light district, the Cross evolved into Australia's most notorious drug marketplace. The 1980s saw the rise of heroin, while the 1990s brought cocaine and the nightclub scene.",
+    gangs: "Territory disputed between various crime families. The Razor gangs of the 1920s gave way to modern syndicates.",
+    drugs: ["Ice", "Cocaine", "Heroin", "MDMA"],
+    policeActivity: "Heavy police presence, especially weekends. Undercover operations frequent. CCTV covers every corner.",
+    policeRisk: 80
+  },
+  // Add more locations as needed...
+};
+
+// Define default stories for each location type
+const defaultStories: Record<string, LocationStory> = {
+  hardcoreArea: {
+    history: "A notorious hotspot in Australia's drug trade. Local landmarks have witnessed decades of deals and violence.",
+    gangs: "Multiple criminal organizations fight for control. Street corners are marked by gang tags and lookouts.",
+    drugs: ["Ice", "Heroin", "Cocaine"],
+    policeActivity: "Heavy police presence with regular raids. Undercover operations are common.",
+    policeRisk: 75
+  },
+  gangTerritory: {
+    history: "Traditional gang stronghold with deep criminal roots. Local businesses pay protection money to operate.",
+    gangs: "Controlled by established crime families. Young recruits patrol on motorcycles and in modified cars.",
+    drugs: ["Ice", "Cocaine", "MDMA"],
+    policeActivity: "Police maintain surveillance but face community resistance.",
+    policeRisk: 60
+  },
+  cityCenter: {
+    history: "Urban drug scene operates behind the facade of legitimate businesses.",
+    gangs: "Professional criminals maintain sophisticated operations.",
+    drugs: ["Cocaine", "MDMA", "Pingas"],
+    policeActivity: "Heavy surveillance and regular patrols.",
+    policeRisk: 50
+  },
+  suburb: {
+    history: "Quiet neighborhoods mask active drug networks.",
+    gangs: "Local crews control distribution. Violence is rare but business is steady.",
+    drugs: ["Ice", "Weed", "Xannies"],
+    policeActivity: "Regular patrols keep dealers cautious.",
+    policeRisk: 40
+  },
+  ruralTown: {
+    history: "Small town dynamics influence the local drug trade.",
+    gangs: "Family networks control distribution. Everyone knows everyone.",
+    drugs: ["Ice", "Bush Weed", "Moonshine"],
+    policeActivity: "Small police force means sporadic enforcement.",
+    policeRisk: 30
+  },
+  partyArea: {
+    history: "Nightlife and entertainment drive the drug scene.",
+    gangs: "Club security and promoters control distribution.",
+    drugs: ["MDMA", "Cocaine", "Pingas"],
+    policeActivity: "Focus on visible presence and crowd control.",
+    policeRisk: 45
+  }
+};
+
 // Fix debounce to handle string input specifically
 const debounce = <T extends (value: string) => void>(fn: T, ms = 300) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -161,94 +226,31 @@ const logTransaction = (type: 'buy' | 'sell', drug: string, quantity: number, pr
 };
 
 // Helper function to get location description
-const getLocationDescription = (location: string): string => {
-  // Search through all regions to find the location and its comment
-  for (const [_, locations] of Object.entries(locationsByRegion)) {
-    const locationEntry = locations.find(loc => 
-      typeof loc === 'string' ? loc === location : loc.includes(location)
-    );
-    if (locationEntry) {
-      // Extract comment if it exists
-      const match = locationEntry.toString().match(/\/\/ (.+)$/);
-      return match ? match[1] : '';
-    }
-  }
-  return '';
-};
+// const getLocationDescription = (location: string): string => { ... }
 
-// Enhanced location details function
-const getLocationDetails = (location: string) => {
+// Enhanced location details function with proper return type
+const getLocationDetails = (location: string): LocationStory & { region: string } => {
+  // Find the region that contains this location
+  const region = Object.entries(locationsByRegion).find(([_, locations]) => 
+    locations.includes(location)
+  )?.[0] || 'Unknown Region';
+
+  // Get the location type
   const locationType = getLocationType(location);
-  const typeDetails = locationTypes[locationType];
-  
-  // Find region and base description
-  let region = '';
-  let description = '';
-  for (const [stateName, locations] of Object.entries(locationsByRegion)) {
-    const locationEntry = locations.find(loc => 
-      typeof loc === 'string' ? loc === location : loc.includes(location)
-    );
-    if (locationEntry) {
-      region = stateName;
-      const match = locationEntry.toString().match(/\/\/ (.+)$/);
-      description = match ? match[1] : '';
-      break;
-    }
-  }
 
-  // Rich location-specific stories and details
-  const locationStories: Record<string, {
-    history: string,
-    gangs: string,
-    drugs: string,
-    policeActivity: string
-  }> = {
-    "Kings Cross": {
-      history: "Once Sydney's red-light district, the Cross evolved into Australia's most notorious drug marketplace. The 1980s saw the rise of heroin, while the 1990s brought cocaine and the nightclub scene.",
-      gangs: "Territory disputed between various crime families. The Razor gangs of the 1920s gave way to modern syndicates. Local strip clubs and nightlife venues serve as fronts for drug operations.",
-      drugs: "Known for cocaine in the clubs, ice in the streets, and a high-end clientele seeking party drugs. Premium prices due to wealthy eastern suburbs customers.",
-      policeActivity: "Heavy police presence, especially weekends. Undercover operations frequent. CCTV covers every corner."
-    },
-    "Cabramatta": {
-      history: "Dubbed 'Vietnamatta' in the 90s, it was Australia's heroin capital. The 5T gang controlled the streets until their leadership was dismantled in 1999. The train station steps were once an open drug market.",
-      gangs: "Vietnamese crime networks maintain a quieter presence today. Asian drug importation still flows through local businesses.",
-      drugs: "Heroin remains, but ice has taken over as the primary trade. Local dealers exploit the railway connections to Western Sydney.",
-      policeActivity: "Regular police operations target rail corridors and shopping strips. Task Force Sigma maintains surveillance."
-    },
-    // Add more location-specific stories...
-  };
-
-  // Default stories based on location type
-  const defaultStories = {
-    hardcoreArea: {
-      history: "A notorious hotspot in Australia's drug trade. Local landmarks have witnessed decades of deals and violence.",
-      gangs: "Multiple criminal organizations fight for control. Street corners are marked by gang tags and lookouts.",
-      drugs: "Everything from ice to heroin moves through here. Quality varies but prices stay high due to constant demand.",
-      policeActivity: "Heavy police presence with regular raids. Undercover operations are common."
-    },
-    gangTerritory: {
-      history: "Traditional gang stronghold with deep criminal roots. Local businesses pay protection money to operate.",
-      gangs: "Controlled by established crime families. Young recruits patrol on motorcycles and in modified cars.",
-      drugs: "Major distribution point for ice and cocaine. Safe houses store product before street-level sales.",
-      policeActivity: "Police maintain surveillance but face community resistance. Corrupt officers have been caught taking bribes."
-    },
-    // ... other location types
-  };
-
+  // Get the location story
   const story = locationStories[location] || defaultStories[locationType] || {
     history: "A typical suburban drug scene operates behind closed doors.",
     gangs: "Local dealers maintain loose territories. Violence is rare but business is steady.",
-    drugs: "Common street drugs circulate through private deals. Prices follow suburban standards.",
-    policeActivity: "Regular patrols keep dealers cautious. House raids happen monthly."
+    drugs: ["Weed", "Ice"],
+    policeActivity: "Regular patrols keep dealers cautious.",
+    policeRisk: 35
   };
 
+  // Return the combined object with proper typing
   return {
-    type: locationType,
-    region,
-    description,
-    story,
-    policeRisk: typeDetails.policeRisk * 100,
-    availableDrugs: typeDetails.drugs,
+    ...story,
+    region
   };
 };
 
@@ -503,7 +505,7 @@ const MarketScreen = () => {
                 </span>
               </h2>
               <p className="text-lg mt-2 text-text/70 italic">
-                "{getLocationDetails(location).description}"
+                "{getLocationDetails(location).history}"
               </p>
             </div>
           </div>
@@ -515,7 +517,7 @@ const MarketScreen = () => {
                 <FontAwesomeIcon icon={faHistory} className="text-xl" />
                 <h3 className="font-bold">Criminal History</h3>
               </div>
-              <p className="text-text/80">{getLocationDetails(location).story.history}</p>
+              <p className="text-text/80">{getLocationDetails(location).history}</p>
             </div>
 
             <div className="story-card">
@@ -523,7 +525,7 @@ const MarketScreen = () => {
                 <FontAwesomeIcon icon={faSkull} className="text-xl" />
                 <h3 className="font-bold">Gang Activity</h3>
               </div>
-              <p className="text-text/80">{getLocationDetails(location).story.gangs}</p>
+              <p className="text-text/80">{getLocationDetails(location).gangs}</p>
             </div>
 
             <div className="story-card">
@@ -531,7 +533,14 @@ const MarketScreen = () => {
                 <FontAwesomeIcon icon={faCapsules} className="text-xl" />
                 <h3 className="font-bold">Drug Scene</h3>
               </div>
-              <p className="text-text/80">{getLocationDetails(location).story.drugs}</p>
+              <p className="text-text/80">{getLocationDetails(location).drugs.map((drug: string) => (
+                <span 
+                  key={drug}
+                  className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70"
+                >
+                  {drug}
+                </span>
+              ))}</p>
             </div>
 
             <div className="story-card">
@@ -539,7 +548,7 @@ const MarketScreen = () => {
                 <FontAwesomeIcon icon={faHandcuffs} className="text-xl" />
                 <h3 className="font-bold">Police Activity</h3>
               </div>
-              <p className="text-text/80">{getLocationDetails(location).story.policeActivity}</p>
+              <p className="text-text/80">{getLocationDetails(location).policeActivity}</p>
             </div>
           </div>
 
@@ -569,7 +578,7 @@ const MarketScreen = () => {
                 <span>Available Products</span>
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
-                {getLocationDetails(location).availableDrugs.map(drug => (
+                {getLocationDetails(location).drugs.map((drug: string) => (
                   <span 
                     key={drug}
                     className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70"
