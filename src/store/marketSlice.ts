@@ -319,6 +319,40 @@ const marketEvents: MarketEvent[] = [
   }
 ];
 
+// Move these helper functions to the top of the file, after the interfaces and before initialState
+const generatePricesForLocation = (locationType: keyof typeof locationTypes, reputation: number) => {
+  const availableDrugs = locationTypes[locationType].drugs;
+  const prices: Record<string, DrugMarket> = {};
+
+  availableDrugs.forEach(drug => {
+    const basePrice = itemData[drug].basePrice;
+    const volatility = itemData[drug].volatility;
+    
+    // Base variation ±20% affected by volatility
+    const variation = (Math.random() - 0.5) * 0.4 * volatility;
+    
+    // Increase reputation effect to ensure prices are lower with higher reputation
+    const reputationDiscount = (reputation / 100) * 0.3; // Increased from 0.15 to 0.3
+    
+    // Calculate final price with stronger reputation influence
+    const finalPrice = Math.max(1, Math.round(basePrice * (1 - reputationDiscount + variation)));
+    
+    prices[drug] = {
+      price: finalPrice,
+      supply: Math.random() * 100,
+      demand: Math.random() * 100
+    };
+  });
+
+  return prices;
+};
+
+const calculateDistanceMultiplier = (prevLocation: string, newLocation: string): number => {
+  const distance = calculateDistance(prevLocation, newLocation);
+  return 1 + (Math.min(distance, 4000) / 8000);
+};
+
+// Then define initialState and the rest of the file...
 const initialState: MarketState = {
   prices: Object.keys(locations).reduce((acc, loc) => {
     acc[loc] = locations[loc].drugs.reduce((items, item) => {
@@ -337,8 +371,9 @@ const initialState: MarketState = {
   activeMarketEvent: null,
 };
 
-const marketSlice = createSlice({
-  name: "market",
+// Update the marketSlice reducers
+export const marketSlice = createSlice({
+  name: 'market',
   initialState,
   reducers: {
     /**
@@ -421,6 +456,31 @@ const marketSlice = createSlice({
         state.activeMarketEvent = null;
       }
     },
+    setState: (_, action) => {
+      return action.payload;
+    },
+    updatePricesWithLocation: (state, action: PayloadAction<{
+      location: string;
+      reputation: number;
+      adultMode: boolean;
+      prevLocation: string;
+    }>) => {
+      const { location, reputation, prevLocation } = action.payload;
+      const locationType = getLocationType(location);
+      
+      // Calculate distance multiplier
+      const distanceMultiplier = calculateDistanceMultiplier(prevLocation, location);
+      
+      // Generate new prices with distance factor
+      const newPrices = generatePricesForLocation(locationType, reputation);
+      
+      // Apply distance multiplier to prices after reputation effects
+      Object.keys(newPrices).forEach(drug => {
+        newPrices[drug].price = Math.round(newPrices[drug].price * distanceMultiplier);
+      });
+      
+      state.prices[location] = newPrices;
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(updatePricesWithLocation.fulfilled, (state, action) => {

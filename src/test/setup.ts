@@ -45,7 +45,7 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-// Add to your existing setup.ts
+// Mock Audio API
 vi.mock('window', () => ({
   Audio: vi.fn().mockImplementation(() => ({
     play: vi.fn().mockResolvedValue(undefined),
@@ -53,4 +53,4 @@ vi.mock('window', () => ({
     volume: 1,
     loop: false,
   })),
-})); 
+})) 
