@@ -125,36 +125,38 @@ export const AudioPlayer = () => {
 
   return (
     <div className="flex items-center gap-2 bg-surface/50 rounded-lg p-2">
-      <button
-        onClick={previousTrack}
-        className="btn btn-ghost btn-sm"
-        aria-label="Previous track"
-      >
-        <FontAwesomeIcon icon={faBackward} />
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={previousTrack}
+          className="btn btn-ghost btn-sm"
+          aria-label="Previous track"
+        >
+          <FontAwesomeIcon icon={faBackward} />
+        </button>
 
-      <button
-        onClick={togglePlay}
-        className="btn btn-primary btn-sm"
-        aria-label={isPlaying ? "Pause" : "Play"}
-      >
-        <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
-      </button>
+        <button
+          onClick={togglePlay}
+          className="btn btn-primary btn-sm"
+          aria-label={isPlaying ? "Pause" : "Play"}
+        >
+          <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
+        </button>
 
-      <button
-        onClick={nextTrack}
-        className="btn btn-ghost btn-sm"
-        aria-label="Next track"
-      >
-        <FontAwesomeIcon icon={faForward} />
-      </button>
+        <button
+          onClick={nextTrack}
+          className="btn btn-ghost btn-sm"
+          aria-label="Next track"
+        >
+          <FontAwesomeIcon icon={faForward} />
+        </button>
+      </div>
 
-      <div className="hidden sm:block flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
         <p className="text-sm truncate">
           {TRACKS[currentTrackIndex].title}
         </p>
-        <div className="flex items-center gap-2 text-xs text-text/70">
-          <span>{formatTime(currentTime)}</span>
+        <div className="flex items-center gap-1 text-xs text-text/70">
+          <span className="hidden xs:inline">{formatTime(currentTime)}</span>
           <div className="flex-1 h-1 bg-surface rounded-full overflow-hidden">
             <div 
               className="h-full bg-primary"
@@ -165,28 +167,30 @@ export const AudioPlayer = () => {
               aria-valuenow={(currentTime / duration) * 100}
             />
           </div>
-          <span>{formatTime(duration)}</span>
+          <span className="hidden xs:inline">{formatTime(duration)}</span>
         </div>
       </div>
 
-      <button
-        onClick={toggleMute}
-        className="btn btn-ghost btn-sm"
-        aria-label={isMuted ? "Unmute" : "Mute"}
-      >
-        <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeUp} />
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={toggleMute}
+          className="btn btn-ghost btn-sm"
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          <FontAwesomeIcon icon={isMuted ? faVolumeMute : faVolumeUp} />
+        </button>
 
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.1"
-        value={volume}
-        onChange={(e) => setVolume(Number(e.target.value))}
-        className="w-20 hidden sm:block"
-        aria-label="Volume control"
-      />
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={volume}
+          onChange={(e) => setVolume(Number(e.target.value))}
+          className="w-12 xs:w-20"
+          aria-label="Volume control"
+        />
+      </div>
     </div>
   );
 }; 
