@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'Bogan Hustler',
         description: 'Build your underground empire in this Australian-themed trading game',
         theme_color: '#ff4500',
-        start_url: '.',
+        start_url: './',
         icons: [
           {
             src: 'icon-192.png',
@@ -30,6 +30,6 @@ export default defineConfig({
       }
     })
   ],
-  base: './',
+  base: process.env.GITHUB_PAGES === 'true' ? '/bogan_hustler/' : '/',
   assetsInclude: ['**/*.jpg', '**/*.png', '**/*.mp3']
 })

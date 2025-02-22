@@ -41,7 +41,11 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
+          const swUrl = window.location.hostname === 'boganhustler.deanlofts.xyz' 
+            ? './sw.js'
+            : '/bogan_hustler/sw.js';
+          
+          navigator.serviceWorker.register(swUrl)
             .then(registration => {
               console.log('ServiceWorker registration successful');
             })

@@ -6,7 +6,8 @@
   "homepage": "https://boganhustler.deanlofts.xyz",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "GITHUB_PAGES=true tsc -b && vite build",
+    "build:custom": "tsc -b && vite build",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "lint:watch": "eslint . --watch",

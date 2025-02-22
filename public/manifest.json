@@ -2,7 +2,7 @@
   "name": "Bogan Hustler",
   "short_name": "Bogan Hustler",
   "description": "Build your underground empire in this Australian-themed trading game",
-  "start_url": ".",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#ff4500",
