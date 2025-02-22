@@ -18,14 +18,13 @@ import {
   faStore,
   faLandmark,
   faBolt,
-  faLink,
-  faPause,
-  faPlay
+  faLink
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MetaTags } from './components/MetaTags'
+import { AudioPlayer } from './components/AudioPlayer'
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -37,8 +36,6 @@ function App() {
   const { inventory, inventorySpace } = useSelector((state: RootState) => state.player);
   const dispatch = useDispatch();
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
-  const [audio] = useState(new Audio('./themesong.mp3'));
-  const [isPlaying, setIsPlaying] = useState(false);
   const [showTips, setShowTips] = useState(true);
 
   useEffect(() => {
@@ -71,19 +68,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const savedPlayingState = localStorage.getItem('boganHustlerAudioPlaying');
-    if (savedPlayingState === 'true') {
-      audio.loop = true;
-      setIsPlaying(true);
-    }
-
     document.documentElement.setAttribute('data-user-interacted', 'true');
-
-    return () => {
-      audio.pause();
-      audio.currentTime = 0;
-    };
-  }, [audio]);
+  }, []);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -99,22 +85,6 @@ function App() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
-
-  const toggleAudio = () => {
-    if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-    } else {
-      audio.loop = true;
-      audio.play().catch(err => {
-        console.error('Audio playback failed:', err);
-        setIsPlaying(false);
-        alert('Audio playback failed. Please check your browser settings.');
-      });
-      setIsPlaying(true);
-    }
-    localStorage.setItem('boganHustlerAudioPlaying', String(!isPlaying));
-  };
 
   if (currentDay > maxDays) {
     return (
@@ -170,13 +140,7 @@ function App() {
               
               {/* Control Buttons */}
               <div className="flex items-center gap-3">
-                <button
-                  onClick={toggleAudio}
-                  aria-label={isPlaying ? "Pause background music" : "Play background music"}
-                  className="btn btn-secondary"
-                >
-                  <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
-                </button>
+                <AudioPlayer />
                 
                 <button
                   onClick={() => dispatch(toggleAdultMode())}
