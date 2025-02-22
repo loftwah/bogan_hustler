@@ -808,8 +808,8 @@ const MarketScreen = () => {
                     {/* Market Stats with Tooltips */}
                     <div className="grid grid-cols-2 gap-3">
                       <div 
-                        className="stat-card group hover:bg-surface/50 transition-colors"
-                        title="Higher supply means lower prices"
+                        className="stat-card group relative"
+                        data-tooltip="Higher supply means lower prices"
                       >
                         <div className="flex items-center gap-2 text-text/70">
                           <FontAwesomeIcon icon={faBoxOpen} className="group-hover:text-primary transition-colors" />
@@ -824,8 +824,8 @@ const MarketScreen = () => {
                         </div>
                       </div>
                       <div 
-                        className="stat-card group hover:bg-surface/50 transition-colors"
-                        title="Higher demand means higher prices"
+                        className="stat-card group relative"
+                        data-tooltip="Higher demand means higher prices"
                       >
                         <div className="flex items-center gap-2 text-text/70">
                           <FontAwesomeIcon icon={faChartBar} className="group-hover:text-primary transition-colors" />
