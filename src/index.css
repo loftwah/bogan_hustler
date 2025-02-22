@@ -55,7 +55,7 @@
 
   .card {
     @apply bg-surface rounded-lg p-6 border border-border
-           transition-all duration-200 hover:border-border/80;
+           transition-all duration-200;
   }
 
   .input {
@@ -114,4 +114,17 @@ h1 {
 /* Add smooth scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+@layer utilities {
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .hover\:line-clamp-none:hover {
+    -webkit-line-clamp: unset;
+  }
 }

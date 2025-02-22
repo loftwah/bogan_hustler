@@ -121,7 +121,7 @@ function App() {
           </div>
 
           {/* Game Header Card */}
-          <div className="card mb-6 -mt-20 relative z-10 shadow-xl border-t-4 border-t-primary">
+          <div className="card mb-6 -mt-20 relative z-10 shadow-xl border-t-4 border-t-primary transition-none hover:border-border">
             {/* Top Section with Logo and Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               {/* Logo and Title */}
@@ -169,7 +169,9 @@ function App() {
               </div>
               <div className="stat-card">
                 <div className="text-sm text-text/70">Location</div>
-                <div className="text-xl font-bold truncate">{location}</div>
+                <div className="text-xl font-bold line-clamp-1 hover:line-clamp-none transition-all">
+                  {location}
+                </div>
               </div>
               <div className="stat-card">
                 <div className="text-sm text-text/70">Day</div>

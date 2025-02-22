@@ -779,42 +779,28 @@ const MarketScreen = () => {
                     {price > 0 && (
                       <div className="space-y-2">
                         {/* Enhanced Quick Buy/Sell Options */}
-                        <div className="grid grid-cols-2 gap-1 sm:gap-2">
-                          {/* Quick Buy Options */}
-                          <div className="space-y-1 sm:space-y-2">
-                            {getQuickBuyOptions(price, owned, true).map(option => (
-                              <button
-                                key={`buy-${option.amount}`}
-                                onClick={() => {
-                                  dispatch(buyDrug({ drug, quantity: option.amount, price }));
-                                  dispatch(adjustMarket({ location, item: drug, quantity: option.amount, isBuy: true }));
-                                }}
-                                className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-green-800 hover:bg-green-700 text-white disabled:opacity-30 disabled:bg-green-900"
-                                disabled={option.totalValue > cash || option.amount + currentInventoryUsed > inventorySpace}
-                              >
-                                {option.label}
-                                <span className="text-green-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
-                              </button>
-                            ))}
-                          </div>
+                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-1 sm:gap-2">
+                          {getQuickBuyOptions(price, owned, true).map((option) => (
+                            <button
+                              key={option.amount}
+                              onClick={() => handleQuantityChange(option.amount.toString())}
+                              className="btn px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm whitespace-nowrap"
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
 
-                          {/* Quick Sell Options */}
-                          <div className="space-y-1 sm:space-y-2">
-                            {getQuickBuyOptions(price, owned, false).map(option => (
-                              <button
-                                key={`sell-${option.amount}`}
-                                onClick={() => {
-                                  dispatch(sellDrug({ drug, quantity: option.amount, price }));
-                                  dispatch(adjustMarket({ location, item: drug, quantity: option.amount, isBuy: false }));
-                                }}
-                                className="btn w-full text-xs sm:text-sm py-1.5 sm:py-2 bg-red-800 hover:bg-red-700 text-white disabled:opacity-30 disabled:bg-red-900"
-                                disabled={!owned || option.amount > owned}
-                              >
-                                {option.label}
-                                <span className="text-red-300 ml-1 sm:ml-2">${option.totalValue.toFixed(0)}</span>
-                              </button>
-                            ))}
-                          </div>
+                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-1 sm:gap-2">
+                          {getQuickBuyOptions(price, owned, false).map((option) => (
+                            <button
+                              key={option.amount}
+                              onClick={() => handleQuantityChange(option.amount.toString())}
+                              className="btn px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm whitespace-nowrap"
+                            >
+                              {option.label}
+                            </button>
+                          ))}
                         </div>
                       </div>
                     )}
