@@ -74,10 +74,10 @@ function App() {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'i' || e.key === 'I') {
-        // Find and click the floating inventory button
-        const inventoryBtn = document.getElementById('floating-inventory-btn');
-        if (inventoryBtn) {
-          inventoryBtn.click();
+        // Use the globally accessible toggle function
+        const toggleInventory = (window as any).__toggleInventory;
+        if (typeof toggleInventory === 'function') {
+          toggleInventory();
         }
       }
       if (e.key === 'm' || e.key === 'M') {

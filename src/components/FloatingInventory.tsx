@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,20 +9,30 @@ const FloatingInventory = () => {
   const { inventory, inventorySpace, cash } = useSelector((state: RootState) => state.player);
   const currentSpace = inventory.reduce((acc, item) => acc + item.quantity, 0);
 
+  const toggleInventory = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+
   useEffect(() => {
+    (window as any).__toggleInventory = toggleInventory;
+
     const button = document.getElementById('floating-inventory-btn');
     if (button) {
       button.classList.add('pulse');
       setTimeout(() => button.classList.remove('pulse'), 1000);
     }
-  }, [inventory]);
+
+    return () => {
+      delete (window as any).__toggleInventory;
+    };
+  }, [toggleInventory]);
 
   if (!isOpen) {
     return (
       <button 
         id="floating-inventory-btn"
         className="fixed bottom-24 right-4 md:right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-opacity-80 z-[100]"
-        onClick={() => setIsOpen(true)}
+        onClick={toggleInventory}
         aria-label="Show inventory"
       >
         <FontAwesomeIcon icon={faBox} />
