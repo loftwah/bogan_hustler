@@ -121,7 +121,7 @@ function App() {
           </div>
 
           {/* Game Header Card */}
-          <div className="card mb-6 -mt-20 relative z-10 shadow-xl border-t-4 border-t-primary transition-none hover:border-border">
+          <div className="card mb-6 -mt-20 relative z-10 shadow-xl border-t-4 border-t-primary">
             {/* Top Section with Logo and Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               {/* Logo and Title */}
