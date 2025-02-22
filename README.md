@@ -12,6 +12,8 @@
 [![Vite](https://img.shields.io/badge/Vite-6.1.0-646CFF.svg)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4.1-38B2AC.svg)](https://tailwindcss.com/)
 
+![ogimage](https://github.com/user-attachments/assets/3e875869-2868-4075-8675-4390c097f951)
+
 ## 🎮 Play Now
 
 [Play Bogan Hustler](https://boganhustler.deanlofts.xyz)
