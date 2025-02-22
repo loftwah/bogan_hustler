@@ -35,13 +35,31 @@ export const AudioPlayer = () => {
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
+    console.log('Current environment:', {
+      hostname: window.location.hostname,
+      pathname: window.location.pathname,
+      href: window.location.href
+    });
+    console.log('Available tracks:', TRACKS);
+  }, []);
+
+  useEffect(() => {
     const loadAudio = async () => {
       try {
-        const baseUrl = window.location.hostname === 'boganhustler.deanlofts.xyz' 
-          ? '.'
-          : '/bogan_hustler';
+        let basePath = '';
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          basePath = '/';
+        } else if (window.location.hostname === 'loftwah.github.io') {
+          basePath = '/bogan_hustler/';
+        } else {
+          basePath = './';
+        }
+
+        const trackPath = TRACKS[currentTrackIndex].file.replace('./', '');
+        audio.src = `${basePath}${trackPath}`;
         
-        audio.src = `${baseUrl}${TRACKS[currentTrackIndex].file.replace('./', '/')}`;
+        console.log('Loading audio from:', audio.src);
+        
         audio.loop = true;
         audio.volume = volume;
         
@@ -49,7 +67,11 @@ export const AudioPlayer = () => {
           await audio.play();
         }
       } catch (err) {
-        console.error('Failed to load audio:', err);
+        console.error('Failed to load audio:', err, {
+          hostname: window.location.hostname,
+          audioSrc: audio.src,
+          trackIndex: currentTrackIndex
+        });
         setIsPlaying(false);
       }
     };
