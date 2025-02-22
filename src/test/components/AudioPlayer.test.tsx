@@ -12,6 +12,10 @@ describe('AudioPlayer', () => {
     pause: Mock;
     volume: number;
     loop: boolean;
+    currentTime: number;
+    duration: number;
+    addEventListener: Mock;
+    removeEventListener: Mock;
   };
 
   beforeEach(() => {
@@ -25,6 +29,10 @@ describe('AudioPlayer', () => {
       pause: vi.fn(),
       volume: 1,
       loop: false,
+      currentTime: 0,
+      duration: 180, // 3 minutes
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
     };
     
     vi.spyOn(window, 'Audio').mockImplementation(() => mockAudio as any);
@@ -104,6 +112,55 @@ describe('AudioPlayer', () => {
       // Click previous
       fireEvent.click(screen.getByLabelText('Previous track'));
       expect(screen.getByText('Bogan Hustler')).toBeInTheDocument();
+    });
+
+    it('displays current time and duration', () => {
+      render(<AudioPlayer />);
+      
+      // Simulate timeupdate event
+      const timeUpdateHandler = mockAudio.addEventListener.mock.calls.find(
+        call => call[0] === 'timeupdate'
+      )[1];
+      
+      act(() => {
+        mockAudio.currentTime = 65; // 1:05
+        timeUpdateHandler();
+      });
+      
+      expect(screen.getByText('1:05')).toBeInTheDocument();
+      expect(screen.getByText('3:00')).toBeInTheDocument();
+    });
+
+    it('updates progress bar width based on current time', () => {
+      render(<AudioPlayer />);
+      
+      const timeUpdateHandler = mockAudio.addEventListener.mock.calls.find(
+        call => call[0] === 'timeupdate'
+      )[1];
+      
+      act(() => {
+        mockAudio.currentTime = 90; // Half way through
+        timeUpdateHandler();
+      });
+      
+      const progressBar = screen.getByRole('progressbar');
+      expect(progressBar).toHaveStyle({ width: '50%' });
+      expect(progressBar).toHaveAttribute('aria-valuenow', '50');
+    });
+
+    it('handles audio metadata loading', () => {
+      render(<AudioPlayer />);
+      
+      const metadataHandler = mockAudio.addEventListener.mock.calls.find(
+        call => call[0] === 'loadedmetadata'
+      )[1];
+      
+      act(() => {
+        mockAudio.duration = 240; // 4 minutes
+        metadataHandler();
+      });
+      
+      expect(screen.getByText('4:00')).toBeInTheDocument();
     });
   });
 
