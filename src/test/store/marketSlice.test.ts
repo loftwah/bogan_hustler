@@ -218,6 +218,11 @@ describe('Market Slice', () => {
       vi.setSystemTime(mockDate);
 
       const store = createTestStore("Richmond");
+      
+      // Get initial price before applying time-based modifications
+      const initialState = store.getState().market;
+      const initialPrice = initialState.prices["Richmond"].Ice.price;
+
       await store.dispatch(updatePricesWithLocation({
         location: "Richmond",
         reputation: 0,
@@ -228,9 +233,9 @@ describe('Market Slice', () => {
       const state = store.getState().market;
       const prices = state.prices["Richmond"];
       
-      // Night prices should be higher than base price but not unreasonable
-      expect(prices.Ice.price).toBeGreaterThan(350); // Just check if it's above base price
-      expect(prices.Ice.price).toBeLessThan(500); // But not too high
+      // Compare with initial price instead of absolute value
+      expect(prices.Ice.price).toBeGreaterThan(initialPrice);
+      expect(prices.Ice.price).toBeLessThan(initialPrice * 1.5); // Max 50% increase
 
       vi.useRealTimers();
     });
