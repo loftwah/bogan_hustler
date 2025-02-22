@@ -10,8 +10,8 @@ const urlsToCache = [
   './siren.mp3',
   './Dust of the Damned.mp3',
   './Grave of the Outcast.mp3',
-  './Hustler\'s Last Run.mp3',
-  './Junkie\'s Jig.mp3',
+  './Hustler%27s Last Run.mp3',
+  './Junkie%27s Jig.mp3',
   './Phantom Love.mp3',
   './Shadows in the Scrub.mp3',
   './Wraith of the Wastes.mp3'
