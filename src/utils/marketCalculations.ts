@@ -1,28 +1,46 @@
 import { MarketTrend, MarketItemDetails } from '../types';
 
+export interface MarketTrend {
+  direction: 'up' | 'down' | 'stable' | 'unknown';
+  strength: number | 'unknown';
+  description?: string;
+  supplyStatus?: string;
+  demandStatus?: string;
+  confidence: number;
+}
+
 export const analyzeTrend = (supply: number, demand: number, marketIntel: number): MarketTrend => {
   if (marketIntel < 25) {
     return {
-      direction: 'stable',
+      direction: 'unknown',
       strength: 0,
-      description: 'Market trend unknown - Need more intel'
+      description: 'Market trend unknown - Need more intel',
+      confidence: marketIntel / 100
     };
   }
 
   const trendStrength = Math.abs(demand - supply);
   const direction = demand > supply ? 'up' : demand < supply ? 'down' : 'stable';
   
+  // Add more sophisticated trend analysis with market intel
+  if (marketIntel > 50) {
+    const supplyTrend = supply > 75 ? 'oversupplied' : supply < 25 ? 'scarce' : 'stable';
+    const demandTrend = demand > 75 ? 'high' : demand < 25 ? 'low' : 'moderate';
+    
+    return {
+      direction,
+      strength: trendStrength,
+      supplyStatus: supplyTrend,
+      demandStatus: demandTrend,
+      confidence: marketIntel / 100
+    };
+  }
+  
+  // Return basic trend for low market intel
   return {
     direction,
     strength: trendStrength,
-    description: (() => {
-      if (trendStrength > 50) {
-        return direction === 'up' ? '🚀 Strong upward trend' : '📉 Sharp price drop';
-      } else if (trendStrength > 25) {
-        return direction === 'up' ? '📈 Moderate rise' : '↘️ Gradual decline';
-      }
-      return '→ Stable market';
-    })()
+    confidence: marketIntel / 100
   };
 };
 

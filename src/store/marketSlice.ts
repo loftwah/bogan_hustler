@@ -464,8 +464,9 @@ export const marketSlice = createSlice({
       reputation: number;
       adultMode: boolean;
       prevLocation: string;
+      marketIntel: number;
     }>) => {
-      const { location, reputation, prevLocation } = action.payload;
+      const { location, reputation, prevLocation, marketIntel } = action.payload;
       const locationType = getLocationType(location);
       
       // Calculate distance multiplier
@@ -477,6 +478,33 @@ export const marketSlice = createSlice({
       // Apply distance multiplier to prices after reputation effects
       Object.keys(newPrices).forEach(drug => {
         newPrices[drug].price = Math.round(newPrices[drug].price * distanceMultiplier);
+      });
+      
+      // Apply market intel effect
+      Object.keys(newPrices).forEach(drug => {
+        let variation = (Math.random() - 0.5) * 0.4;
+        
+        // Add market intel effect - higher intel reduces price variation
+        const intelEffect = (marketIntel / 100) * 0.2; // Up to 20% reduction in variation
+        variation *= (1 - intelEffect);
+        
+        // Distance affects prices
+        variation += distance * 0.001; // 0.1% per km
+        
+        // Time-based effects
+        const currentHour = new Date().getHours();
+        const isNighttime = currentHour >= 20 || currentHour <= 4;
+        const timeModifier = isNighttime ? 1.2 : 1.0; // 20% price increase at night
+        variation *= timeModifier;
+        
+        // Add reputation effect - higher reputation gives slightly better prices
+        const reputationEffect = (reputation / 100) * 0.15; // Up to 15% discount with max reputation
+        variation -= reputationEffect;
+        
+        // Prevent negative prices
+        const finalPrice = Math.max(1, Math.round(newPrices[drug].price * (1 + variation)));
+        
+        newPrices[drug].price = finalPrice;
       });
       
       state.prices[location] = newPrices;
@@ -498,6 +526,7 @@ interface UpdatePricesParams {
   location: string;
   adultMode: boolean;
   prevLocation: string;
+  marketIntel: number;
 }
 
 // Remove the duplicate updatePrices export from the slice actions
@@ -506,32 +535,53 @@ export const { adjustMarket, triggerMarketEvent } = marketSlice.actions;
 // Rename the async thunk version to be more specific
 export const updatePricesWithLocation = createAsyncThunk(
   'market/updatePricesWithLocation',
-  async ({ reputation, location, adultMode, prevLocation }: UpdatePricesParams) => {
+  async ({ reputation, location, adultMode, prevLocation, marketIntel }: UpdatePricesParams) => {
     const distance = calculateDistance(prevLocation, location);
     const timeOfDay = new Date().getHours();
     const isNighttime = timeOfDay >= 20 || timeOfDay <= 4;
+    const locationType = getLocationType(location);
     
-    // Use the existing itemData instead of undefined BASE_PRICES
-    return Object.entries(getItemData(adultMode)).reduce((acc, [drug, data]) => {
-      // Base variation
-      let variation = (Math.random() - 0.5) * 0.4; // ±20% base variation
+    // Get the item data first to ensure it exists
+    const items = getItemData(adultMode);
+    
+    return Object.entries(items).reduce((acc, [drug, data]) => {
+      // Base price from itemData
+      const basePrice = data.basePrice;
+      
+      // Start with base variation
+      let multiplier = 1.0;
+      
+      // Location type modifier
+      if (locationType === 'hardcoreArea') {
+        multiplier += 0.2; // 20% increase in hardcore areas
+      }
       
       // Distance affects prices
-      variation += distance * 0.001; // 0.1% per km
+      multiplier += (distance || 0) * 0.001; // 0.1% per km
       
       // Time-based effects
-      if (isNighttime) variation += 0.1; // 10% premium at night
+      if (isNighttime) {
+        multiplier += 0.2; // 20% increase at night
+      }
       
-      // Add reputation effect - higher reputation gives slightly better prices
-      variation -= (reputation / 100) * 0.15; // Up to 15% discount with max reputation
+      // Reputation effect (discount)
+      const reputationDiscount = (reputation / 100) * 0.3;
+      multiplier -= reputationDiscount;
       
-      // Prevent negative prices
-      const finalPrice = Math.max(1, Math.round(data.basePrice * (1 + variation)));
+      // Market intel effect
+      const intelEffect = (marketIntel / 100) * 0.2;
+      multiplier *= (1 - intelEffect);
+      
+      // Ensure minimum multiplier
+      multiplier = Math.max(0.5, multiplier);
+      
+      // Calculate final price
+      const finalPrice = Math.max(1, Math.round(basePrice * multiplier));
       
       acc[drug] = {
         price: finalPrice,
-        supply: Math.random() * 100,
-        demand: Math.random() * 100
+        supply: 50 + Math.floor(Math.random() * 50),
+        demand: 50 + Math.floor(Math.random() * 50)
       };
       
       return acc;
@@ -571,7 +621,14 @@ interface LocationCoordinates {
 
 const LOCATION_COORDS: Record<string, LocationCoordinates> = {
   "Kings Cross": { lat: -33.8775, lng: 151.2252 },
-  // Add coordinates for other locations...
+  "Melbourne CBD": { lat: -37.8136, lng: 144.9631 },
+  "Richmond": { lat: -37.8183, lng: 144.9984 },
+  "St Kilda": { lat: -37.8597, lng: 144.9729 },
+  "Redfern": { lat: -33.8932, lng: 151.2094 },
+  "Cabramatta": { lat: -33.8947, lng: 150.9366 },
+  "Mount Druitt": { lat: -33.7712, lng: 150.8198 },
+  "Footscray": { lat: -37.8001, lng: 144.9004 },
+  // Add more locations as needed...
 };
 
 // Also export itemData

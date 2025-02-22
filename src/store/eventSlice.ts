@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { PlayerState } from '../types';
+import { getLocationType } from './marketSlice';
 
 export interface InventoryItem {
   name: string;
@@ -31,6 +32,14 @@ export interface EventChoiceOutcome {
   triggerMinigame?: boolean;
   requireLocation?: LocationRequirement;
   opponentType?: 'police' | 'gang' | 'bikie' | 'dealer';
+  combatModifiers?: {
+    playerDamageMultiplier?: number;
+    opponentHealthMultiplier?: number;
+    specialEffects?: {
+      bleed?: number;
+      stun?: number;
+    };
+  };
 }
 
 export interface EventChoice {
@@ -103,6 +112,14 @@ const standardOutcomes: Record<string, StandardOutcome> = {
       requireLocation: {
         blacklist: ["Kings Cross", "Sydney CBD"],
         failureMessage: "Can't fight here - too many witnesses!"
+      },
+      combatModifiers: {
+        playerDamageMultiplier: 1.0,
+        opponentHealthMultiplier: 1.0,
+        specialEffects: {
+          bleed: 0.1,
+          stun: 0.05
+        }
       }
     }
   },
@@ -506,15 +523,16 @@ export const triggerRandomEventAsync = createAsyncThunk(
   async (location: string, { getState }) => {
     const state = getState() as RootState;
     const { reputation, currentDay, policeEvasion } = state.player;
-    const hour = new Date().getHours();
-
+    
     // First check if event happens at all based on police evasion
     const baseEventChance = 0.4;
     const modifiedChance = baseEventChance * (1 - policeEvasion / 200);
+    
+    if (Math.random() > modifiedChance) {
+      return null;
+    }
 
-    if (Math.random() > modifiedChance) return null;
-
-    // First, filter events by cooldown
+    // Filter events by cooldown
     const availableEvents = enhancedEvents.filter(event => {
       if (!event.repeatable) return false;
       if (event.lastTriggered && event.cooldown) {
@@ -526,65 +544,35 @@ export const triggerRandomEventAsync = createAsyncThunk(
       return true;
     });
 
-    // Then, filter by other conditions and prioritize location-specific events
+    if (availableEvents.length === 0) {
+      return null;
+    }
+
+    // Filter by location and other conditions
     const eligibleEvents = availableEvents.filter(event => {
       const conditions = event.conditions;
-      
-      // Basic condition checks
-      const meetsBasicConditions = (
-        (!conditions.minReputation || reputation >= conditions.minReputation) &&
-        (!conditions.maxReputation || reputation <= conditions.maxReputation) &&
-        (!conditions.timeOfDay || conditions.timeOfDay.includes(hour))
-      );
-
-      if (!meetsBasicConditions) return false;
-
-      // Location check
-      if (conditions.location) {
-        return conditions.location.includes(location);
+      if (!conditions.location?.includes(location)) {
+        return false;
       }
-
-      return false; // Only allow location-specific events
+      
+      return (!conditions.minReputation || reputation >= conditions.minReputation) &&
+             (!conditions.maxReputation || reputation <= conditions.maxReputation);
     });
 
-    console.log('Eligible events:', eligibleEvents.map(e => e.id));
+    if (eligibleEvents.length === 0) {
+      return null;
+    }
 
-    if (eligibleEvents.length === 0) return null;
-
-    // Weight events based on conditions
-    const weightedEvents = eligibleEvents.map(event => ({
-      id: event.id,
-      weight: calculateEventWeight(event, state.player)
-    }));
-
-    console.log('Weighted events:', weightedEvents.map(e => ({
-      id: e.id,
-      weight: e.weight
-    })));
-
-    // Select event using weighted random
-    const totalWeight = weightedEvents.reduce((sum, e) => sum + e.weight, 0);
-    let random = Math.random() * totalWeight;
+    // Select random event from eligible events
+    const selectedEvent = eligibleEvents[Math.floor(Math.random() * eligibleEvents.length)];
     
-    console.log('Event selection:', { totalWeight, random });
-
-    let selectedEvent = null;
-    for (const { id, weight } of weightedEvents) {
-      random -= weight;
-      if (random <= 0) {
-        selectedEvent = enhancedEvents.find(e => e.id === id);
-        break;
-      }
-    }
-
-    if (selectedEvent) {
-      // Update the lastTriggered time when an event is selected
-      selectedEvent.lastTriggered = currentDay;
-      console.log('Selected event:', selectedEvent.id);
-      return selectedEvent;
-    }
-
-    return null;
+    // Update lastTriggered
+    selectedEvent.lastTriggered = currentDay;
+    
+    return {
+      ...selectedEvent,
+      description: selectedEvent.description.replace("%location%", location)
+    };
   }
 );
 
@@ -602,7 +590,31 @@ const calculateEventWeight = (event: EnhancedEvent, player: PlayerState): number
     weight *= 1.3;
   }
 
+  // Add time-based risk
+  const hour = new Date().getHours();
+  if (hour >= 22 || hour <= 4) {
+    weight *= 1.2; // 20% more likely at night
+  }
+  
+  // Add location-based risk
+  const locationType = getLocationType(player.location);
+  if (locationType === 'hardcoreArea') {
+    weight *= 1.3; // 30% more likely in hardcore areas
+  } else if (locationType === 'cityCenter') {
+    weight *= 0.8; // 20% less likely in city centers
+  }
+
   return weight;
+};
+
+export const getEventCooldownStatus = (event: EnhancedEvent, currentDay: number): string => {
+  if (!event.repeatable || !event.cooldown || !event.lastTriggered) return '';
+  
+  const daysSinceLastTrigger = currentDay - event.lastTriggered;
+  const daysRemaining = event.cooldown - daysSinceLastTrigger;
+  
+  if (daysRemaining <= 0) return 'Ready';
+  return `${daysRemaining} days`;
 };
 
 export default eventSlice.reducer; 
