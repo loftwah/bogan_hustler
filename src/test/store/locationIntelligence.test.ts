@@ -1,4 +1,4 @@
-import { getLocationIntel, locationIntelligence } from '../../data/locationIntelligence';
+import { getLocationIntel } from '../../data/locationIntelligence';
 
 describe('Location Intelligence', () => {
   describe('Known Locations', () => {

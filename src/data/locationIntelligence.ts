@@ -1,4 +1,3 @@
-import { locationsByRegion } from "../components/MapScreen";
 import { locationTypes, HARDCORE_AREAS } from "../store/marketSlice";
 
 export interface LocationIntel {
@@ -14,10 +13,18 @@ export interface LocationIntel {
 // Define location type keys
 type LocationType = keyof typeof locationTypes;
 
+// Define hardcore areas type to match the constant from marketSlice
+type HardcoreArea = typeof HARDCORE_AREAS[number]; // This is better than manually listing them
+
 // Helper function to determine location type
 const getLocationType = (location: string): LocationType => {
+  // Type guard for hardcore areas
+  const isHardcoreArea = (loc: string): loc is HardcoreArea => {
+    return (HARDCORE_AREAS as readonly string[]).includes(loc);
+  };
+
   // Hardcore areas are typically high-risk zones
-  if (HARDCORE_AREAS.includes(location)) {
+  if (isHardcoreArea(location)) {
     return "hardcoreArea";
   }
 
@@ -149,14 +156,13 @@ export const locationIntelligence: Record<string, LocationIntel> = {
 
 // Helper function to get intel for any location
 export const getLocationIntel = (location: string): LocationIntel => {
-  // Return specific intel if it exists
   if (locationIntelligence[location]) {
     return locationIntelligence[location];
   }
 
-  // Generate generic intel based on location type
   const locationType = getLocationType(location);
-  const isHardcore = HARDCORE_AREAS.includes(location);
+  // Cast HARDCORE_AREAS to string[] for the includes check
+  const isHardcore = (HARDCORE_AREAS as readonly string[]).includes(location);
 
   const genericIntel: LocationIntel = {
     description: `${location} is a ${isHardcore ? 'high-risk' : 'typical'} ${locationType} drug market.`,
