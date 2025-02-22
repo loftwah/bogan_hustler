@@ -29,6 +29,6 @@ export default defineConfig({
       }
     })
   ],
-  base: '/bogan_hustler/',
+  base: '/',
   assetsInclude: ['**/*.jpg', '**/*.png', '**/*.mp3']
 })

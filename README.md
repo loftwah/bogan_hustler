@@ -14,7 +14,7 @@
 
 ## 🎮 Play Now
 
-[Play Bogan Hustler](https://loftwah.github.io/bogan_hustler)
+[Play Bogan Hustler](https://boganhustler.deanlofts.xyz)
 
 ## 📖 About
 
