@@ -1,20 +1,20 @@
 const CACHE_NAME = 'bogan-hustler-v1';
 const urlsToCache = [
-  '/bogan_hustler/',
-  '/bogan_hustler/index.html',
-  '/bogan_hustler/manifest.json',
-  '/bogan_hustler/favicon.ico',
-  '/bogan_hustler/icon-192.png',
-  '/bogan_hustler/icon-512.png',
-  '/bogan_hustler/themesong.mp3',
-  '/bogan_hustler/siren.mp3',
-  '/bogan_hustler/Dust of the Damned.mp3',
-  '/bogan_hustler/Grave of the Outcast.mp3',
-  '/bogan_hustler/Hustler\'s Last Run.mp3',
-  '/bogan_hustler/Junkie\'s Jig.mp3',
-  '/bogan_hustler/Phantom Love.mp3',
-  '/bogan_hustler/Shadows in the Scrub.mp3',
-  '/bogan_hustler/Wraith of the Wastes.mp3'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/favicon.ico',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/themesong.mp3',
+  '/siren.mp3',
+  '/Dust of the Damned.mp3',
+  '/Grave of the Outcast.mp3',
+  '/Hustler\'s Last Run.mp3',
+  '/Junkie\'s Jig.mp3',
+  '/Phantom Love.mp3',
+  '/Shadows in the Scrub.mp3',
+  '/Wraith of the Wastes.mp3'
 ];
 
 self.addEventListener('install', (event) => {
