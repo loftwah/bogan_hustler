@@ -251,6 +251,22 @@ const getLocationDetails = (location: string): LocationStory & { region: string 
   };
 };
 
+// Add this helper function near the top of the file
+const getCensoredDrugName = (drug: string, adultMode: boolean): string => {
+  if (adultMode) return drug;
+  return DRUG_MAPPINGS[drug as DrugName] || drug;
+};
+
+// Add this helper function near the top of the file (if not already present)
+const getCensoredText = (text: string, adultMode: boolean): string => {
+  if (adultMode) return text;
+  return Object.entries(DRUG_MAPPINGS).reduce((censored, [drug, replacement]) => {
+    // Use word boundaries to avoid partial word matches
+    const regex = new RegExp(`\\b${drug}\\b`, 'g');
+    return censored.replace(regex, replacement);
+  }, text);
+};
+
 const MarketScreen = () => {
   const dispatch = useDispatch();
   const { inventory, cash, inventorySpace, marketIntel } = useSelector((state: RootState) => state.player);
@@ -505,7 +521,7 @@ const MarketScreen = () => {
         {showLocationInfo && (
           <div className="space-y-6 mt-4">
             <p className="text-lg text-text/70 italic">
-              "{getLocationDetails(location).history}"
+              {getCensoredText(getLocationDetails(location).history, adultMode)}
             </p>
 
             {/* Location Story Cards */}
@@ -515,7 +531,9 @@ const MarketScreen = () => {
                   <FontAwesomeIcon icon={faHistory} className="text-xl" />
                   <h3 className="font-bold">Criminal History</h3>
                 </div>
-                <p className="text-text/80">{getLocationDetails(location).history}</p>
+                <p className="text-text/80">
+                  {getCensoredText(getLocationDetails(location).history, adultMode)}
+                </p>
               </div>
 
               <div className="story-card">
@@ -523,7 +541,9 @@ const MarketScreen = () => {
                   <FontAwesomeIcon icon={faSkull} className="text-xl" />
                   <h3 className="font-bold">Gang Activity</h3>
                 </div>
-                <p className="text-text/80">{getLocationDetails(location).gangs}</p>
+                <p className="text-text/80">
+                  {getCensoredText(getLocationDetails(location).gangs, adultMode)}
+                </p>
               </div>
 
               <div className="story-card">
@@ -531,14 +551,16 @@ const MarketScreen = () => {
                   <FontAwesomeIcon icon={faCapsules} className="text-xl" />
                   <h3 className="font-bold">Drug Scene</h3>
                 </div>
-                <p className="text-text/80">{getLocationDetails(location).drugs.map((drug: string) => (
-                  <span 
-                    key={drug}
-                    className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70"
-                  >
-                    {drug}
-                  </span>
-                ))}</p>
+                <div className="flex flex-wrap gap-1">
+                  {getLocationDetails(location).drugs.map((drug: string) => (
+                    <span 
+                      key={drug}
+                      className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70 mr-1"
+                    >
+                      {getCensoredDrugName(drug, adultMode)}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className="story-card">
@@ -546,7 +568,9 @@ const MarketScreen = () => {
                   <FontAwesomeIcon icon={faHandcuffs} className="text-xl" />
                   <h3 className="font-bold">Police Activity</h3>
                 </div>
-                <p className="text-text/80">{getLocationDetails(location).policeActivity}</p>
+                <p className="text-text/80">
+                  {getCensoredText(getLocationDetails(location).policeActivity, adultMode)}
+                </p>
               </div>
             </div>
 
@@ -581,7 +605,7 @@ const MarketScreen = () => {
                       key={drug}
                       className="px-2 py-0.5 bg-surface rounded-full text-xs font-medium text-text/70"
                     >
-                      {drug}
+                      {getCensoredDrugName(drug, adultMode)}
                     </span>
                   ))}
                 </div>
