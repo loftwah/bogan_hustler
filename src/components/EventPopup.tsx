@@ -77,9 +77,10 @@ const EventPopup = () => {
 
   // Type guard for EventOutcome
   const isEventOutcome = (outcome: EventOutcome | EventChoiceOutcome): outcome is EventOutcome => {
-    return !('successChance' in outcome) && 
-           !('triggerMinigame' in outcome) && 
-           !('baseEffects' in outcome);
+    return typeof outcome === 'object' &&
+           'cash' in outcome &&
+           !('triggerMinigame' in outcome) &&
+           !('successChance' in outcome);
   };
 
   const handleChoice = (choice: EventChoice) => {
