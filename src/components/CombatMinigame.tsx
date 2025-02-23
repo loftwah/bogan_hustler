@@ -172,11 +172,17 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
     if (playerHealth <= 0) {
       setGameState('defeat');
       setGameMessage('You were defeated!');
-      onComplete(false);
+      // Delay calling onComplete, so the defeat message remains visible for 2 seconds
+      setTimeout(() => {
+        onComplete(false);
+      }, 2000);
     } else if (opponentHealth <= 0) {
       setGameState('victory');
       setGameMessage('Victory!');
-      onComplete(true);
+      // Delay calling onComplete, so the victory message remains visible for 2 seconds
+      setTimeout(() => {
+        onComplete(true);
+      }, 2000);
     }
   }, [playerHealth, opponentHealth, onComplete]);
 

@@ -109,6 +109,11 @@ describe('CombatMinigame', () => {
         await vi.advanceTimersByTime(100);
       });
       
+      // NEW: Wait for the onComplete callback delay (2000ms)
+      await act(async () => {
+        await vi.advanceTimersByTime(2000);
+      });
+      
       // Check for victory text
       expect(screen.getByText('🎉 Victory!')).toBeInTheDocument();
       expect(onComplete).toHaveBeenCalledWith(true);
