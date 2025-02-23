@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPlay, 
@@ -26,7 +26,7 @@ const TRACKS: Track[] = [
 ];
 
 export const AudioPlayer = () => {
-  const [audio] = useState(new Audio());
+  const audioRef = useRef(new Audio());
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -56,20 +56,20 @@ export const AudioPlayer = () => {
         }
 
         const trackPath = TRACKS[currentTrackIndex].file.replace('./', '');
-        audio.src = `${basePath}${trackPath}`;
+        audioRef.current.src = `${basePath}${trackPath}`;
         
-        console.log('Loading audio from:', audio.src);
+        console.log('Loading audio from:', audioRef.current.src);
         
-        audio.loop = true;
-        audio.volume = volume;
+        audioRef.current.loop = true;
+        audioRef.current.volume = volume;
         
         if (isPlaying) {
-          await audio.play();
+          await audioRef.current.play();
         }
       } catch (err) {
         console.error('Failed to load audio:', err, {
           hostname: window.location.hostname,
-          audioSrc: audio.src,
+          audioSrc: audioRef.current.src,
           trackIndex: currentTrackIndex
         });
         setIsPlaying(false);
@@ -87,28 +87,28 @@ export const AudioPlayer = () => {
   }, [currentTrackIndex]);
 
   useEffect(() => {
-    audio.volume = isMuted ? 0 : volume;
+    audioRef.current.volume = isMuted ? 0 : volume;
     localStorage.setItem('boganHustlerVolume', String(volume));
   }, [volume, isMuted]);
 
   useEffect(() => {
     const timeUpdateHandler = () => {
-      setCurrentTime(audio.currentTime);
-      setDuration(audio.duration);
+      setCurrentTime(audioRef.current.currentTime);
+      setDuration(audioRef.current.duration);
     };
 
-    audio.addEventListener('timeupdate', timeUpdateHandler);
-    audio.addEventListener('loadedmetadata', timeUpdateHandler);
+    audioRef.current.addEventListener('timeupdate', timeUpdateHandler);
+    audioRef.current.addEventListener('loadedmetadata', timeUpdateHandler);
 
     return () => {
-      audio.removeEventListener('timeupdate', timeUpdateHandler);
-      audio.removeEventListener('loadedmetadata', timeUpdateHandler);
+      audioRef.current.removeEventListener('timeupdate', timeUpdateHandler);
+      audioRef.current.removeEventListener('loadedmetadata', timeUpdateHandler);
     };
-  }, [audio]);
+  }, []);
 
   const playAudio = async () => {
     try {
-      await audio.play();
+      await audioRef.current.play();
       setIsPlaying(true);
     } catch (err) {
       console.error('Audio playback failed:', err);
@@ -118,7 +118,7 @@ export const AudioPlayer = () => {
 
   const togglePlay = () => {
     if (isPlaying) {
-      audio.pause();
+      audioRef.current.pause();
       setIsPlaying(false);
     } else {
       playAudio();
