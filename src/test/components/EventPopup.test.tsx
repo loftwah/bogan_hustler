@@ -6,7 +6,7 @@ import EventPopup from '../../components/EventPopup';
 import eventReducer from '../../store/eventSlice';
 import playerReducer from '../../store/playerSlice';
 import { toast } from 'react-hot-toast';
-import { act } from 'react-dom/test-utils';
+import { act } from 'react';
 
 // Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
