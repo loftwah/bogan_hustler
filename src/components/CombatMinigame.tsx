@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBolt, faShieldHalved, faPersonRunning, faDumbbell } from '@fortawesome/free-solid-svg-icons';
+import { faBolt, faShieldHalved, faPersonRunning, faDumbbell, faDizzy, faTint, faFire, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 export type OpponentType = 'police' | 'gang' | 'bikie' | 'dealer';
@@ -128,6 +128,22 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
   const [playerStatusEffects, setPlayerStatusEffects] = useState<StatusEffect[]>([]);
   const [opponentStatusEffects, setOpponentStatusEffects] = useState<StatusEffect[]>([]);
 
+  // New: Helper function to map effect type to a FontAwesome icon
+  const getStatusIcon = (effectType: string) => {
+    switch(effectType) {
+      case 'stun':
+        return faDizzy;
+      case 'bleed':
+        return faTint;
+      case 'defense':
+        return faShieldAlt;
+      case 'rage':
+        return faFire;
+      default:
+        return faBolt; // fallback if effect not recognized
+    }
+  };
+
   // Process status effects and regenerate energy
   useEffect(() => {
     const gameLoop = setInterval(() => {
@@ -249,6 +265,39 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
           <div className="flex justify-between">
             <span>Opponent:</span>
             <span className="font-bold" data-testid="opponent-health">{opponentHealth}%</span>
+          </div>
+        </div>
+
+        {/* New: Status Effect Display */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-1">
+              <span className="text-sm">Your Effects:</span>
+              {playerStatusEffects.length > 0 ? playerStatusEffects.map((effect, idx) => (
+                <div key={effect.name + idx} className="flex items-center">
+                  <FontAwesomeIcon 
+                    icon={getStatusIcon(effect.effect)} 
+                    title={`${effect.effect} (${effect.duration})`} 
+                    className="text-lg text-primary" 
+                  />
+                  <span className="text-xs ml-1">{effect.duration}</span>
+                </div>
+              )) : <span className="text-xs text-text/60">None</span>}
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="text-sm">Opponent Effects:</span>
+              {opponentStatusEffects.length > 0 ? opponentStatusEffects.map((effect, idx) => (
+                <div key={effect.name + idx} className="flex items-center">
+                  <FontAwesomeIcon 
+                    data-testid={`opponent-status-effect-${effect.effect}`}
+                    icon={getStatusIcon(effect.effect)} 
+                    title={`${effect.effect} (${effect.duration})`} 
+                    className="text-lg text-primary" 
+                  />
+                  <span className="text-xs ml-1">{effect.duration}</span>
+                </div>
+              )) : <span className="text-xs text-text/60">None</span>}
+            </div>
           </div>
         </div>
 

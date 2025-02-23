@@ -139,5 +139,20 @@ describe('CombatMinigame', () => {
       // Status effect message should be gone
       expect(screen.queryByText('Adrenaline rush activated!')).not.toBeInTheDocument();
     });
+
+    it('renders status effect icon for opponent when stun is triggered', async () => {
+      // Force heavy blow to trigger stun (random < 0.4)
+      vi.spyOn(Math, 'random').mockReturnValue(0.3);
+      render(<CombatMinigame onComplete={() => {}} opponentType="police" />);
+      
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Heavy Blow/i }));
+        // Allow state update for heavy blow and its side effects
+        await vi.advanceTimersByTime(100);
+      });
+      
+      // Expect to find the opponent stun status effect icon using its data-testid
+      expect(screen.getByTestId('opponent-status-effect-stun')).toBeInTheDocument();
+    });
   });
 }); 
