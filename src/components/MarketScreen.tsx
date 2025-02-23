@@ -38,6 +38,7 @@ const DRUG_MAPPINGS: Partial<Record<DrugName, string>> = {
   Durries: "Cigarettes",
   Nangs: "Cream Chargers",
   "Bush Weed": "Herbal Tea",
+  Weed: "Herbal Blend",
   Hydro: "Coffee Beans",
   Shrooms: "Mushroom Extract",
   Acid: "Caffeine Pills",
