@@ -129,9 +129,9 @@ export function getLocationType(location: string): keyof typeof locationTypes {
     "Elizabeth",
     "Port Augusta",
     "Salisbury"
-  ];
+  ] as const;
 
-  if (gangTerritories.includes(location)) {
+  if ((gangTerritories as readonly string[]).includes(location)) {
     return "gangTerritory";
   }
 
@@ -147,9 +147,9 @@ export function getLocationType(location: string): keyof typeof locationTypes {
     "Logan Central",
     "Inala",
     "Elizabeth"
-  ];
+  ] as const;
 
-  if (hardcoreAreas.includes(location)) {
+  if ((hardcoreAreas as readonly string[]).includes(location)) {
     return "hardcoreArea";
   }
   
@@ -165,8 +165,8 @@ export function getLocationType(location: string): keyof typeof locationTypes {
   }
 
   // Rural towns
-  const ruralTowns = ["Dubbo", "Moe", "Tennant Creek", "Katherine", "Port Hedland"];
-  if (ruralTowns.includes(location)) {
+  const ruralTowns = ["Dubbo", "Moe", "Tennant Creek", "Katherine", "Port Hedland"] as const;
+  if ((ruralTowns as readonly string[]).includes(location)) {
     return "ruralTown";
   }
 

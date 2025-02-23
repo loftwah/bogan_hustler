@@ -4,7 +4,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { buyDrug, sellDrug } from "../store/playerSlice";
 import { RootState } from "../store/store";
 import type { DrugMarket } from "../store/marketSlice";
-import { adjustMarket, getLocationType } from "../store/marketSlice";
+import { adjustMarket, getLocationType, itemData } from "../store/marketSlice";
 import { DEBUG } from '../config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -25,28 +25,28 @@ import {
 import { calculateMarketDetails } from '../utils/marketCalculations';
 import { locationsByRegion } from './MapScreen';
 
-const DRUG_MAPPINGS: Record<string, string> = {
-  "Ice": "Energy Drinks",
-  "Crack": "Supplements",
-  "Heroin": "Protein Powder",
-  "Cocaine": "Pre-workout",
-  "Pingas": "Vitamins",
-  "Xannies": "Pain Relief",
-  "Durries": "Cigarettes",
-  "Nangs": "Cream Chargers",
+type DrugName = keyof typeof itemData;
+
+const DRUG_MAPPINGS: Partial<Record<DrugName, string>> = {
+  Ice: "Energy Drinks",
+  Crack: "Supplements",
+  Heroin: "Protein Powder",
+  Cocaine: "Pre-workout",
+  Pingas: "Vitamins",
+  MDMA: "Energy Tablets",
+  Xannies: "Pain Relief",
+  Durries: "Cigarettes",
+  Nangs: "Cream Chargers",
   "Bush Weed": "Herbal Tea",
-  "Hydro": "Coffee Beans",
-  "Shrooms": "Mushroom Extract",
-  "Acid": "Caffeine Pills",
-  "MDMA": "Energy Tablets",
-  "Ketamine": "Sleep Aid",
-  "Weed": "Green Tea",
-  "Steroids": "Protein Bars",
+  Hydro: "Coffee Beans",
+  Shrooms: "Mushroom Extract",
+  Acid: "Caffeine Pills",
+  Ketamine: "Sleep Aid",
   "Chop Chop": "Loose Leaf Tea",
   "Bootleg Spirits": "Craft Soda",
   "Black Market Vapes": "Essential Oils",
   "Counterfeit Cigs": "Herbal Cigarettes",
-  "Moonshine": "Apple Juice",
+  Moonshine: "Apple Juice",
   "Research Chems": "Dietary Supplements"
 };
 
@@ -67,7 +67,7 @@ const selectPricesForLocation = createSelector(
     const marketData = prices[location];
     if (!adultMode) {
       return Object.entries(marketData).reduce((acc, [drug, data]) => {
-        const censoredName = DRUG_MAPPINGS[drug] || drug;
+        const censoredName = DRUG_MAPPINGS[drug as DrugName] || drug;
         acc[censoredName] = {
           ...data,
           originalName: drug,
@@ -276,7 +276,7 @@ const MarketScreen = () => {
     });
 
     inventory.forEach((item: InventoryItem) => {
-      const displayName = adultMode ? item.name : DRUG_MAPPINGS[item.name] || item.name;
+      const displayName = adultMode ? item.name : DRUG_MAPPINGS[item.name as DrugName] || item.name;
       if (!items.has(displayName)) {
         items.set(displayName, {
           price: 0,

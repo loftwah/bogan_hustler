@@ -15,6 +15,7 @@ export interface PlayerState {
   debtInterest: number;
   policeEvasion: number;
   marketIntel: number;
+  adultMode: boolean;
 }
 
 export interface DrugMarket {
@@ -76,4 +77,9 @@ export interface MarketItemDetails {
   nearbyComparison: string;
   buyAdvice: string;
   priceChange?: string;
+}
+
+export interface InventoryItem {
+  name: string;
+  quantity: number;
 } 

@@ -1,9 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-interface InventoryItem {
-  name: string;
-  quantity: number;
-}
+import { InventoryItem } from "../types";
 
 export interface PlayerState {
   cash: number;
@@ -79,7 +75,7 @@ const playerSlice = createSlice({
         return;
       }
       
-      const currentSpace = state.inventory.reduce((acc, item) => acc + item.quantity, 0);
+      const currentSpace = state.inventory.reduce((acc: number, item: InventoryItem) => acc + item.quantity, 0);
       const spaceNeeded = intQuantity;
       
       if (currentSpace + spaceNeeded > state.inventorySpace) {
@@ -89,11 +85,11 @@ const playerSlice = createSlice({
 
       state.cash -= totalCost;
       
-      const existingItem = state.inventory.find(item => item.name === drug);
+      const existingItem = state.inventory.find((item: InventoryItem) => item.name === drug);
       if (existingItem) {
         existingItem.quantity += intQuantity;
       } else {
-        state.inventory.push({ name: drug, quantity: intQuantity });
+        state.inventory.push({ name: drug, quantity: intQuantity } as InventoryItem);
       }
     },
     sellDrug: (state, action: PayloadAction<{ drug: string; quantity: number; price: number }>) => {
@@ -103,7 +99,7 @@ const playerSlice = createSlice({
       const intPrice = Math.round(price);
       const totalEarned = intQuantity * intPrice;
       
-      const existingItem = state.inventory.find(item => item.name === drug);
+      const existingItem = state.inventory.find((item: InventoryItem) => item.name === drug);
       if (!existingItem || existingItem.quantity < intQuantity) {
         console.warn(`Insufficient quantity: Required ${intQuantity}, have ${existingItem?.quantity || 0}`);
         return;
@@ -113,7 +109,7 @@ const playerSlice = createSlice({
       existingItem.quantity -= intQuantity;
       
       if (existingItem.quantity === 0) {
-        state.inventory = state.inventory.filter(item => item.name !== drug);
+        state.inventory = state.inventory.filter((item: InventoryItem) => item.name !== drug);
       }
     },
     takeLoan: (state, action: PayloadAction<number>) => {

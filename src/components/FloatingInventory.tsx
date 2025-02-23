@@ -14,7 +14,7 @@ const FloatingInventory = () => {
   }, []);
 
   useEffect(() => {
-    (window as any).__toggleInventory = toggleInventory;
+    window.__toggleInventory = toggleInventory;
 
     const button = document.getElementById('floating-inventory-btn');
     if (button) {
@@ -23,7 +23,7 @@ const FloatingInventory = () => {
     }
 
     return () => {
-      delete (window as any).__toggleInventory;
+      delete window.__toggleInventory;
     };
   }, [toggleInventory]);
 
