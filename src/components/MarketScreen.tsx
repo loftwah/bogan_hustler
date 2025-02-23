@@ -251,20 +251,21 @@ const getLocationDetails = (location: string): LocationStory & { region: string 
   };
 };
 
-// Add this helper function near the top of the file
-const getCensoredDrugName = (drug: string, adultMode: boolean): string => {
-  if (adultMode) return drug;
-  return DRUG_MAPPINGS[drug as DrugName] || drug;
-};
-
-// Add this helper function near the top of the file (if not already present)
+// Update the helper function to handle types properly
 const getCensoredText = (text: string, adultMode: boolean): string => {
   if (adultMode) return text;
   return Object.entries(DRUG_MAPPINGS).reduce((censored, [drug, replacement]) => {
+    if (!replacement) return censored; // Skip if no replacement exists
     // Use word boundaries to avoid partial word matches
     const regex = new RegExp(`\\b${drug}\\b`, 'g');
     return censored.replace(regex, replacement);
   }, text);
+};
+
+// Add this helper function as well if not already present
+const getCensoredDrugName = (drug: string, adultMode: boolean): string => {
+  if (adultMode) return drug;
+  return DRUG_MAPPINGS[drug as DrugName] || drug;
 };
 
 const MarketScreen = () => {
