@@ -123,9 +123,9 @@ const EventPopup = () => {
   const handleMinigameComplete = (success: boolean) => {
     setShowMinigame(false);
     if (success) {
-      toast("You won the fight!", { icon: '🎉' });
+      toast("Victory! Your tactical maneuvers and quick strikes won the fight. Well done!", { icon: '🎉' });
     } else {
-      toast("You lost the fight...", { icon: '💀' });
+      toast("Defeat... The enemy was too strong this time. Regroup and try again.", { icon: '💀' });
     }
     
     // Clear the event after minigame completion

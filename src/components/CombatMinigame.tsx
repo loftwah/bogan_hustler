@@ -252,6 +252,13 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
           {gameState === 'victory' && '🎉 Victory!'}
           {gameState === 'defeat' && '💀 Defeat!'}
         </h3>
+        {gameState !== 'playing' && (
+          <p className="text-center text-lg">
+            {gameState === 'victory'
+              ? 'You defeated your opponent with skill!'
+              : 'You were overwhelmed in battle.'}
+          </p>
+        )}
 
         <div className="mb-4 space-y-2">
           <div className="flex justify-between">
