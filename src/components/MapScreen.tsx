@@ -144,7 +144,7 @@ const MapScreen = () => {
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-2xl font-bold">Straya Drug Map</h2>
+        <h2 className="text-2xl font-bold">{adultMode ? "Straya Drug Map" : "Straya Market Map"}</h2>
       </div>
 
       <div className="grid gap-6">
