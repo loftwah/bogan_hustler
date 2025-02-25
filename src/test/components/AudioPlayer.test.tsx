@@ -115,7 +115,7 @@ describe('AudioPlayer', () => {
       
       // Click next
       fireEvent.click(screen.getByLabelText('Next track'));
-      expect(screen.getByText('Dust of the Damned')).toBeInTheDocument();
+      expect(screen.getByText('Shadows in the Scrub')).toBeInTheDocument();
       
       // Click previous
       fireEvent.click(screen.getByLabelText('Previous track'));
@@ -253,7 +253,7 @@ describe('AudioPlayer', () => {
       });
       
       // Should now be on second track
-      expect(screen.getByText('Dust of the Damned')).toBeInTheDocument();
+      expect(screen.getByText('Shadows in the Scrub')).toBeInTheDocument();
       
       // Enable repeat mode
       fireEvent.click(screen.getByLabelText('Repeat Off'));
@@ -347,7 +347,7 @@ describe('AudioPlayer', () => {
       render(<AudioPlayer />);
       
       // Verify saved track is loaded
-      expect(screen.getByText('Grave of the Outcast')).toBeInTheDocument();
+      expect(screen.getByText("Hustler's Last Run")).toBeInTheDocument();
       
       // Verify saved volume is loaded
       expect(mockAudio.volume).toBe(0.6);
