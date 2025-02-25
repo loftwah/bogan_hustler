@@ -18,12 +18,12 @@ interface Track {
 
 const TRACKS: Track[] = [
   { title: "Bogan Hustler", file: "./themesong.mp3" },
-  { title: "Dust of the Damned", file: "./Dust of the Damned.mp3" },
-  { title: "Grave of the Outcast", file: "./Grave of the Outcast.mp3" },
+  { title: "Shadows in the Scrub", file: "./Shadows in the Scrub.mp3" },
   { title: "Hustler's Last Run", file: "./Hustlers Last Run.mp3" },
   { title: "Junkie's Jig", file: "./Junkies Jig.mp3" },
   { title: "Phantom Love", file: "./Phantom Love.mp3" },
-  { title: "Shadows in the Scrub", file: "./Shadows in the Scrub.mp3" },
+  { title: "Dust of the Damned", file: "./Dust of the Damned.mp3" },
+  { title: "Grave of the Outcast", file: "./Grave of the Outcast.mp3" },
   { title: "Wraith of the Wastes", file: "./Wraith of the Wastes.mp3" },
 ];
 
