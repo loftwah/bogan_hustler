@@ -16,6 +16,7 @@ describe('AudioPlayer', () => {
     duration: number;
     addEventListener: Mock;
     removeEventListener: Mock;
+    _currentTime?: number; // Add this internal property for tracking currentTime
   };
 
   beforeEach(() => {
@@ -34,6 +35,13 @@ describe('AudioPlayer', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     };
+    
+    // Add a setter for currentTime to ensure it updates properly
+    Object.defineProperty(mockAudio, 'currentTime', {
+      get: vi.fn(() => mockAudio._currentTime || 0),
+      set: vi.fn((value) => { mockAudio._currentTime = value; }),
+      configurable: true
+    });
     
     vi.spyOn(window, 'Audio').mockImplementation(() => mockAudio as any);
     
@@ -182,6 +190,171 @@ describe('AudioPlayer', () => {
       
       expect(mockAudio.volume).toBe(0);
       expect(screen.getByLabelText('Unmute')).toBeInTheDocument();
+    });
+  });
+
+  describe('Playback modes', () => {
+    it('toggles repeat mode when repeat button is clicked', () => {
+      render(<AudioPlayer />);
+      
+      // Default mode should be 'normal'
+      expect(mockAudio.loop).toBe(false);
+      
+      // Click repeat button
+      fireEvent.click(screen.getByLabelText('Repeat Off'));
+      
+      // Should be in repeat mode now
+      expect(mockAudio.loop).toBe(true);
+      expect(screen.getByLabelText('Repeat On')).toBeInTheDocument();
+      
+      // Click repeat button again
+      fireEvent.click(screen.getByLabelText('Repeat On'));
+      
+      // Should be back in normal mode
+      expect(mockAudio.loop).toBe(false);
+      expect(screen.getByLabelText('Repeat Off')).toBeInTheDocument();
+    });
+    
+    it('toggles shuffle mode when shuffle button is clicked', () => {
+      render(<AudioPlayer />);
+      
+      // Click shuffle button to enable shuffle
+      fireEvent.click(screen.getByLabelText('Shuffle Off'));
+      
+      // Verify shuffle button indicates shuffle is on
+      expect(screen.getByLabelText('Shuffle On')).toBeInTheDocument();
+      
+      // Click next track button to test shuffle
+      const nextButton = screen.getByLabelText('Next track');
+      fireEvent.click(nextButton);
+      
+      // Can't directly test randomness, but we can verify localStorage was updated
+      expect(localStorage.setItem).toHaveBeenCalledWith('boganHustlerPlaybackMode', 'shuffle');
+      
+      // Click shuffle button to disable shuffle
+      fireEvent.click(screen.getByLabelText('Shuffle On'));
+      
+      // Verify shuffle is off
+      expect(screen.getByLabelText('Shuffle Off')).toBeInTheDocument();
+      expect(localStorage.setItem).toHaveBeenCalledWith('boganHustlerPlaybackMode', 'normal');
+    });
+    
+    it('handles track end according to playback mode', () => {
+      render(<AudioPlayer />);
+      
+      // Get the track end handler
+      const endHandler = mockAudio.addEventListener.mock.calls.find(
+        call => call[0] === 'ended'
+      )[1];
+      
+      // Test normal mode (should move to next track)
+      act(() => {
+        endHandler();
+      });
+      
+      // Should now be on second track
+      expect(screen.getByText('Dust of the Damned')).toBeInTheDocument();
+      
+      // Enable repeat mode
+      fireEvent.click(screen.getByLabelText('Repeat Off'));
+      
+      // In repeat mode, the track end handler does nothing
+      // because the audio element handles looping
+      expect(mockAudio.loop).toBe(true);
+    });
+  });
+
+  describe('Progress bar seeking', () => {
+    it('renders a clickable progress bar', () => {
+      const { container } = render(<AudioPlayer />);
+      
+      // Get the progress bar element
+      const progressBar = container.querySelector('.cursor-pointer');
+      expect(progressBar).toBeTruthy();
+      
+      // Verify it has the correct classes and attributes
+      expect(progressBar).toHaveClass('cursor-pointer');
+      
+      // Verify there's a progress indicator inside
+      const progressIndicator = screen.getByRole('progressbar');
+      expect(progressIndicator).toBeInTheDocument();
+      
+      // Set some time and check if progress bar updates
+      act(() => {
+        // Simulate timeupdate event
+        const timeUpdateHandler = mockAudio.addEventListener.mock.calls.find(
+          call => call[0] === 'timeupdate'
+        )[1];
+        
+        mockAudio.currentTime = 90; // Half way through
+        timeUpdateHandler();
+      });
+      
+      // Verify the progress indicator shows correct progress
+      expect(progressIndicator).toHaveStyle({ width: '50%' });
+      expect(progressIndicator).toHaveAttribute('aria-valuenow', '50');
+    });
+  });
+
+  describe('LocalStorage persistence', () => {
+    it('saves current track to localStorage', () => {
+      render(<AudioPlayer />);
+      
+      // Change to next track
+      fireEvent.click(screen.getByLabelText('Next track'));
+      
+      // Check if localStorage was updated
+      expect(localStorage.setItem).toHaveBeenCalledWith('boganHustlerCurrentTrack', '1');
+    });
+    
+    it('saves volume to localStorage', () => {
+      render(<AudioPlayer />);
+      
+      // Change volume
+      const volumeSlider = screen.getByLabelText('Volume control');
+      fireEvent.change(volumeSlider, { target: { value: '0.7' } });
+      
+      // Check if localStorage was updated
+      expect(localStorage.setItem).toHaveBeenCalledWith('boganHustlerVolume', '0.7');
+    });
+    
+    it('saves playback mode to localStorage', () => {
+      render(<AudioPlayer />);
+      
+      // Enable shuffle mode
+      fireEvent.click(screen.getByLabelText('Shuffle Off'));
+      
+      // Check if localStorage was updated
+      expect(localStorage.setItem).toHaveBeenCalledWith('boganHustlerPlaybackMode', 'shuffle');
+      
+      // Change to repeat mode
+      fireEvent.click(screen.getByLabelText('Shuffle On'));
+      fireEvent.click(screen.getByLabelText('Repeat Off'));
+      
+      // Check if localStorage was updated
+      expect(localStorage.setItem).toHaveBeenCalledWith('boganHustlerPlaybackMode', 'repeat');
+    });
+    
+    it('loads saved state from localStorage on init', () => {
+      // Mock localStorage.getItem to return saved values
+      (localStorage.getItem as Mock).mockImplementation((key) => {
+        if (key === 'boganHustlerCurrentTrack') return '2';
+        if (key === 'boganHustlerVolume') return '0.6';
+        if (key === 'boganHustlerPlaybackMode') return 'repeat';
+        return null;
+      });
+      
+      render(<AudioPlayer />);
+      
+      // Verify saved track is loaded
+      expect(screen.getByText('Grave of the Outcast')).toBeInTheDocument();
+      
+      // Verify saved volume is loaded
+      expect(mockAudio.volume).toBe(0.6);
+      
+      // Verify saved playback mode is loaded
+      expect(mockAudio.loop).toBe(true);
+      expect(screen.getByLabelText('Repeat On')).toBeInTheDocument();
     });
   });
 
