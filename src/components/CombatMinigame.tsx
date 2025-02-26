@@ -40,7 +40,7 @@ const CombatButton: React.FC<{
     onClick={onClick}
     disabled={disabled}
     className={`
-      flex items-center justify-center transition-all duration-200
+      flex flex-col items-center justify-center transition-all duration-200 p-3
       ${disabled 
         ? "btn btn-disabled opacity-50 cursor-not-allowed" 
         : "btn btn-primary relative overflow-hidden hover:scale-105 hover:shadow-md"
@@ -48,8 +48,11 @@ const CombatButton: React.FC<{
     `}
     title={`${move.description}${disabled ? ' (Not enough energy or stunned)' : ' (Ready to use)'}`}
   >
-    <FontAwesomeIcon icon={icon} className={`mr-2 ${!disabled && "animate-pulse text-accent"}`} />
-    {moveType} ({move.energyCost})
+    <FontAwesomeIcon icon={icon} className={`text-xl mb-1 ${!disabled && "animate-pulse text-accent"}`} />
+    <div className="flex flex-col items-center">
+      <span className="font-bold">{moveType}</span>
+      <span className="text-xs">Energy: {move.energyCost} | Damage: {move.damage}</span>
+    </div>
     {!disabled && (
       <span className="absolute right-2 top-1 text-xs text-accent animate-ping">
         ✓
@@ -171,8 +174,8 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
         setGameMessage('Opponent is bleeding!');
       }
 
-      // Regenerate energy
-      setPlayerEnergy(prev => Math.min(100, prev + 5));
+      // Regenerate energy faster
+      setPlayerEnergy(prev => Math.min(100, prev + 8)); // Increased from 5
     }, 1000);
 
     return () => clearInterval(gameLoop);
@@ -202,8 +205,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
     }
     
     const move = config.specialMoves[moveType as keyof typeof config.specialMoves];
-    console.log('Move selected:', moveType, move); // Debug log
-
+    
     if (playerEnergy < move.energyCost) {
       setGameMessage('Not enough energy!');
       return;
@@ -212,21 +214,23 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
     setPlayerEnergy(prev => prev - move.energyCost);
     
     // Calculate damage with modifiers
-    let damage = move.damage || 0; // Add default value to prevent NaN
-    console.log('Initial damage:', damage); // Debug log
+    let damage = move.damage || 0;
 
+    // Apply rage effect (increased damage)
     if (playerStatusEffects.some(e => e.effect === 'rage')) {
       damage *= 1.5;
+      setGameMessage('Rage increases your damage!');
     }
+    
+    // Apply defense reduction
     if (opponentStatusEffects.some(e => e.effect === 'defense')) {
-      damage *= 0.5;
+      damage *= 0.7; // Reduced from 0.5 to make it more player-friendly
     }
-    console.log('Modified damage:', damage); // Debug log
 
-    // Apply special move effects
+    // Apply special move effects with improved chances
     switch (moveType) {
       case 'heavyBlow':
-        if (Math.random() < 0.4) {
+        if (Math.random() < 0.5) { // Increased from 0.4
           setOpponentStatusEffects(prev => [...prev, { name: 'Stunned', duration: 2, effect: 'stun' }]);
           setGameMessage('Heavy blow stunned the opponent!');
         }
@@ -236,25 +240,26 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
         setGameMessage('Defensive stance activated!');
         break;
       case 'adrenaline':
-        setPlayerStatusEffects(prev => [...prev, { name: 'Rage', duration: 2, effect: 'rage' }]);
+        setPlayerStatusEffects(prev => [...prev, { name: 'Rage', duration: 3, effect: 'rage' }]); // Increased from 2
         setGameMessage('Adrenaline rush activated!');
         break;
     }
 
-    console.log('Current opponent health:', opponentHealth); // Debug log
+    // Apply damage to opponent
     setOpponentHealth(prev => {
       const newHealth = Math.max(0, prev - damage);
-      console.log('New opponent health:', newHealth);
       return newHealth;
     });
 
-    // Opponent counter-attack
+    // Opponent counter-attack with reduced chance and damage
     if (!opponentStatusEffects.some(e => e.effect === 'stun')) {
-      if (Math.random() < 0.2) {
-        setPlayerStatusEffects(prev => [...prev, { name: 'Stunned', duration: 2, effect: 'stun' }]);
+      if (Math.random() < 0.15) { // Reduced from 0.2
+        setPlayerStatusEffects(prev => [...prev, { name: 'Stunned', duration: 1, effect: 'stun' }]); // Reduced from 2
         setGameMessage('You were stunned by the counter-attack!');
       }
-      const counterDamage = config.damage * (playerStatusEffects.some(e => e.effect === 'defense') ? 0.5 : 1);
+      
+      // Reduce opponent damage and increase defense effect
+      const counterDamage = config.damage * (playerStatusEffects.some(e => e.effect === 'defense') ? 0.4 : 0.8); // More effective defense
       setPlayerHealth(prev => Math.max(0, prev - counterDamage));
     }
   };
@@ -319,13 +324,31 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                 <span>You:</span>
                 <span className="font-bold" data-testid="player-health">{playerHealth}%</span>
               </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-green-500 transition-all duration-300" 
+                  style={{ width: `${playerHealth}%` }}
+                />
+              </div>
               <div className="flex justify-between">
                 <span>Energy:</span>
                 <span className="font-bold" data-testid="player-energy">{playerEnergy}%</span>
               </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 transition-all duration-300" 
+                  style={{ width: `${playerEnergy}%` }}
+                />
+              </div>
               <div className="flex justify-between">
                 <span>Opponent:</span>
                 <span className="font-bold" data-testid="opponent-health">{opponentHealth}%</span>
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-red-500 transition-all duration-300" 
+                  style={{ width: `${opponentHealth}%` }}
+                />
               </div>
             </div>
 
@@ -339,7 +362,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                       <FontAwesomeIcon 
                         icon={getStatusIcon(effect.effect)} 
                         title={`${effect.effect} (${effect.duration})`} 
-                        className="text-lg text-primary" 
+                        className={`text-lg ${effect.effect === 'stun' ? 'text-red-500' : 'text-primary'}`} 
                       />
                       <span className="text-xs ml-1">{effect.duration}</span>
                     </div>
@@ -353,7 +376,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                         data-testid={`opponent-status-effect-${effect.effect}`}
                         icon={getStatusIcon(effect.effect)} 
                         title={`${effect.effect} (${effect.duration})`} 
-                        className="text-lg text-primary" 
+                        className={`text-lg ${effect.effect === 'stun' ? 'text-red-500' : 'text-primary'}`} 
                       />
                       <span className="text-xs ml-1">{effect.duration}</span>
                     </div>

@@ -149,8 +149,8 @@ describe('CombatMinigame', () => {
       
       // Wait for game loop to process status effects
       await act(async () => {
-        // Status effect duration is 2, so we need to wait for 2 game loop cycles
-        await vi.advanceTimersByTime(2100); // 2 seconds + 100ms buffer
+        // Status effect duration is now 3, so we need to wait for 3 game loop cycles
+        await vi.advanceTimersByTime(3100); // 3 seconds + 100ms buffer
       });
       
       // Status effect message should be gone
