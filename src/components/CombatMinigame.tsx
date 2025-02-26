@@ -171,18 +171,16 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
   useEffect(() => {
     if (playerHealth <= 0) {
       setGameState('defeat');
-      setGameMessage('You were defeated!');
-      // Delay calling onComplete, so the defeat message remains visible for 2 seconds
+      // Delay calling onComplete, so the defeat message remains visible for 3 seconds
       setTimeout(() => {
         onComplete(false);
-      }, 2000);
+      }, 3000);
     } else if (opponentHealth <= 0) {
       setGameState('victory');
-      setGameMessage('Victory!');
-      // Delay calling onComplete, so the victory message remains visible for 2 seconds
+      // Delay calling onComplete, so the victory message remains visible for 4 seconds
       setTimeout(() => {
         onComplete(true);
-      }, 2000);
+      }, 4000);
     }
   }, [playerHealth, opponentHealth, onComplete]);
 
@@ -252,109 +250,142 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-surface rounded-lg shadow-lg p-6 max-w-md w-full">
+      <div className="bg-surface rounded-lg shadow-lg p-6 max-w-md w-full relative">
+        {/* Close button */}
+        {gameState !== 'playing' && (
+          <button 
+            onClick={() => onComplete(gameState === 'victory')}
+            className="absolute top-2 right-2 text-text/60 hover:text-text transition-colors"
+            aria-label="Close combat minigame"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+
         <h3 className="text-xl font-bold mb-4">
           {gameState === 'playing' && config.title}
           {gameState === 'victory' && '🎉 Victory!'}
           {gameState === 'defeat' && '💀 Defeat!'}
         </h3>
-        {gameState !== 'playing' && (
-          <p className="text-center text-lg">
-            {gameState === 'victory'
-              ? 'You defeated your opponent with skill!'
-              : 'You were overwhelmed in battle.'}
-          </p>
+        
+        {/* Enhanced victory/defeat screen */}
+        {gameState !== 'playing' ? (
+          <div className="flex flex-col items-center justify-center py-6 animate-pulse">
+            {gameState === 'victory' ? (
+              <>
+                <div className="text-6xl mb-4">🏆</div>
+                <h2 className="text-3xl font-bold text-green-400 mb-4 text-center animate-bounce">
+                  VICTORY!
+                </h2>
+                <p className="text-center text-lg mb-4">
+                  You defeated your opponent with skill and strength!
+                </p>
+                <div className="w-full h-2 bg-green-200 rounded-full overflow-hidden mt-2">
+                  <div className="h-full bg-green-500 animate-pulse w-full" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-6xl mb-4">💀</div>
+                <h2 className="text-3xl font-bold text-red-400 mb-4 text-center">
+                  DEFEAT
+                </h2>
+                <p className="text-center text-lg mb-4">
+                  You were overwhelmed in battle. Better luck next time.
+                </p>
+                <div className="w-full h-2 bg-red-200 rounded-full overflow-hidden mt-2">
+                  <div className="h-full bg-red-500 animate-pulse w-full" />
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 space-y-2">
+              <div className="flex justify-between">
+                <span>You:</span>
+                <span className="font-bold" data-testid="player-health">{playerHealth}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Energy:</span>
+                <span className="font-bold" data-testid="player-energy">{playerEnergy}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Opponent:</span>
+                <span className="font-bold" data-testid="opponent-health">{opponentHealth}%</span>
+              </div>
+            </div>
+
+            {/* Status Effect Display */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm">Your Effects:</span>
+                  {playerStatusEffects.length > 0 ? playerStatusEffects.map((effect, idx) => (
+                    <div key={effect.name + idx} className="flex items-center">
+                      <FontAwesomeIcon 
+                        icon={getStatusIcon(effect.effect)} 
+                        title={`${effect.effect} (${effect.duration})`} 
+                        className="text-lg text-primary" 
+                      />
+                      <span className="text-xs ml-1">{effect.duration}</span>
+                    </div>
+                  )) : <span className="text-xs text-text/60">None</span>}
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm">Opponent Effects:</span>
+                  {opponentStatusEffects.length > 0 ? opponentStatusEffects.map((effect, idx) => (
+                    <div key={effect.name + idx} className="flex items-center">
+                      <FontAwesomeIcon 
+                        data-testid={`opponent-status-effect-${effect.effect}`}
+                        icon={getStatusIcon(effect.effect)} 
+                        title={`${effect.effect} (${effect.duration})`} 
+                        className="text-lg text-primary" 
+                      />
+                      <span className="text-xs ml-1">{effect.duration}</span>
+                    </div>
+                  )) : <span className="text-xs text-text/60">None</span>}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <CombatButton
+                moveType="Quick Strike"
+                move={config.specialMoves.quickStrike}
+                icon={faBolt}
+                disabled={playerEnergy < config.specialMoves.quickStrike.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
+                onClick={() => executeMove('quickStrike')}
+              />
+              <CombatButton
+                moveType="Heavy Blow"
+                move={config.specialMoves.heavyBlow}
+                icon={faDumbbell}
+                disabled={playerEnergy < config.specialMoves.heavyBlow.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
+                onClick={() => executeMove('heavyBlow')}
+              />
+              <CombatButton
+                moveType="Defensive"
+                move={config.specialMoves.defensive}
+                icon={faShieldHalved}
+                disabled={playerEnergy < config.specialMoves.defensive.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
+                onClick={() => executeMove('defensive')}
+              />
+              <CombatButton
+                moveType="Adrenaline"
+                move={config.specialMoves.adrenaline}
+                icon={faPersonRunning}
+                disabled={playerEnergy < config.specialMoves.adrenaline.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
+                onClick={() => executeMove('adrenaline')}
+              />
+            </div>
+          </>
         )}
 
-        <div className="mb-4 space-y-2">
-          <div className="flex justify-between">
-            <span>You:</span>
-            <span className="font-bold" data-testid="player-health">{playerHealth}%</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Energy:</span>
-            <span className="font-bold" data-testid="player-energy">{playerEnergy}%</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Opponent:</span>
-            <span className="font-bold" data-testid="opponent-health">{opponentHealth}%</span>
-          </div>
-        </div>
-
-        {/* New: Status Effect Display */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-1">
-              <span className="text-sm">Your Effects:</span>
-              {playerStatusEffects.length > 0 ? playerStatusEffects.map((effect, idx) => (
-                <div key={effect.name + idx} className="flex items-center">
-                  <FontAwesomeIcon 
-                    icon={getStatusIcon(effect.effect)} 
-                    title={`${effect.effect} (${effect.duration})`} 
-                    className="text-lg text-primary" 
-                  />
-                  <span className="text-xs ml-1">{effect.duration}</span>
-                </div>
-              )) : <span className="text-xs text-text/60">None</span>}
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-sm">Opponent Effects:</span>
-              {opponentStatusEffects.length > 0 ? opponentStatusEffects.map((effect, idx) => (
-                <div key={effect.name + idx} className="flex items-center">
-                  <FontAwesomeIcon 
-                    data-testid={`opponent-status-effect-${effect.effect}`}
-                    icon={getStatusIcon(effect.effect)} 
-                    title={`${effect.effect} (${effect.duration})`} 
-                    className="text-lg text-primary" 
-                  />
-                  <span className="text-xs ml-1">{effect.duration}</span>
-                </div>
-              )) : <span className="text-xs text-text/60">None</span>}
-            </div>
-          </div>
-        </div>
-
-        {gameState === 'playing' && (
-          <div className="grid grid-cols-2 gap-2">
-            <CombatButton
-              moveType="Quick Strike"
-              move={config.specialMoves.quickStrike}
-              icon={faBolt}
-              disabled={playerEnergy < config.specialMoves.quickStrike.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              onClick={() => executeMove('quickStrike')}
-            />
-            <CombatButton
-              moveType="Heavy Blow"
-              move={config.specialMoves.heavyBlow}
-              icon={faDumbbell}
-              disabled={playerEnergy < config.specialMoves.heavyBlow.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              onClick={() => executeMove('heavyBlow')}
-            />
-            <CombatButton
-              moveType="Defensive"
-              move={config.specialMoves.defensive}
-              icon={faShieldHalved}
-              disabled={playerEnergy < config.specialMoves.defensive.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              onClick={() => executeMove('defensive')}
-            />
-            <CombatButton
-              moveType="Adrenaline"
-              move={config.specialMoves.adrenaline}
-              icon={faPersonRunning}
-              disabled={playerEnergy < config.specialMoves.adrenaline.energyCost || playerStatusEffects.some(e => e.effect === 'stun')}
-              onClick={() => executeMove('adrenaline')}
-            />
-          </div>
-        )}
-
-        {gameMessage && (
+        {gameMessage && gameState === 'playing' && (
           <p className="mt-4 text-center font-bold text-primary">{gameMessage}</p>
-        )}
-
-        {gameState !== 'playing' && (
-          <p className="mt-4 text-center">
-            {gameState === 'victory' ? 'You won the fight!' : 'Better luck next time!'}
-          </p>
         )}
       </div>
     </div>

@@ -109,14 +109,26 @@ describe('CombatMinigame', () => {
         await vi.advanceTimersByTime(100);
       });
       
-      // NEW: Wait for the onComplete callback delay (2000ms)
+      // Check for victory text
+      expect(screen.getByText('VICTORY!')).toBeInTheDocument();
+      
+      // Test the close button
+      const closeButton = screen.getByLabelText('Close combat minigame');
+      expect(closeButton).toBeInTheDocument();
+      
+      // Click the close button
       await act(async () => {
-        await vi.advanceTimersByTime(2000);
+        fireEvent.click(closeButton);
       });
       
-      // Check for victory text
-      expect(screen.getByText('🎉 Victory!')).toBeInTheDocument();
+      // Check that onComplete was called with true
       expect(onComplete).toHaveBeenCalledWith(true);
+      
+      // Alternatively, wait for the timeout to complete
+      // await act(async () => {
+      //   await vi.advanceTimersByTime(4000);
+      // });
+      // expect(onComplete).toHaveBeenCalledWith(true);
     });
   });
 
