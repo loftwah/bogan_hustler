@@ -39,11 +39,22 @@ const CombatButton: React.FC<{
   <button
     onClick={onClick}
     disabled={disabled}
-    className="btn btn-primary flex items-center justify-center"
-    title={move.description}
+    className={`
+      flex items-center justify-center transition-all duration-200
+      ${disabled 
+        ? "btn btn-disabled opacity-50 cursor-not-allowed" 
+        : "btn btn-primary relative overflow-hidden hover:scale-105 hover:shadow-md"
+      }
+    `}
+    title={`${move.description}${disabled ? ' (Not enough energy or stunned)' : ' (Ready to use)'}`}
   >
-    <FontAwesomeIcon icon={icon} className="mr-2" />
+    <FontAwesomeIcon icon={icon} className={`mr-2 ${!disabled && "animate-pulse text-accent"}`} />
     {moveType} ({move.energyCost})
+    {!disabled && (
+      <span className="absolute right-2 top-1 text-xs text-accent animate-ping">
+        ✓
+      </span>
+    )}
   </button>
 );
 
