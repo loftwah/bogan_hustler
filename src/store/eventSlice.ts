@@ -532,20 +532,36 @@ export const triggerRandomEventAsync = createAsyncThunk(
     const state = getState() as RootState;
     const { reputation, currentDay, policeEvasion } = state.player;
     
-    // First check if event happens at all based on police evasion
-    const baseEventChance = 0.4;
-    const modifiedChance = baseEventChance * (1 - policeEvasion / 200);
+    // Increase base event chance significantly
+    const baseEventChance = 0.7; // Increased from 0.4
+    const modifiedChance = baseEventChance * (1 - policeEvasion / 300); // Reduced police evasion impact
     
     if (Math.random() > modifiedChance) {
       return null;
     }
 
-    // Filter events by cooldown
-    const availableEvents = enhancedEvents.filter(event => {
-      if (!event.repeatable) return false;
-      if (event.lastTriggered && event.cooldown) {
+    // Get all events that could potentially trigger in this location
+    const locationEvents = enhancedEvents.filter(event => {
+      // If no location specified in conditions, event can happen anywhere
+      if (!event.conditions.location) return true;
+      return event.conditions.location.includes(location);
+    });
+
+    if (locationEvents.length === 0) {
+      return null;
+    }
+
+    // Filter events by cooldown - but with more lenient checks
+    const availableEvents = locationEvents.filter(event => {
+      // Non-repeatable events that haven't triggered yet
+      if (!event.repeatable && !event.lastTriggered) return true;
+      
+      // Repeatable events with cooldown
+      if (event.repeatable && event.lastTriggered && event.cooldown) {
         const daysSinceLastTrigger = currentDay - event.lastTriggered;
-        if (daysSinceLastTrigger < event.cooldown) {
+        // Reduce cooldown by 50% to make events more frequent
+        const adjustedCooldown = Math.ceil(event.cooldown * 0.5);
+        if (daysSinceLastTrigger < adjustedCooldown) {
           return false;
         }
       }
@@ -556,12 +572,9 @@ export const triggerRandomEventAsync = createAsyncThunk(
       return null;
     }
 
-    // Filter by location and other conditions
+    // Filter by reputation and other conditions
     const eligibleEvents = availableEvents.filter(event => {
       const conditions = event.conditions;
-      if (!conditions.location?.includes(location)) {
-        return false;
-      }
       
       return (!conditions.minReputation || reputation >= conditions.minReputation) &&
              (!conditions.maxReputation || reputation <= conditions.maxReputation);
