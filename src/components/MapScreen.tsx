@@ -112,6 +112,10 @@ export const locationsByRegion = {
 const MapScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { location: currentLocation, policeEvasion, reputation, adultMode, marketIntel } = useSelector((state: RootState) => state.player);
+  const isDebugMode = window.location.search.includes('debug=true');
+  
+  // Check if we're on mobile to increase event frequency
+  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   const handleTravel = (location: string) => {
     if (location !== currentLocation) {
@@ -124,18 +128,32 @@ const MapScreen = () => {
         marketIntel: marketIntel
       }));
 
-      // Get last event time from localStorage or default to 0
+      // Get last event time from localStorage
       const lastEventTime = Number(localStorage.getItem('lastEventTime')) || 0;
       const currentTime = Date.now();
-      const cooldownPeriod = 30000; // 30 seconds cooldown
-
+      
+      // Reduce cooldown period to increase event frequency
+      // Even shorter cooldown on mobile
+      const cooldownPeriod = isMobileDevice ? 5000 : 10000; // 5 seconds on mobile, 10 seconds otherwise
+      
       // Police risk is reduced by player's evasion skill
-      const baseRisk = 0.2;
-      const modifiedRisk = baseRisk * (1 - policeEvasion / 100);
-
-      // Only trigger event if enough time has passed since the last event
+      // Increase base risk significantly to trigger more events
+      // Higher base chance on mobile
+      const baseRisk = isMobileDevice ? 0.8 : 0.6; // 80% on mobile, 60% otherwise
+      const modifiedRisk = baseRisk * (1 - policeEvasion / 200); // Less reduction from evasion
+      
+      if (isDebugMode) {
+        console.log(`Event chance: ${modifiedRisk.toFixed(2)}, Cooldown passed: ${currentTime - lastEventTime > cooldownPeriod}`);
+        console.log(`Is mobile: ${isMobileDevice}, Last event time: ${new Date(lastEventTime).toLocaleTimeString()}`);
+      }
+      
+      // Only trigger event if enough time has passed
       if (Math.random() < modifiedRisk && currentTime - lastEventTime > cooldownPeriod) {
+        if (isDebugMode) {
+          console.log("Triggering random event!");
+        }
         dispatch(triggerRandomEvent(location));
+        // Save the current time to localStorage for cooldown
         localStorage.setItem('lastEventTime', currentTime.toString());
       }
     }
@@ -180,4 +198,4 @@ const MapScreen = () => {
   );
 };
 
-export default MapScreen; 
+export default MapScreen;

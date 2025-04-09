@@ -25,6 +25,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MetaTags } from './components/MetaTags'
 import { AudioPlayer } from './components/AudioPlayer'
+// Import the DebugPanel component
+import DebugPanel from './components/DebugPanel';
 
 type Screen = "map" | "market" | "loan" | "upgrades";
 
@@ -37,6 +39,8 @@ function App() {
   const dispatch = useDispatch();
   const adultMode = useSelector((state: RootState) => state.player.adultMode);
   const [showTips, setShowTips] = useState(true);
+  // Add debug mode detection
+  const isDebugMode = window.location.search.includes('debug=true');
 
   useEffect(() => {
     localStorage.setItem(
@@ -288,6 +292,9 @@ function App() {
 
           <EventPopup />
           <FloatingInventory />
+          
+          {/* Add the debug panel but only show it in debug mode */}
+          {isDebugMode && <DebugPanel />}
         </div>
         <ToastContainer
           position="bottom-left"
