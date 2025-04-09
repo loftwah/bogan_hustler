@@ -132,6 +132,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
     }
   };
 
+  const isDebugMode = window.location.search.includes('debug=true');
   const config = opponentConfigs[opponentType];
   
   const [playerHealth, setPlayerHealth] = useState(100);
@@ -142,7 +143,14 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
   const [playerStatusEffects, setPlayerStatusEffects] = useState<StatusEffect[]>([]);
   const [opponentStatusEffects, setOpponentStatusEffects] = useState<StatusEffect[]>([]);
 
-  // New: Helper function to map effect type to a FontAwesome icon
+  // Debug logging
+  useEffect(() => {
+    if (isDebugMode) {
+      console.log('Combat state:', { playerHealth, opponentHealth, gameState });
+    }
+  }, [playerHealth, opponentHealth, gameState, isDebugMode]);
+
+  // Helper function to map effect type to a FontAwesome icon
   const getStatusIcon = (effectType: string) => {
     switch(effectType) {
       case 'stun':
@@ -265,22 +273,22 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-surface rounded-lg shadow-lg p-6 max-w-md w-full relative">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 z-[101]">
+      <div className="bg-surface rounded-lg shadow-lg p-4 max-w-md w-full relative animate-fadeIn">
         {/* Close button */}
         {gameState !== 'playing' && (
           <button 
             onClick={() => onComplete(gameState === 'victory')}
-            className="absolute top-2 right-2 text-text/60 hover:text-text transition-colors"
+            className="absolute top-2 right-2 text-text/60 hover:text-text transition-colors p-4"
             aria-label="Close combat minigame"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
 
-        <h3 className="text-xl font-bold mb-4">
+        <h3 className="text-2xl font-bold mb-4">
           {gameState === 'playing' && config.title}
           {gameState === 'victory' && '🎉 Victory!'}
           {gameState === 'defeat' && '💀 Defeat!'}
@@ -301,6 +309,12 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                 <div className="w-full h-2 bg-green-200 rounded-full overflow-hidden mt-2">
                   <div className="h-full bg-green-500 animate-pulse w-full" />
                 </div>
+                <button 
+                  onClick={() => onComplete(true)}
+                  className="mt-6 btn btn-primary py-3 px-8 text-lg"
+                >
+                  Continue
+                </button>
               </>
             ) : (
               <>
@@ -314,6 +328,12 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                 <div className="w-full h-2 bg-red-200 rounded-full overflow-hidden mt-2">
                   <div className="h-full bg-red-500 animate-pulse w-full" />
                 </div>
+                <button 
+                  onClick={() => onComplete(false)}
+                  className="mt-6 btn btn-primary py-3 px-8 text-lg"
+                >
+                  Continue
+                </button>
               </>
             )}
           </div>
@@ -324,7 +344,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                 <span>You:</span>
                 <span className="font-bold" data-testid="player-health">{playerHealth}%</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-green-500 transition-all duration-300" 
                   style={{ width: `${playerHealth}%` }}
@@ -334,7 +354,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                 <span>Energy:</span>
                 <span className="font-bold" data-testid="player-energy">{playerEnergy}%</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-500 transition-all duration-300" 
                   style={{ width: `${playerEnergy}%` }}
@@ -344,7 +364,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                 <span>Opponent:</span>
                 <span className="font-bold" data-testid="opponent-health">{opponentHealth}%</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-red-500 transition-all duration-300" 
                   style={{ width: `${opponentHealth}%` }}
@@ -369,7 +389,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
                   )) : <span className="text-xs text-text/60">None</span>}
                 </div>
                 <div className="flex items-center space-x-1">
-                  <span className="text-sm">Opponent Effects:</span>
+                  <span className="text-sm">Opponent:</span>
                   {opponentStatusEffects.length > 0 ? opponentStatusEffects.map((effect, idx) => (
                     <div key={effect.name + idx} className="flex items-center">
                       <FontAwesomeIcon 
@@ -385,7 +405,7 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <CombatButton
                 moveType="Quick Strike"
                 move={config.specialMoves.quickStrike}
@@ -419,9 +439,9 @@ export const CombatMinigame = ({ onComplete, opponentType }: Props) => {
         )}
 
         {gameMessage && gameState === 'playing' && (
-          <p className="mt-4 text-center font-bold text-primary">{gameMessage}</p>
+          <p className="mt-4 text-center font-bold text-primary text-lg">{gameMessage}</p>
         )}
       </div>
     </div>
   );
-}; 
+};
