@@ -531,12 +531,28 @@ export const triggerRandomEventAsync = createAsyncThunk(
   async (location: string, { getState }) => {
     const state = getState() as RootState;
     const { reputation, currentDay, policeEvasion } = state.player;
+    const isDebugMode = window.location.search.includes('debug=true');
     
-    // Increase base event chance significantly
-    const baseEventChance = 0.7; // Increased from 0.4
-    const modifiedChance = baseEventChance * (1 - policeEvasion / 300); // Reduced police evasion impact
+    // Check if we're on mobile to increase event frequency
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // IMPORTANT FIXES:
+    // 1. Significantly increase base event chance 
+    // 2. Reduce police evasion impact to ensure events still trigger
+    // 3. Provide even higher chance on mobile devices
+    
+    // Increase base event chance
+    const baseEventChance = isMobileDevice ? 0.85 : 0.75; // 85% on mobile, 75% on desktop (increased from 0.7)
+    const modifiedChance = baseEventChance * (1 - policeEvasion / 400); // Further reduced police evasion impact
+    
+    if (isDebugMode) {
+      console.log(`[Event System] Base chance: ${baseEventChance.toFixed(2)}, Modified chance: ${modifiedChance.toFixed(2)}, Mobile: ${isMobileDevice}`);
+    }
     
     if (Math.random() > modifiedChance) {
+      if (isDebugMode) {
+        console.log('[Event System] Random roll failed, no event triggered');
+      }
       return null;
     }
 
@@ -547,11 +563,15 @@ export const triggerRandomEventAsync = createAsyncThunk(
       return event.conditions.location.includes(location);
     });
 
+    if (isDebugMode) {
+      console.log(`[Event System] Found ${locationEvents.length} possible events for location ${location}`);
+    }
+    
     if (locationEvents.length === 0) {
       return null;
     }
 
-    // Filter events by cooldown - but with more lenient checks
+    // Filter events by cooldown - but with much more lenient checks
     const availableEvents = locationEvents.filter(event => {
       // Non-repeatable events that haven't triggered yet
       if (!event.repeatable && !event.lastTriggered) return true;
@@ -559,15 +579,25 @@ export const triggerRandomEventAsync = createAsyncThunk(
       // Repeatable events with cooldown
       if (event.repeatable && event.lastTriggered && event.cooldown) {
         const daysSinceLastTrigger = currentDay - event.lastTriggered;
-        // Reduce cooldown by 50% to make events more frequent
-        const adjustedCooldown = Math.ceil(event.cooldown * 0.5);
+        
+        // Reduce cooldown even more for mobile
+        const cooldownReduction = isMobileDevice ? 0.2 : 0.3; // 80% reduction on mobile, 70% on desktop
+        const adjustedCooldown = Math.max(1, Math.ceil(event.cooldown * cooldownReduction));
+        
         if (daysSinceLastTrigger < adjustedCooldown) {
+          if (isDebugMode) {
+            console.log(`[Event System] Event ${event.id} on cooldown. Days since trigger: ${daysSinceLastTrigger}, Adjusted cooldown: ${adjustedCooldown}`);
+          }
           return false;
         }
       }
       return true;
     });
 
+    if (isDebugMode) {
+      console.log(`[Event System] ${availableEvents.length} events available after cooldown check`);
+    }
+    
     if (availableEvents.length === 0) {
       return null;
     }
@@ -580,15 +610,47 @@ export const triggerRandomEventAsync = createAsyncThunk(
              (!conditions.maxReputation || reputation <= conditions.maxReputation);
     });
 
+    if (isDebugMode) {
+      console.log(`[Event System] ${eligibleEvents.length} events eligible after reputation check`);
+    }
+    
     if (eligibleEvents.length === 0) {
       return null;
     }
 
-    // Select random event from eligible events
-    const selectedEvent = eligibleEvents[Math.floor(Math.random() * eligibleEvents.length)];
+    // Weight events based on their 'chance' property for better distribution
+    const totalWeight = eligibleEvents.reduce((sum, event) => sum + (event.conditions.chance || 0.1), 0);
+    let random = Math.random() * totalWeight;
+    
+    let selectedEvent = eligibleEvents[0]; // Default to first event
+    
+    for (const event of eligibleEvents) {
+      random -= (event.conditions.chance || 0.1);
+      if (random <= 0) {
+        selectedEvent = event;
+        break;
+      }
+    }
+    
+    if (isDebugMode) {
+      console.log(`[Event System] Selected event: ${selectedEvent.id}`);
+    }
     
     // Update lastTriggered
     selectedEvent.lastTriggered = currentDay;
+    
+    // Save event to localStorage for persistence (new)
+    try {
+      localStorage.setItem('lastTriggeredEvent', JSON.stringify({
+        id: selectedEvent.id,
+        day: currentDay,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      if (isDebugMode) {
+        console.error('[Event System] Failed to save event to localStorage', e);
+      }
+    }
     
     return {
       ...selectedEvent,

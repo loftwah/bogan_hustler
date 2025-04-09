@@ -35,25 +35,60 @@ const EventPopup = () => {
   const event = useSelector((state: RootState) => state.events.activeEvent);
   const [showMinigame, setShowMinigame] = useState(false);
   const [opponentType, setOpponentType] = useState<'police' | 'gang' | 'bikie' | 'dealer'>('police');
+  const isDebugMode = window.location.search.includes('debug=true');
+  
+  // Add console logging for debugging
+  useEffect(() => {
+    if (isDebugMode) {
+      console.log("Event state:", event);
+      console.log("Minigame state:", showMinigame);
+    }
+  }, [event, showMinigame, isDebugMode]);
+
+  // Add debug logging for state changes
+  useEffect(() => {
+    if (isDebugMode) {
+      console.log("showMinigame state changed:", showMinigame);
+    }
+  }, [showMinigame, isDebugMode]);
+
+  useEffect(() => {
+    if (isDebugMode) {
+      console.log("opponentType state changed:", opponentType);
+    }
+  }, [opponentType, isDebugMode]);
 
   useEffect(() => {
     if (event?.id.includes('police')) {
       const siren = new Audio('./siren.mp3');
       siren.volume = 0.3;
       
-      if (document.documentElement.hasAttribute('data-user-interacted')) {
-        siren.play().catch(err => console.log('Audio playback failed:', err));
-      }
+      // Always try to play - modern browsers allow this after any user interaction with the page
+      siren.play().catch(err => {
+        if (isDebugMode) console.log('Audio playback failed:', err);
+      });
     }
-  }, [event]);
+  }, [event, isDebugMode]);
 
+  // Auto-mark as interacted after a short delay for mobile users
   useEffect(() => {
     const markInteracted = () => {
       document.documentElement.setAttribute('data-user-interacted', 'true');
-      document.removeEventListener('click', markInteracted);
     };
-    document.addEventListener('click', markInteracted);
-    return () => document.removeEventListener('click', markInteracted);
+    
+    // Mark interacted immediately if on mobile
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+      markInteracted();
+    }
+    
+    // Also set up traditional listener
+    document.addEventListener('click', markInteracted, { once: true });
+    document.addEventListener('touchstart', markInteracted, { once: true });
+    
+    return () => {
+      document.removeEventListener('click', markInteracted);
+      document.removeEventListener('touchstart', markInteracted);
+    };
   }, []);
 
   if (!event) return null;
@@ -65,7 +100,7 @@ const EventPopup = () => {
     const effects = {
       cash: outcome.cash || 0,
       reputation: outcome.reputation || 0,
-      policeEvasion: 0, // Add other effects as needed
+      policeEvasion: outcome.policeEvasion || 0,
     };
 
     dispatch(adjustStatsFromEvent(effects));
@@ -85,6 +120,11 @@ const EventPopup = () => {
 
   const handleChoice = (choice: EventChoice) => {
     const outcome = choice.outcome;
+    
+    if (isDebugMode) {
+      console.log("Choice clicked:", choice.text);
+      console.log("Outcome:", outcome);
+    }
 
     if (isEventOutcome(outcome)) {
       applyOutcome(outcome);
@@ -92,10 +132,23 @@ const EventPopup = () => {
       return;
     }
 
-    // Handle complex EventChoiceOutcome
+    // Improved minigame triggering
     if ('triggerMinigame' in outcome && outcome.triggerMinigame) {
-      setShowMinigame(true);
+      if (isDebugMode) {
+        console.log("🔥 FIGHT BUTTON CLICKED - SHOULD TRIGGER MINIGAME 🔥");
+        console.log("Attempting to trigger minigame:", outcome.opponentType || 'police');
+      }
+      
+      // Set opponent type immediately
       setOpponentType(outcome.opponentType || 'police');
+      
+      // Use a longer timeout to ensure state has time to update
+      setTimeout(() => {
+        if (isDebugMode) {
+          console.log("Setting showMinigame to true");
+        }
+        setShowMinigame(true);
+      }, 100);
       return;
     }
 
@@ -122,7 +175,11 @@ const EventPopup = () => {
   };
 
   const handleMinigameComplete = (success: boolean) => {
+    if (isDebugMode) {
+      console.log("Minigame completed:", success ? "Victory" : "Defeat");
+    }
     setShowMinigame(false);
+    
     if (success) {
       toast("Victory! Your tactical maneuvers and quick strikes won the fight. Well done!", { icon: '🎉' });
     } else {
@@ -212,49 +269,51 @@ const EventPopup = () => {
 
   return (
     <>
-      {showMinigame ? (
+      {/* Always render but show/hide based on state */}
+      <div className={`fixed inset-0 bg-black/70 flex items-center justify-center z-[999] ${showMinigame ? 'block' : 'hidden'}`}>
         <CombatMinigame 
           onComplete={handleMinigameComplete} 
           opponentType={opponentType}
         />
-      ) : (
-        <div className="fixed inset-0 bg-black/50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto">
-          <div className="bg-surface rounded-lg shadow-lg border border-border w-full max-w-md my-4 sm:my-0">
-            {/* Header */}
-            <div className="sticky top-0 bg-surface p-3 sm:p-4 border-b border-border z-10">
-              <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                {event.id.includes('police') ? '🚨 ' : '⚠️ '}
-                Warning
-              </h3>
-              <p className="mt-2 text-sm sm:text-base">{event.description}</p>
-            </div>
+      </div>
+      
+      {/* Regular event popup */}
+      <div className={`fixed inset-0 bg-black/50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-[100] overflow-y-auto ${showMinigame ? 'hidden' : 'block'}`}>
+        <div className="bg-surface rounded-lg shadow-lg border border-border w-full max-w-md my-4 sm:my-0">
+          {/* Header */}
+          <div className="sticky top-0 bg-surface p-3 sm:p-4 border-b border-border z-10">
+            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+              {event.id.includes('police') ? '🚨 ' : '⚠️ '}
+              Warning
+            </h3>
+            <p className="mt-2 text-sm sm:text-base">{event.description}</p>
+          </div>
 
-            {/* Choices */}
-            <div className="p-2 sm:p-4 space-y-2">
-              {event.choices.map((choice, index) => (
-                <button 
-                  key={index}
-                  onClick={() => handleChoice(choice)}
-                  className="btn w-full bg-surface/90 hover:bg-surface text-sm relative overflow-hidden border border-border/50 hover:border-primary/50 transition-all"
-                  aria-label={choice.text}
-                >
-                  <div className="flex flex-col p-2 sm:p-3">
-                    {/* Choice Text */}
-                    <span className="text-sm sm:text-base font-medium mb-1.5">{choice.text}</span>
-                    
-                    {/* Outcome Details - More Compact Layout */}
-                    <div className="text-xs sm:text-sm opacity-80">
-                      {renderOutcomeDetails(choice)}
-                    </div>
+          {/* Choices */}
+          <div className="p-2 sm:p-4 space-y-2">
+            {event.choices.map((choice, index) => (
+              <button 
+                key={index}
+                onClick={() => handleChoice(choice)}
+                className="btn w-full bg-surface/90 hover:bg-surface text-sm relative overflow-hidden border border-border/50 hover:border-primary/50 transition-all"
+                aria-label={choice.text}
+              >
+                <div className="flex flex-col p-2 sm:p-3">
+                  {/* Choice Text */}
+                  <span className="text-sm sm:text-base font-medium mb-1.5">{choice.text}</span>
+                  
+                  {/* Outcome Details - More Compact Layout */}
+                  <div className="text-xs sm:text-sm opacity-80">
+                    {renderOutcomeDetails(choice)}
                   </div>
-                </button>
-              ))}
-            </div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };
 
-export default EventPopup; 
+export default EventPopup;
