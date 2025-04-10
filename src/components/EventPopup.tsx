@@ -132,7 +132,7 @@ const EventPopup = () => {
       return;
     }
 
-    // Improved minigame triggering
+    // Always trigger minigame immediately when fight button is clicked
     if ('triggerMinigame' in outcome && outcome.triggerMinigame) {
       if (isDebugMode) {
         console.log("🔥 FIGHT BUTTON CLICKED - SHOULD TRIGGER MINIGAME 🔥");
@@ -142,13 +142,10 @@ const EventPopup = () => {
       // Set opponent type immediately
       setOpponentType(outcome.opponentType || 'police');
       
-      // Use a longer timeout to ensure state has time to update
-      setTimeout(() => {
-        if (isDebugMode) {
-          console.log("Setting showMinigame to true");
-        }
-        setShowMinigame(true);
-      }, 100);
+      // Show minigame immediately without timeout
+      setShowMinigame(true);
+      
+      // Don't clear the event yet, let the minigame completion handle it
       return;
     }
 
